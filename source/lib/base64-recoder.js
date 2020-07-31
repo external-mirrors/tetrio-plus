@@ -4,3 +4,6 @@ function b64Recode(value) {
   let enc = JSON.stringify([...JSON.stringify(value)].map(char => char.charCodeAt(0)));
   return `JSON.parse(JSON.parse("${enc}").map(char => String.fromCharCode(char)).join(''))`;
 }
+
+if (typeof module !== 'undefined')
+  module.exports = b64Recode;

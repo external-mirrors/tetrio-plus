@@ -2,6 +2,8 @@
   "private": true,
   "author": "UniQMG",
   "dependencies": {
+    "express": "^4.17.1",
+    "http-proxy": "^1.18.1",
     "node-fetch": "^2.6.0",
     "whatwg-url": "^8.1.0",
     "xmldom": "^0.3.0"

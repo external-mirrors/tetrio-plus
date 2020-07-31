@@ -9,6 +9,13 @@ extensively tested, and it's not packaged into a proper extension.**
 bugs, remove the extension and try again *before* reporting it**
 * Chromium-based browsers are not supported as [they lack](https://bugs.chromium.org/p/chromium/issues/detail?id=487422) an [important API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/filterResponseData) used by this project.
 
+## Technical
+
+Tetrio plus is designed to be loaded in three contexts:
+- As a firefox extension
+- As a native modification for the desktop client
+- As a reverse proxy
+
 ## Electron packaging instructions
 
 These are instructions for *packaging electron releases*.
@@ -46,8 +53,20 @@ onMainWindow(mainWindow);
 - Repack the asar file: `asar pack out app.asar`
 - Distribute the asar file!
 
+## Proxy version
+
+Note: Proxy is VERY MUCH STILL IN DEVELOPMENT and not ready for general use.
+Basic functionality works, but pretty much any edge case you throw at it will
+crash it. Performance is awful. The TPSE file is **NOT SANITIZED YET**. Do not
+use a tpse you haven't exported yourself.
+
+Setup is fairly easy: get a tpse file, rename it to `proxy-settings.tpse` and
+put it in the project root. Then `npm install` and `node source/proxy/app.js`.
+Proxy is hosted on http port 3000.
+
+The proxy contains no GUI and only loads settings from a tpse file.
+
 ## Directory structure
-Tetrio plus is designed to be loaded in two contexts: As a firefox extension, and as a native modification for the desktop client.
 
 ### source/bootstrap/browser
 Contains general purpose *extension background* scripts for bootstrapping other scripts that are executed in the extension sandbox.

@@ -11,13 +11,16 @@ createRewriteFilter("Music Request", "https://tetr.io/res/bgm/*", {
     );
     if (!musicEnabled) return false;
 
-    let [_, songname] = /bgm\/(.+).mp3$/.exec(url);
+    let match = /bgm\/(.+).mp3$/.exec(url);
+    if (!match) return false;
+    
+    let [_, songname] = match;
     let overrides = music.filter(song => song.override == songname);
     if (overrides.length > 0)
       return true;
 
-    let match = /\?song=([^&]+)/.exec(url);
-    if (!match) {
+    let match2 = /\?song=([^&]+)/.exec(url);
+    if (!match2) {
       console.log("[Music Request filter] Ignoring, no song ID or overrides:", url);
       return false;
     }
