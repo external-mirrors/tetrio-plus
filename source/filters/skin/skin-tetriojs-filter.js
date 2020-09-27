@@ -105,7 +105,8 @@ createRewriteFilter("Animated skins", "https://tetr.io/js/tetrio.js", {
           sprite.gotoAndStop(target());
           let int = setInterval(() => {
             sprite.gotoAndStop(target());
-            if (!sprite.parent) clearInterval(int);
+            if (!sprite.parent || !sprite.parent.parent)
+              clearInterval(int);
           }, 16);
           return sprite;
         })()${postmatch}
