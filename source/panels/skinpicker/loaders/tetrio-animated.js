@@ -12,17 +12,35 @@ export function test(files) {
 }
 
 export async function splitgif(file) {
-  let frames = await gifFrames({
-    url: file.data,
-    frames: 'all',
-    outputType: 'canvas',
-    cumulative: app.combine
-  });
-  return frames.map(frame => {
-    let image = frame.getImage();
+  const gif = GIFGroover();
+  gif.playOnLoad = false;
+  gif.src = file.data;
+  let evt = await new Promise(res => gif.onload = res);
+
+  if (!app.overrideFPS) {
+    let fps = ((gif.duration / gif.frameCount) / 1000) * 60;
+    app.delay = fps;
+  }
+
+  let canvas = document.createElement('canvas');
+  canvas.width = gif.naturalWidth;
+  canvas.height = gif.naturalHeight;
+  let ctx = canvas.getContext('2d');
+
+  let frames = [];
+  for (let i = 0; i < gif.frameCount; i++) {
+    if (!app.combine)
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(gif.getFrame(i), 0, 0);
+
+    let image = document.createElement('canvas');
+    image.width = canvas.width;
+    image.height = canvas.height;
+    image.getContext('2d').drawImage(canvas, 0, 0);
     let data = image.toDataURL('image/png');
-    return {...file, type: 'image/png', image, data};
-  });
+    frames.push({ ...file, type: 'image/png', image, data });
+  }
+  return frames;
 }
 
 import { load as loadraster } from './tetrio-raster.js';

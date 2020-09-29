@@ -30,8 +30,12 @@ const app = new Vue({
       <fieldset v-if="!loader || extrainputs.delay">
         <legend>Animated skin options</legend>
         <div>
+          <input type="checkbox" v-model="overrideFPS" />
+          Override framerate
+        </div>
+        <div>
           Delay (frames):
-          <input type="number" v-model.number="delay" min="1">
+          <input type="number" v-model.number="delay" min="1" :disabled="!overrideFPS">
         </div>
         <div>
           <input type="checkbox" v-model="combine" />
@@ -50,6 +54,7 @@ const app = new Vue({
   data: {
     loader: null,
     delay: 30,
+    overrideFPS: false,
     combine: true,
     loaders: loaders
   },
