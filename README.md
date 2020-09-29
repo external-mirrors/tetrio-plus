@@ -42,6 +42,11 @@ if (arg.startsWith('tetrio://') && !handleWindowOpen(arg)) { ... }
 // At the end of createWindow()
 onMainWindow(mainWindow);
 ```
+- Modify preload.js like so:
+```javascript
+// At the end of the file
+require('./tetrioplus/source/electron/preload');
+```
 - Repack the asar file: `asar pack out app.asar`
 - Distribute the asar file!
 

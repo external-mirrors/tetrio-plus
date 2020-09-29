@@ -90,6 +90,8 @@
             width,
             height,
             webPreferences: {
+              nodeIntegration: false,
+              enableRemoteModule: true,
               preload: path.join(__dirname, 'electron-browser-polyfill.js')
             }
           });

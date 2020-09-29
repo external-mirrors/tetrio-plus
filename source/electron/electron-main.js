@@ -17,7 +17,7 @@ const Store = require('electron-store');
 const store = new Store({ name: 'tetrio-plus' });
 
 function modifyWindowSettings(settings) {
-  settings.webPreferences.preload = path.join(__dirname, 'preload.js');
+  // settings.webPreferences.preload = path.join(__dirname, 'preload.js');
 
   if (store.get('transparentBgEnabled')) {
     settings.frame = false;
@@ -86,7 +86,9 @@ async function createTetrioPlusWindow() {
     width: 432,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'electron-browser-polyfill.js')
+      nodeIntegration: false,
+      enableRemoteModule: true,
+      preload: path.join(app.getAppPath(), 'tetrioplus/source/electron/electron-browser-polyfill.js')
     }
   });
   tpWindow.loadURL(`tetrio-plus-internal://source/popup/index.html`);
