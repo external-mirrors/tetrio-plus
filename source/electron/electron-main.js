@@ -18,6 +18,7 @@ const store = new Store({ name: 'tetrio-plus' });
 
 function modifyWindowSettings(settings) {
   // settings.webPreferences.preload = path.join(__dirname, 'preload.js');
+  settings.webPreferences.enableRemoteModule = true;
 
   if (store.get('transparentBgEnabled')) {
     settings.frame = false;
