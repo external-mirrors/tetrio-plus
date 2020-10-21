@@ -31,10 +31,7 @@ createRewriteFilter("Animated skins", "https://tetr.io/js/tetrio.js", {
           } = ${b64Recode(res.skinAnimMeta)};
 
           let frames = [];
-          // If only using one frame, might as well just load the svg version
-          let baseUrl = frameCount > 1
-            ? 'https://tetr.io/res/minos.png?animated'
-            : 'https://tetr.io/res/minos.svg';
+          let baseUrl = 'https://tetr.io/res/minos.png?animated';
           let base = PIXI.BaseTexture.from(baseUrl);
           for (let i = 0; i < frameCount; i++) {
             let rect = new PIXI.Rectangle(
