@@ -11,7 +11,7 @@ function matchesGlob(glob, string) {
 }
 
 mainWindow.webContents.session.webRequest.onBeforeRequest(
-  { urls: ['https://tetr.io/*'] },
+  { urls: ['https://tetr.io/*', '*://*.adinplay.com/*', '*://adinplay.com/*'] },
   (request, callback) => {
     (async () => {
       // greenlog("Request origin URL", request);
@@ -40,6 +40,12 @@ mainWindow.webContents.session.webRequest.onBeforeRequest(
             greenlog(`[${name} filter] Disabled, ignoring ${request.url}`);
             continue;
           }
+        }
+
+        if (options.blockRequest) {
+          greenlog(`[${name} filter] Request to ${url} \u001b[31mblocked`);
+          callback({ cancel: true });
+          return;
         }
 
         greenlog(`[${name} filter] Redirecting ${request.url}`);

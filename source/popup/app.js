@@ -118,22 +118,6 @@ const app = new Vue({
               Bypass bootstrapper
             </span>
           </option-toggle>
-          <!-- <option-toggle storageKey="showLegacyOptions">
-            <span title="Enables deprecated legacy options">
-              Show legacy options
-            </span>
-            <option-toggle inline storageKey="showLegacyOptions" mode="show">
-              <span
-                class="warning-icon"
-                :title="(
-                  'These are features which are no longer relevent due to ' +
-                  'the introduction of comparable base game features. ' +
-                  'They\\'re not maintained and have a higher chance of ' +
-                  'breaking something.'
-                )"
-              >⚠️</span>
-            </option-toggle>
-          </option-toggle> -->
           <option-toggle storageKey="openDevtoolsOnStart" v-if="isElectron">
             <span :title="(
               'Opens the developer tools as soon as the game launches. ' +
@@ -149,6 +133,24 @@ const app = new Vue({
               Hide Tetrio Plus window on startup
             </span>
           </option-toggle>
+          <div>
+            <option-toggle inline storageKey="blockAds">
+              <span :title="'uBlock Origin is recommended over this option on firefox'">
+                Block Ads
+              </span>
+            </option-toggle>
+            <option-toggle inline storageKey="blockAds" mode="show">
+              <a
+                href='#'
+                @click.prevent="openMonetizationInfo"
+                class="warning-icon"
+                :title="(
+                  'Please consider supporting the game!' +
+                  ' Click this link to learn more.'
+                )"
+              >please read</a>
+            </option-toggle>
+          </div>
 
           <option-toggle
             storageKey="debugBreakTheGame"
@@ -293,6 +295,16 @@ const app = new Vue({
           height: 520
         });
       }
+    },
+    openMonetizationInfo() {
+      browser.windows.create({
+        type: 'detached_panel',
+        url: browser.extension.getURL(
+          'source/panels/monetizationinfo/index.html'
+        ),
+        width: 750,
+        height: 350
+      });
     },
     openTouchEditor() {
       browser.tabs.create({

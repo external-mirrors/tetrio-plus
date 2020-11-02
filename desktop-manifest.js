@@ -29,7 +29,8 @@ manifest.browser_specific_settings.desktop_client = {
     "source/filters/touch-controls-tetriojs-filter.js",
     "source/filters/emote-tab-tetriojs-filter.js",
     "source/filters/osd-request-filter.js",
-    "source/filters/debug-tetriojs-filter.js"
+    "source/filters/debug-tetriojs-filter.js",
+    "source/filters/adblocker-filter.js"
   ],
   "preload_scripts": [
     "source/shared/migrate.js",

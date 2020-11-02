@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>TETR.IO PLUS - Support the game</title>
+    <style>
+      body {
+          font-size: 16pt;
+          margin: 0px 20px;
+          text-align: justify;
+          font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      TETR.IO isn't free to run, and blocking ads means osk doesn't recieve any
+      revenue. The game won't prevent you from playing if you block ads, but the
+      servers cost quite a bit of money to run. Please consider supporting the
+      game through alternate channels such as
+      <a id='patreon' href="#">Patreon</a>.
+      Consider also reading osk's
+      <a id='blogpost' href="#">blog post</a>
+      about the addition of ads into the game.
+    </p>
+
+    <script>
+      function open(url) {
+        if (browser.electron) {
+          browser.tabs.openExternal(url);
+        } else {
+          window.open(url);
+        }
+      }
+      document.getElementById('patreon').onclick = function() {
+        open('https://www.patreon.com/tetrio');
+      }
+      document.getElementById('blogpost').onclick = function() {
+        open('https://blog.osk.sh/post.php?p=5f9dfef7f36858.79227265')
+      }
+    </script>
+
+    <p>
+      Note: These are links for supporting osk and TETR.IO directly. They
+      <em>do not</em> support the author of TETR.IO PLUS. TETR.IO PLUS will
+      remain freely available without ads.
+    </p>
+  </body>
+</html>

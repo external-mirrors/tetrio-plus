@@ -105,6 +105,10 @@
         create({ url, active }) {
           browser.windows.create({ type: null, url, width: 800, height: 800 });
         },
+        openExternal(url) {
+          console.log('Opening', url, 'externally');
+          require('electron').shell.openExternal(url);
+        },
         electronOnMainNavigate(callback) {
           require('electron').ipcRenderer.on('client-navigated', (event, url) => {
             callback(url);

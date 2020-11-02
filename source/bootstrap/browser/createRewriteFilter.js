@@ -21,6 +21,12 @@ function createRewriteFilter(name, url, options) {
         }
       }
 
+      if (options.blockRequest) {
+        request.cancel = true;
+        console.log(`[${name} filter] Request to ${url} blocked`);
+        return;
+      }
+
       console.log(`[${name} filter] Filtering ${url}`);
 
       if (options.onStart || options.onStop) {
