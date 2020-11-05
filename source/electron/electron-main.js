@@ -15,14 +15,27 @@ const fs = require('fs');
 
 const manifest = require('../../desktop-manifest.js');
 
+path.join(app.getPath('userData'), 'tetrioplus');
+
 const Store = require('electron-store');
-const store = new Store({ name: 'tetrio-plus' });
+function storeGet(key) {
+  console.log("storeget", key)
+  if (!(/^[A-Za-z0-9\-_]+$/.test(key)))
+    throw new Error("Invalid key: " + key);
+  console.log("getting", 'tpkey-'+key)
+  let val = new Store({
+    name: 'tpkey-'+key,
+    cwd: 'tetrioplus'
+  }).get('value');
+  console.log('ok', val);
+  return val;
+}
 
 function modifyWindowSettings(settings) {
   // settings.webPreferences.preload = path.join(__dirname, 'preload.js');
   settings.webPreferences.enableRemoteModule = true;
 
-  if (store.get('transparentBgEnabled')) {
+  if (storeGet('transparentBgEnabled')) {
     settings.frame = false;
     settings.transparent = true;
     settings.backgroundColor = '#00000000';
@@ -390,14 +403,14 @@ app.whenReady().then(async () => {
     }
   }
 
-  if (store.get('openDevtoolsOnStart')) {
+  if (storeGet('openDevtoolsOnStart')) {
     let mainContents = (await mainWindow).webContents;
     mainContents.on('dom-ready', async evt => {
       mainContents.openDevTools();
     });
   }
 
-  if (!store.get('hideTetrioPlusOnStartup')) {
+  if (!storeGet('hideTetrioPlusOnStartup')) {
     createTetrioPlusWindow();
   }
 }).catch(greenlog);

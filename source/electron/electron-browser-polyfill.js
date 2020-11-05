@@ -1,13 +1,19 @@
 (() => {
-  let electron = typeof window != 'undefined' && window?.process?.versions?.electron;
-  let node = typeof module != 'undefined' && module.exports;
+  const electron = typeof window != 'undefined' && window?.process?.versions?.electron;
+  const node = typeof module != 'undefined' && module.exports;
   if (electron || node) {
     console.log("Running under electron - polyfilling browser");
 
     // provided by tetrio desktop
     const Store = require('electron-store');
-    const store = new Store({ name: 'tetrio-plus' });
+    // const store = new Store({ name: 'tetrio-plus' });
+    const keystore = new Store({
+      name: 'key-index',
+      cwd: 'tetrioplus',
+      defaults: { keys: [] }
+    });
 
+    const { promisify } = require('util');
     const electron = require('electron');
     const path = require('path');
     const fs = require('fs');
@@ -133,8 +139,14 @@
             if (typeof keys == 'string') keys = [keys];
 
             let values = {};
-            for (let key of keys)
-              values[key] = store.get(key);
+            for (let key of keys) {
+              if (!(/^[A-Za-z0-9\-_]+$/.test(key)))
+                throw new Error("Invalid key: " + key);
+              values[key] = new Store({
+                name: 'tpkey-' + key,
+                cwd: 'tetrioplus'
+              }).get('value');
+            }
 
             // Prevent infinite loops in some users that don't expect
             // the promise to resolve syncronously
@@ -142,14 +154,38 @@
             return values;
           },
           async set(vals) {
-            store.set(vals);
+            for (let [key, value] of Object.entries(vals)) {
+              if (!(/^[A-Za-z0-9\-_]+$/.test(key)))
+                throw new Error("Invalid key: " + key);
+
+              let keys = keystore.get('keys');
+              if (keys.indexOf(key) == -1)
+                keys.push(key);
+              keystore.set({ keys });
+
+              new Store({
+                name: 'tpkey-' + key,
+                cwd: 'tetrioplus'
+              }).set({ value });
+            }
           },
           async remove(keys) {
             if (typeof keys == 'string') keys = [keys];
-            for (let key of keys) store.delete(key);
+            for (let key of keys) {
+              if (!(/^[A-Za-z0-9\-_]+$/.test(key)))
+                throw new Error("Invalid key: " + key);
+
+              let keys = keystore.get('keys');
+              if (keys.indexOf(key) !== -1)
+                keys.splice(keys.indexOf(key), 1);
+              keystore.set({ keys });
+
+              let {path} = new Store({ name: 'tpkey-'+key, cwd: 'tetrioplus' });
+              await promisify(fs.unlink)(path);
+            }
           },
           async clear() {
-            store.clear();
+            await browser.storage.local.remove(keystore.get('keys'));
           }
         }
       }
