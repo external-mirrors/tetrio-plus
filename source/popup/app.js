@@ -133,7 +133,7 @@ const app = new Vue({
               Hide Tetrio Plus window on startup
             </span>
           </option-toggle>
-          <div>
+          <div v-if="isElectron">
             <option-toggle inline storageKey="blockAds">
               <span :title="'uBlock Origin is recommended over this option on firefox'">
                 Block Ads
@@ -150,6 +150,9 @@ const app = new Vue({
                 )"
               >please read</a>
             </option-toggle>
+          </div>
+          <div v-if="isElectron">
+            <button @click="uninstall">Uninstall TETR.IO PLUS</button>
           </div>
 
           <option-toggle
@@ -319,6 +322,11 @@ const app = new Vue({
         evt.preventDefault();
         openInBrowser(evt.target.href);
       }
+    },
+    uninstall() {
+      browser.management.uninstallSelf().catch(ex => {
+        alert(ex.toString());
+      });
     }
   }
 });

@@ -7,6 +7,8 @@ const manifest = JSON.parse(fs.readFileSync(
 // Moved to this file since apparently "browser_specific_settings" means
 // "firefox settings that firefox will complain about if you add your own entry"
 manifest.browser_specific_settings.desktop_client = {
+  // Hash of the uninstall app.asar
+  "vanilla_hash": "12462D298C690D16165833F9901FE69CF8D2D986",
   "scripts": [
     "source/shared/migrate.js",
     "source/shared/tpse-sanitizer.js",

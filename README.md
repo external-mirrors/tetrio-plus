@@ -47,6 +47,8 @@ onMainWindow(mainWindow);
 // At the end of the file
 require('./tetrioplus/source/electron/preload');
 ```
+- Copy the original vanilla app.asar file to `out/app.asar.vanilla`
+- Copy its SHA1 hash into desktop-manifest.js
 - Repack the asar file: `asar pack out app.asar`
 - Distribute the asar file!
 

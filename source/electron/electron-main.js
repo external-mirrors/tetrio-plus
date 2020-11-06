@@ -4,8 +4,10 @@
   Not used on firefox
 */
 
-const { app, BrowserWindow, protocol, ipcMain } = require('electron');
+const { app, BrowserWindow, protocol, ipcMain, dialog } = require('electron');
 const browser = require('./electron-browser-polyfill.js');
+const { promisify } = require('util');
+const crypto = require('crypto');
 const https = require('https');
 const path = require('path');
 const vm = require('vm');
@@ -109,8 +111,62 @@ async function createTetrioPlusWindow() {
   });
 }
 
+function showError(title, ...lines) {
+  dialog.showMessageBoxSync(null, {
+    type: 'error',
+    title: title,
+    message: lines.join('\n')
+  });
+}
+
 ipcMain.on('tetrio-plus-cmd', async (evt, arg) => {
   switch(arg) {
+    case 'uninstall':
+      try {
+        const asarPath = app.getAppPath();
+        if (path.basename(asarPath) !== 'app.asar') {
+          throw new Error(
+            'App path isn\'t an asar file. Are you running tetrio unpacked?\n' +
+            'Path: ' + asarPath
+          );
+        }
+
+        const vanillaPath = path.join(asarPath, 'app.asar.vanilla');
+        greenlog("Vanilla asar path: " + vanillaPath);
+        const vanillaAppAsar = fs.readFileSync(vanillaPath);
+
+        const hash = crypto.createHash('sha1');
+        hash.setEncoding('hex');
+        hash.write(vanillaAppAsar);
+        hash.end();
+
+        const targetHash = manifest
+          .browser_specific_settings
+          .desktop_client
+          .vanilla_hash;
+        const actualHash = hash.read();
+        if (actualHash.toLowerCase() !== targetHash.toLowerCase()) {
+          throw new Error(
+            'Hash mismatch.' +
+            '\nStored app.asar.vanilla hash: ' + actualHash +
+            '\nExpected hash: ' + targetHash
+          );
+        }
+
+        greenlog("Installing", vanillaAppAsar);
+        require('original-fs').writeFileSync(asarPath, vanillaAppAsar);
+        app.relaunch();
+        app.exit();
+      } catch(ex) {
+        dialog.showMessageBoxSync(null, {
+          type: 'error',
+          title: 'Uninstall TETR.IO PLUS',
+          message: ex.toString()
+        });
+        greenlog("Uninstall error:", ex);
+      }
+      break;
+
     case 'destroy everything':
       BrowserWindow.getAllWindows().forEach(window => window.destroy());
       process.exit();

@@ -20,6 +20,15 @@
 
     const browser = {
       electron: true,
+      management: {
+        async uninstallSelf() {
+          if (!confirm(
+            "Are you sure you want to uninstall TETR.IO PLUS? " +
+            "The application will quit after uninstalling."
+          )) throw new Error('Uninstall cancelled');
+          electron.ipcRenderer.send('tetrio-plus-cmd', 'uninstall');
+        }
+      },
       runtime: {
         getURL(relative) {
           let absolute = 'tetrio-plus-internal://' + relative;
