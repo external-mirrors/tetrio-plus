@@ -203,23 +203,8 @@ ipcMain.on('tetrio-plus-cmd', async (evt, arg) => {
   }
 })
 
-if (protocol) {
-  protocol.registerSchemesAsPrivileged([{
-    scheme: 'tetrio-plus',
-    privileges: {
-      secure: true,
-      supportFetchAPI: true,
-      bypassCSP: true,
-      corsEnabled: true
-    }
-  }, {
-    scheme: 'tetrio-plus-internal',
-    privileges: {
-      secure: true,
-      supportFetchAPI: true,
-      corsEnabled: true
-    }
-  }]);
+if (protocol && !tetrioPatcherIsPresent) {
+  require(path.join(__dirname,"..","..","patcher-preload","tetrio-plus.uniqmg.js"))
 }
 
 function matchesGlob(glob, string) {
