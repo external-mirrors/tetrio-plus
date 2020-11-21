@@ -6,7 +6,6 @@ import fs from 'fs';
 import { Canvas, Image } from 'canvas';
 import './decoders.js';
 import { Blob, FileReader } from 'vblob';
-import GIFGroover from './lib/GIFGroover.js';
 
 global.self = global;
 require('../source/lib/OggVorbisEncoder.js');
@@ -16,7 +15,6 @@ Object.assign(global, {
   window: {
     Blob,
     FileReader,
-    GIFGroover,
     OggVorbisEncoder,
     OfflineAudioContext,
     Image,
@@ -41,13 +39,14 @@ Object.assign(global, {
       }
 
       return await fetch(url);
-    },
+    }
   },
   browser: {
-      extension: {
-        getURL(relpath) {
-          return fs.createReadStream(path.join(__dirname, '..', relpath));
-        }
+    extension: {
+      getURL(relpath) {
+        return fs.createReadStream(path.join(__dirname, '..', relpath));
       }
     }
+  }
 });
+window.GIFGroover = require('./lib/GIFGroover.js').default;
