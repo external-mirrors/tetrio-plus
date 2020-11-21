@@ -4,7 +4,7 @@
   "author": "UniQMG",
   "description": "Tetrio Plus",
   "main": "makeTPSELib.js",
-  "version": "0.16.4",
+  "version": "0.16.5",
   "dependencies": {
     "canvas": "^2.6.1",
     "commander": "^6.2.0",

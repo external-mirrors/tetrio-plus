@@ -32,7 +32,11 @@ Object.assign(global, {
     let dataUrl = /^data:.+\/(.+);base64,(.*)$/;
     if (dataUrl.test(url)) {
       let [_1,_2,data] = /^data:.+\/(.+);base64,(.*)$/.exec(url);
-      return Buffer.from(data, 'base64');
+      let buffer = Buffer.from(data, 'base64');
+      return { // mock response
+        async text() { return buffer.toString(); }
+        async arrayBuffer() { return buffer; }
+      }
     }
 
     return await fetch(url);
