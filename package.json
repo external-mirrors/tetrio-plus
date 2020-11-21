@@ -1,5 +1,6 @@
 {
   "private": true,
+  "name": "tetrioplus",
   "author": "UniQMG",
   "description": "Tetrio Plus",
   "main": "makeTPSE.js",
