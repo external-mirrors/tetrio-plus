@@ -12,7 +12,7 @@ export function test(files) {
 }
 
 export async function splitgif(file, options) {
-  const gif = GIFGroover();
+  const gif = window.GIFGroover();
   gif.playOnLoad = false;
   gif.src = file.data;
   let evt = await new Promise(res => gif.onload = res);
@@ -22,7 +22,7 @@ export async function splitgif(file, options) {
     options.delay = fps;
   }
 
-  let canvas = document.createElement('canvas');
+  let canvas = window.document.createElement('canvas');
   canvas.width = gif.naturalWidth;
   canvas.height = gif.naturalHeight;
   let ctx = canvas.getContext('2d');
@@ -33,7 +33,7 @@ export async function splitgif(file, options) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(gif.getFrame(i), 0, 0);
 
-    let image = document.createElement('canvas');
+    let image = window.document.createElement('canvas');
     image.width = canvas.width;
     image.height = canvas.height;
     image.getContext('2d').drawImage(canvas, 0, 0);
@@ -48,7 +48,7 @@ export async function load(files, storage, options) {
   if (files.length == 1 && files[0].type == 'image/gif')
     files = await splitgif(files[0], options);
 
-  let canvas = document.createElement('canvas');
+  let canvas = window.document.createElement('canvas');
   let step = files[0].image.height;
   canvas.width = files[0].image.width;
   canvas.height = step * files.length;

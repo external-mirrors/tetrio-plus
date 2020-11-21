@@ -8,7 +8,7 @@ export function test(files) {
   return aspect == 9;
 }
 export function convertToTetrio(image) {
-  const canvas = document.createElement('canvas');
+  const canvas = window.document.createElement('canvas');
   const pixelGapConstant = 31/30;
   canvas.width = image.width * 12 / 9 * pixelGapConstant;
   canvas.height = image.height;

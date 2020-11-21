@@ -12,7 +12,7 @@ export async function load(files, storage) {
   let file = files[0];
 
   let placeholder = browser.extension.getURL('resources/template.svg');
-  let template = await (await fetch(placeholder)).text();
+  let template = await (await window.fetch(placeholder)).text();
   let svg = template.replace('<!--custom-image-embed-->', file.data);
 
   await storage.set({

@@ -1,5 +1,6 @@
 // Patched version of gifgroover that supports only data uris
 // and withs with es6 exports
+const document = window.document; // polyfill hack
 export default function GIFGroover() {
     "use strict";
     var interlacedBufSize, deinterlaceBuf, pixelBufSize, pixelBuf, st, timerID, currentFrame, currentTime, playing, loading, complete, cancel, disposalMethod, transparencyGiven, delayTime, transparencyIndex, gifWidth, gifHeight, duration, frameTime, playSpeed, nextFrameTime, nextFrame, lastFrame, bgColorCSS, gifSrc, paused, colorRes, globalColourCount, bgColourIndex, globalColourTable;

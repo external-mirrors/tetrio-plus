@@ -2,7 +2,7 @@ const sampleRate = 44100;
 const channels = 2;
 const quality = 0.5;
 export default async function encode(sprites, storage) {
-  let encoder = new OggVorbisEncoder(sampleRate, channels, quality);
+  let encoder = new window.OggVorbisEncoder(sampleRate, channels, quality);
 
   let atlas = {};
   let currentOffset = 0;
@@ -22,7 +22,7 @@ export default async function encode(sprites, storage) {
 
   let blob = encoder.finish();
   let dataUrl = await new Promise(res => {
-    let blobReader = new FileReader();
+    let blobReader = new window.FileReader();
     blobReader.onload = evt => res(blobReader.result)
     blobReader.readAsDataURL(blob);
   });

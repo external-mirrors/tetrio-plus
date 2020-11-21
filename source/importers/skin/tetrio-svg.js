@@ -9,9 +9,9 @@ export function test(files) {
 }
 export async function load(files, storage) {
   let file = files[0];
-  let svg = await (await fetch(files[0].data)).text();
+  let svg = await (await window.fetch(files[0].data)).text();
 
-  let canvas = document.createElement('canvas');
+  let canvas = window.document.createElement('canvas');
   let ctx = canvas.getContext('2d');
   canvas.width = file.image.width;
   canvas.height = file.image.height;

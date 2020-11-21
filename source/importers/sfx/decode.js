@@ -1,7 +1,7 @@
 const sampleRate = 44100;
 const channels = 2;
 
-const decoderCtx = new OfflineAudioContext({
+const decoderCtx = new window.OfflineAudioContext({
   numberOfChannels: channels,
   length: sampleRate * 1,
   sampleRate: sampleRate
@@ -12,7 +12,7 @@ export async function decodeAudio(buffer) {
 }
 
 export async function fetchAtlas() {
-  let srcRequest = await fetch('https://tetr.io/js/tetrio.js');
+  let srcRequest = await window.fetch('https://tetr.io/js/tetrio.js');
   let src = await srcRequest.text();
 
   let regex = /TETRIO_SE_SHEET\s*=\s*(?:({[^}]+})|.+?JSON\.parse\("\[([\d,]+))/;
@@ -36,7 +36,7 @@ export async function fetchAtlas() {
 }
 
 export async function fetchAudio() {
-  let request = await fetch('https://tetr.io/sfx/tetrio.ogg');
+  let request = await window.fetch('https://tetr.io/sfx/tetrio.ogg');
   let encodedSfxBuffer = await request.arrayBuffer();
   return await decodeAudio(encodedSfxBuffer);
 }
@@ -54,7 +54,7 @@ export async function decodeDefaults(status=(()=>{})) {
     // Convert milliseconds to seconds
     offset /= 1000; duration /= 1000;
 
-    const ctx = new OfflineAudioContext({
+    const ctx = new window.OfflineAudioContext({
       numberOfChannels: channels,
       length: sampleRate * duration,
       sampleRate: sampleRate
