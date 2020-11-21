@@ -3,7 +3,7 @@
   "name": "tetrioplus",
   "author": "UniQMG",
   "description": "Tetrio Plus",
-  "main": "makeTPSE.js",
+  "main": "makeTPSELib.js",
   "version": "0.16.1",
   "dependencies": {
     "node-fetch": "^2.6.1",
