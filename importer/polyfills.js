@@ -12,6 +12,7 @@ require('../source/lib/OggVorbisEncoder.js');
 
 // Web API polyfills
 Object.assign(global, {
+  Blob,
   window: {
     Blob,
     FileReader,
