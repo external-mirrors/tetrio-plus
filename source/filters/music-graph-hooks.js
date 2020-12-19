@@ -13,7 +13,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js", {
        * This regex locates the variable holding the 'full'/'tiny' value and
        * one holding something related to board location for use by the next rgx
        */
-      var rgx = /playIngame\(['"`]warning['"`],(\w+),(\w+)/;
+      var rgx = /playIngame\(\w+,\s*([.\w]+),\s*([.\w]+)/;
       var match = rgx.exec(src);
       if (!match) {
         console.error('Music graph hooks broken (setup/?)');
@@ -67,16 +67,17 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js", {
         }
 
         /**
-         * This regex targets a bit of the code that emits the 'warning' sound
-         * effect, and uses it to emit an event for the current board height
-         * plus incoming garbage height.
+         * This regex targets a bit of the code that calculates the board +
+         * garbage height near the code that emits the 'warning' sound effect,
+         * and uses it to emit an event for the current board height plus
+         * incoming garbage height.
          */
         var match = false;
-        var rgx = /(let\s*(\w)\s*=\s*\w+\(\).{0,100}\(\2\s*=)(.+)(\)>)/i;
+        var rgx = /((\w{1,2})\s*=\s*)(Math\.max\(0,\s*\2\s*-\s*Math\.min.+)(\)\s*>\s*19)/i;
         src = src.replace(rgx, ($, prematch, varName, expression, postmatch) => {
           match = true;
           return (
-            `${prematch}(() => {
+            /* o = */`${prematch}(() => {
               let height = ${expression};
               document.dispatchEvent(new CustomEvent('tetrio-plus-actionheight', {
                 detail: {
@@ -86,7 +87,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js", {
                 }
               }));
               return height;
-            })()` + postmatch
+            })()${postmatch}` /* > 19 */
           );
         });
         if (!match) {
