@@ -1,1 +1,1 @@
-module.exports = require('esm')(module)('./importer/tpselib.js').default;
+module.exports = require('esm')(module)('./tpseimporter/tpselib.js').default;

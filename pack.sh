@@ -18,7 +18,7 @@ process () {
 
 files=$(
   find -type f |\
-  grep -Ev 'build|buildscripttest|node_modules|\.zip|\.xpi|\.git|electron|package(-lock)?\.json|desktop-manifest\.js|pack.sh|importer|makeTPSE'
+  grep -Ev 'build|buildscripttest|node_modules|\.zip|\.xpi|\.git|electron|package(-lock)?\.json|desktop-manifest\.js|pack.sh|tpseimporter|makeTPSE'
 )
 for file in $files; do
   process $file
