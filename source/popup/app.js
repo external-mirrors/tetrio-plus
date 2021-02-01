@@ -88,10 +88,9 @@ const app = new Vue({
             </option-toggle>
             <option-toggle storageKey="enableEmoteTab">
               <span :title="(
-                'Allows you to press tab and autocomplete emotes, and press ' +
-                'multiple times to cycle through available ones.'
+                'Shows an emote picker when pressing tab in chat'
               )">
-                Enable emote tabbing
+                Enable emote picker
               </span>
             </option-toggle>
           </div>
