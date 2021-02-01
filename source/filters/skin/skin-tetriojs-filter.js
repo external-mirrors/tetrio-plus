@@ -8,7 +8,7 @@ createRewriteFilter("Animated skins", "https://tetr.io/js/tetrio.js", {
     let { frames, frameWidth, frameHeight } = res.skinAnimMeta;
 
     // You're gonna want line wrap for this one
-    const monster = /Object\.keys\((\w+)\.minoCanvases\)\.forEach\((\w+)\s*=>\s*{\s*(\w+)\[\2\]\s*=[^}]+}\),\s*Object\.keys\(\w+\.minoCanvasesShiny\)\.forEach\((\w+)\s*=>\s*{\s*(\w+)\[\4\]\s*=[^}]+}\),/;
+    const monster = /Object\.keys\(([\w$]+)\.minoCanvases\)\.forEach\(([\w$]+)\s*=>\s*{\s*([\w$]+)\[\2\]\s*=[^}]+}\),\s*Object\.keys\([\w$]+\.minoCanvasesShiny\)\.forEach\(([\w$]+)\s*=>\s*{\s*([\w$]+)\[\4\]\s*=[^}]+}\),/;
 
     let outerTextureList = null;
     let outerShinyTextureList = null;
