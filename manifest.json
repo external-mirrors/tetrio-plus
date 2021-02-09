@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tetr.io+",
-  "version": "0.16.14",
+  "version": "0.16.15",
 
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
@@ -16,7 +16,7 @@
 
   "page_action": {
     "default_icon": "icons/tetrio-256.png",
-    "default_title": "Tetr.io+",
+    "default_title": "TETR.IO PLUS",
     "default_popup": "source/popup/index.html",
     "show_matches": ["*://*.tetr.io/*"]
   },
