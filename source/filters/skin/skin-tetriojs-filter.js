@@ -85,7 +85,9 @@ createRewriteFilter("Animated skins", "https://tetr.io/js/tetrio.js", {
     // Replace anywhere using the previously captured texture variables with an
     // AnimatedSprite instead of a regular one, and also set up animation logic.
     let matches = 0;
-    let spritemaker = new RegExp(`(new PIXI\\.Sprite\\()([^)]*${outerTextureList}[^)]*\\).*?)(;)`, 'g');
+    // Why does javascript allow `$` in variable names reeeEEEEEEE
+    let sanitizedOTL = outerTextureList.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let spritemaker = new RegExp(`(new PIXI\\.Sprite\\()([^)]*${sanitizedOTL}[^)]*\\).*?)(;)`, 'g');
     src = src.replace(spritemaker, (match, _constructor, contents, postmatch) => {
       matches++;
       // Avoiding matching the trailing close paran is harder than really
