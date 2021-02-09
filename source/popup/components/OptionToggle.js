@@ -69,6 +69,9 @@ export default {
     cache: cacheStorage
   }),
   watch: {
+    optionValue(val) {
+      this.$emit('changed', val);
+    },
     storageKey: ensureReactive,
     enabledIfKey: ensureReactive
   },

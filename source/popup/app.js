@@ -23,6 +23,13 @@ const app = new Vue({
       </h1>
       <p class="tagline">Unofficial TETR.IO Customization Tool</p>
 
+      <template v-if="updateHref">
+        <a href="#" @click.prevent="openInBrowser(updateHref)">
+          {{ updateStatus }}
+        </a>
+      </template>
+      <template v-else>{{ updateStatus}}</template>
+
       <fieldset class="section contentPackInfo" v-if="contentPack">
         <legend>Content Pack</legend>
         <div v-if="contentPackIssue" style="max-width: 400px">
@@ -135,7 +142,7 @@ const app = new Vue({
           </option-toggle>
           <div v-if="isElectron">
             <option-toggle inline storageKey="blockAds">
-              <span :title="'uBlock Origin is recommended over this option on firefox'">
+              <span title="Blocks ad scripts">
                 Block Ads
               </span>
             </option-toggle>
@@ -149,6 +156,11 @@ const app = new Vue({
                   ' Click this link to learn more.'
                 )"
               >please read</a>
+            </option-toggle>
+            <option-toggle storageKey="enableUpdateCheck" @changed="updateCheck()">
+              <span title="Notifies you if an update is available">
+                Enable update check
+              </span>
             </option-toggle>
           </div>
           <div v-if="isElectron">
@@ -192,6 +204,8 @@ const app = new Vue({
     BackgroundManager
   },
   data: {
+    updateStatus: null,
+    updateHref: null,
     debugMode: false,
     contentPack: null,
     allowURLPackLoader: null,
@@ -259,8 +273,12 @@ const app = new Vue({
         this.contentPack = decodeURIComponent(match[1]);
       })
     }
+    this.updateCheck();
   },
   methods: {
+    openInBrowser(url) {
+      window.openInBrowser(url)
+    },
     refreshContentPackInfo() {
       browser.storage.local.get([
         'allowURLPackLoader',
@@ -327,6 +345,44 @@ const app = new Vue({
       browser.management.uninstallSelf().catch(ex => {
         alert(ex.toString());
       });
+    },
+    async updateCheck() {
+      let res = await browser.storage.local.get('enableUpdateCheck');
+      if (!res.enableUpdateCheck) {
+        this.updateStatus = null;
+        this.updateHref = null;
+        return;
+      }
+      this.updateStatus = 'Checking for updates...';
+      this.updateHref = null;
+
+      function compare(version, target) {
+        version = version.split('.').map(n => +n);
+        target = target.split('.').map(n => +n);
+        for (let i = 0; i < 3; i++) {
+          if (version[i] > target[i]) return 1;
+          if (version[i] < target[i]) return -1;
+        }
+        return 0;
+      }
+
+      try {
+        const latest = await window.fetchGitlabReleasesJson();
+        const regex = /^electron-v(\d+\.\d+\.\d+)-tetrio-v\d+$/;
+
+        const target = regex.exec(latest[0].tag)[1];
+        const version = this.version;
+        if (compare(version, target) == -1) {
+          this.updateStatus = 'Update available: ' + target;
+          const baseUrl = 'https://gitlab.com/UniQMG/tetrio-plus/-/releases';
+          this.updateHref = `${baseUrl}/${latest[0].tag}`;
+        } else {
+          this.updateStatus = 'Using latest version';
+        }
+      } catch(ex) {
+        this.updateStatus = 'Failed to check for updates';
+        console.error('Failed to check for updates:', ex);
+      }
     }
   }
 });

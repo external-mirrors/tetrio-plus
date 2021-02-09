@@ -15,8 +15,6 @@ const fs = require('fs');
 
 const manifest = require('../../desktop-manifest.js');
 
-path.join(app.getPath('userData'), 'tetrioplus');
-
 const Store = require('electron-store');
 function storeGet(key) {
   console.log("storeget", key)
@@ -32,9 +30,6 @@ function storeGet(key) {
 }
 
 function modifyWindowSettings(settings) {
-  // settings.webPreferences.preload = path.join(__dirname, 'preload.js');
-  settings.webPreferences.enableRemoteModule = true;
-
   if (storeGet('transparentBgEnabled')) {
     settings.frame = false;
     settings.transparent = true;
@@ -103,7 +98,6 @@ async function createTetrioPlusWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: false,
-      enableRemoteModule: true,
       preload: path.join(app.getAppPath(), 'tetrioplus/source/electron/electron-browser-polyfill.js')
     }
   });
@@ -132,7 +126,7 @@ function showError(title, ...lines) {
   });
 }
 
-ipcMain.on('tetrio-plus-cmd', async (evt, arg) => {
+ipcMain.on('tetrio-plus-cmd', async (evt, arg, arg2) => {
   switch(arg) {
     case 'uninstall':
       try {
@@ -180,6 +174,26 @@ ipcMain.on('tetrio-plus-cmd', async (evt, arg) => {
       }
       break;
 
+    case 'get-cwd':
+      evt.returnValue = app.getPath('userData');
+      break;
+
+    case 'tetrio-plus-open-browser-window':
+      redlog('TPOBW: ' + JSON.stringify(arg2));
+      let panel = new BrowserWindow({
+        width: arg2.width,
+        height: arg2.height,
+        webPreferences: {
+          nodeIntegration: false,
+          preload: path.join(__dirname, 'electron-browser-polyfill.js')
+        }
+      });
+      panel.loadURL(arg2.url);
+      panel.on('closed', () => {
+        tpWindow.reload();
+      });
+      break;
+
     case 'destroy everything':
       BrowserWindow.getAllWindows().forEach(window => window.destroy());
       process.exit();
@@ -187,10 +201,6 @@ ipcMain.on('tetrio-plus-cmd', async (evt, arg) => {
 
     case 'create tetrio plus window':
       createTetrioPlusWindow();
-      break;
-
-    case 'super force reload':
-      (await mainWindow).webContents.reloadIgnoringCache()
       break;
 
     case 'super force reload':

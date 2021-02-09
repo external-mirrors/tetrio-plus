@@ -4,19 +4,32 @@
   if (electron || node) {
     console.log("Running under electron - polyfilling browser");
 
+    const { promisify } = require('util');
+    const electron = require('electron');
+    const path = require('path');
+    const fs = require('fs');
+    const https = require('https');
+
+    // Only necessary in render process
+    if (typeof window != 'undefined') {
+      let appdir = electron.ipcRenderer.sendSync('tetrio-plus-cmd', 'get-cwd');
+      electron.app = {
+        getPath(path) {
+          switch (path) {
+            case 'userData': return appdir;
+            default: throw new Error('unimplemented monkey patch');
+          }
+        }
+      }
+    }
+
     // provided by tetrio desktop
     const Store = require('electron-store');
-    // const store = new Store({ name: 'tetrio-plus' });
     const keystore = new Store({
       name: 'key-index',
       cwd: 'tetrioplus',
       defaults: { keys: [] }
     });
-
-    const { promisify } = require('util');
-    const electron = require('electron');
-    const path = require('path');
-    const fs = require('fs');
 
     // onConnect listeners. Since the content scripts
     // run in the same context while under electron,
@@ -99,21 +112,13 @@
         }
       },
       windows: {
-        create({ type, url, width, height }) {
-          console.log("Create", url);
-          let panel = new electron.remote.BrowserWindow({
-            width,
-            height,
-            webPreferences: {
-              nodeIntegration: false,
-              enableRemoteModule: true,
-              preload: path.join(__dirname, 'electron-browser-polyfill.js')
-            }
-          });
-          panel.loadURL(url);
-          panel.on('closed', () => {
-            window.location.reload();
-          });
+        create({ _type, url, width, height }) {
+          console.log('Sent open request', url, width, height);
+          require('electron').ipcRenderer.send(
+            'tetrio-plus-cmd',
+            'tetrio-plus-open-browser-window',
+            { url, width, height }
+          );
         }
       },
       tabs: {
@@ -195,9 +200,26 @@
     if (typeof module != 'undefined' && module.exports)
       module.exports = browser;
     if (typeof window != 'undefined') {
+      window.doublebrowser = browser;
       window.browser = browser;
       window.openInBrowser = href => {
         electron.shell.openExternal(href);
+      }
+      window.fetchGitlabReleasesJson = async function() {
+        const url = 'https://gitlab.com/UniQMG/tetrio-plus/-/releases.json';
+        let text = await new Promise((res, rej) => https.get(url, response => {
+          const chunks = [];
+          response.on('data', chunk => chunks.push(chunk));
+          response.on('end', () => {
+            if (response.statusCode != 200) {
+              rej('Unexpected status code: ' + response.statusCode);
+              return;
+            }
+            res(chunks.join(''));
+          });
+          response.on('error', err => rej(err));
+        }));
+        return JSON.parse(text);
       }
     }
   }
