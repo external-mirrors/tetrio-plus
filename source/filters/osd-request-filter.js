@@ -1,4 +1,4 @@
-createRewriteFilter("OSD hooks", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("OSD hooks", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let res = await storage.get('enableOSD');
     return res.enableOSD;

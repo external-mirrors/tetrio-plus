@@ -1,4 +1,4 @@
-createRewriteFilter("Touch control hooks", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("Touch control hooks", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let res = await storage.get('enableTouchControls');
     return res.enableTouchControls;

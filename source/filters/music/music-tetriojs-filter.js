@@ -2,7 +2,7 @@
   This filter rewrites the hardcoded music definition object in
   the tetrio.js source file to facillitate adding new music.
 */
-createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, url) => {
     if (url.indexOf('tetrio-plus-bypass') != -1) return false;
     let { musicEnabled } = await storage.get('musicEnabled');

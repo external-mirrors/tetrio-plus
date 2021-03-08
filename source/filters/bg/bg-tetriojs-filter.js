@@ -4,7 +4,7 @@
   from the extension.
 */
 
-createRewriteFilter("Tetrio.js BG", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("Tetrio.js BG", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let res = await storage.get([
       'transparentBgEnabled',

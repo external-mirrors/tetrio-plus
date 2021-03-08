@@ -1,6 +1,6 @@
 /*
 */
-createRewriteFilter("Bootstrap.js hooks", "https://tetr.io/bootstrap.js", {
+createRewriteFilter("Bootstrap.js hooks", "https://tetr.io/bootstrap.js*", {
   enabledFor: async (storage, url) => {
     let res = await storage.get([
       'bypassBootstrapper'

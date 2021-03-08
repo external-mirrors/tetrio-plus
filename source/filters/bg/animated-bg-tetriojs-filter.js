@@ -5,7 +5,7 @@
   A content script then inserts the animated background as a DOM
   element underneath the pixijs canvas.
 */
-createRewriteFilter("Tetrio.js Animated BG", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("Tetrio.js Animated BG", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let res = await storage.get([
       'bgEnabled', 'animatedBgEnabled', 'transparentBgEnabled'

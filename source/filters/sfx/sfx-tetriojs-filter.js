@@ -4,7 +4,7 @@
   those from the user-configured sfx atlas.
 */
 
-createRewriteFilter("Tetrio.js Sfx", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("Tetrio.js Sfx", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let {sfxEnabled} = await storage.get('sfxEnabled');
     if (!sfxEnabled) return false; // Custom sfx disabled

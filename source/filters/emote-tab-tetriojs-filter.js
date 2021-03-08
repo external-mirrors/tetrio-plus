@@ -1,5 +1,5 @@
 /* Added by Jabster28 | MIT Licensed */
-createRewriteFilter("Emote tabbing hooks", "https://tetr.io/js/tetrio.js", {
+createRewriteFilter("Emote tabbing hooks", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let res = await storage.get('enableEmoteTab');
     return res.enableEmoteTab;
