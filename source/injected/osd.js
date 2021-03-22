@@ -26,6 +26,12 @@
     elem.style.gridArea = name;
     let icon = `url("${baseIconURL}icon-${tetrioName}.png")`;
     elem.style.setProperty('background-image', icon);
+    elem.setActive = function(active) {
+      let suffix = active ? '-pressed' : '';
+      let icon = `url("${baseIconURL}icon-${tetrioName}${suffix}.png")`;
+      elem.style.setProperty('background-image', icon);
+    }
+    elem.setActive(false);
     osd.appendChild(elem);
     buttons.push(elem);
     buttonMap[tetrioName] = elem;
@@ -46,16 +52,18 @@
 
   let resizeHandle = document.createElement('div');
   resizeHandle.classList.toggle('tetrio-plus-osd-resize-handle');
-  resizeHandle.innerText = '🡦';
+  let resizeIcon = `url("${baseIconURL}resize.png")`;
+  resizeHandle.style.setProperty('background-image', resizeIcon);
   handleContainer.appendChild(resizeHandle);
 
   // too lazy to write hooks back to browser storage from an injected script
+  const fixedAspect = 3.125;
+  const minWidth = 150;
+  const minHeight = minWidth / fixedAspect;
   let x = +localStorage.tp_osd_x || 40;
   let y = +localStorage.tp_osd_y || 40;
-  let w = +localStorage.tp_osd_w || 180;
-  let h = +localStorage.tp_osd_h || 90;
-  const minWidth = 100;
-  const minHeight = 50;
+  let w = +localStorage.tp_osd_w || minWidth * 2;
+  let h = +localStorage.tp_osd_h || minHeight * 2;
 
   function resize() {
     let _x = x, _y = y, _w = w, _h = h;
@@ -91,6 +99,7 @@
     if (resizing) {
       w += evt.clientX - lastMouseX;
       h += evt.clientY - lastMouseY;
+      if (evt.shiftKey) h = w / fixedAspect;
       resize();
     } else if (dragging) {
       x += evt.clientX - lastMouseX;
@@ -120,7 +129,7 @@
 
   function onGameKey(obj) {
     if (obj.type == 'end') {
-      buttons.forEach(el => el.classList.toggle('active', false));
+      buttons.forEach(el => el.setActive(false));
       return;
     }
 
@@ -129,10 +138,10 @@
 
     switch (obj.type) {
       case 'keyup':
-        elem.classList.toggle('active', false);
+        elem.setActive(false);
         break;
       case 'keydown':
-        elem.classList.toggle('active', true);
+        elem.setActive(true);
         break;
     }
   }

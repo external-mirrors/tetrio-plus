@@ -23,23 +23,25 @@
   display: inline-block;
 }
 .tetrio-plus-osd-resize-handle {
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  position: absolute;
+  display: inline-block;
+  padding-right: 4px;
+  
+  width: 10px;
+  height: 10px;
   right: 0px;
   bottom: 0px;
-  position: absolute;
-  padding-right: 4px;
-  display: inline-block;
 }
 
 .tetrio-plus-osd-key {
-  margin: 1px;
-  border: 1px solid white;
-
-  background-size: contain;
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center;
   background-origin: content-box;
-
-  padding: 10%;
+  margin: 1px;
 }
 
 .tetrio-plus-osd-key.active {

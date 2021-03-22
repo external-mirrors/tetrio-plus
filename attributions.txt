@@ -1,0 +1,3 @@
+resources/osd/*.png - © Deer / Cakeeh (MIT license)
+source/content/emote-tab.js - © Jabster28 (MIT license)
+source/injected/emote-tab.js - © Jabster28 (MIT license)
