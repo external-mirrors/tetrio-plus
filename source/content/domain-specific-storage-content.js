@@ -8,7 +8,7 @@ const getDataSourceForDomain = (() => {
 
     port.onMessage.addListener(msg => {
       if (msg.type != 'fetchContentPackResult') return;
-      console.log("Tetr.io+ - TPSE pack preview mode", msg.value);
+      console.log("TETR.IO PLUS - TPSE pack preview mode", msg.value);
       res(msg.value);
     });
   })

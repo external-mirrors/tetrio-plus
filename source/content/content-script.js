@@ -1,5 +1,12 @@
 (async () => {
-  console.log("Tetr.io+ is installed");
+  let storage = await getDataSourceForDomain(window.location);
+  let { tetrioPlusEnabled } = await storage.get('tetrioPlusEnabled');
+
+  console.log("TETR.IO PLUS is installed");
+  if (!tetrioPlusEnabled) {
+    console.log("(but disabled)");
+    return;
+  }
 
   let port = browser.runtime.connect({ name: 'info-channel' });
   port.postMessage({ type: 'getInfoString' });
@@ -7,7 +14,7 @@
 
   let jsLoadErr = document.getElementById("js_load_error");
   if (!jsLoadErr) {
-    console.error("[Tetr.io+] Can't find '#js_load_error'?");
+    console.error("[TETR.IO PLUS] Can't find '#js_load_error'?");
   } else {
     let header = document.createElement('h2');
     header.innerText = "TETRIO PLUS is enabled";
@@ -69,7 +76,7 @@
 
   let f8menu = document.getElementById('devbuildid');
   if (!f8menu) {
-    console.log("[Tetr.io+] Can't find '#devbuildid'?")
+    console.log("[TETR.IO PLUS] Can't find '#devbuildid'?")
   } else {
     let div = document.createElement('div');
     f8menu.parentNode.insertBefore(div, f8menu.nextSibling);

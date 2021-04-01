@@ -1,8 +1,9 @@
 (async () => {
   let storage = await getDataSourceForDomain(window.location);
   let res = await storage.get([
-    'bgEnabled', 'animatedBgEnabled', 'transparentBgEnabled'
+    'bgEnabled', 'animatedBgEnabled', 'transparentBgEnabled', 'tetrioPlusEnabled'
   ]);
+  if (!res.tetrioPlusEnabled) return;
 
   if (res.transparentBgEnabled) {
     document.documentElement.style.background = 'transparent';

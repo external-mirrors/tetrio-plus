@@ -13,6 +13,12 @@ function createRewriteFilter(name, url, options) {
       console.log("Request origin URL", origin);
       const dataSource = await getDataSourceForDomain(origin);
 
+      let { tetrioPlusEnabled } = await dataSource.get('tetrioPlusEnabled');
+      if (!tetrioPlusEnabled) {
+        console.log(`[${name} filter] Tetrio plus disabled, ignoring ${url}`);
+        return;
+      }
+
       if (options.enabledFor) {
         let enabled = await options.enabledFor(dataSource, request.url);
         if (!enabled) {

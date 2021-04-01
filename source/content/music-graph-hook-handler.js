@@ -16,6 +16,8 @@ try {
     if (window.location.pathname != '/') return;
 
     let storage = await getDataSourceForDomain(window.location);
+    let { tetrioPlusEnabled } = await storage.get('tetrioPlusEnabled');
+    if (!tetrioPlusEnabled) return;
     let {
       music, musicGraph, musicEnabled, musicGraphEnabled
     } = await storage.get([

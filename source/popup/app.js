@@ -22,6 +22,15 @@ const app = new Vue({
         </span>
       </h1>
       <p class="tagline">Unofficial TETR.IO Customization Tool</p>
+      <option-toggle storageKey="tetrioPlusEnabled">
+        <span :title="(
+          'Toggles ALL FEATURES (that use request rewriting or injected scripts' +
+          ', at least) on or off. Great for troubleshooting, but this is NOT ' +
+          'AS GOOD AS UNINSTALLING TETR.IO PLUS.'
+        )">
+          TETR.IO PLUS enabled
+        </span>
+      </option-toggle>
 
       <template v-if="updateHref">
         <a href="#" @click.prevent="openInBrowser(updateHref)">

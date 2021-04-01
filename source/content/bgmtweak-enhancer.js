@@ -1,7 +1,8 @@
 (async () => {
   let storage = await getDataSourceForDomain(window.location);
-  let cfg = await storage.get('enableAllSongTweaker');
+  let cfg = await storage.get(['enableAllSongTweaker', 'tetrioPlusEnabled']);
   if (!cfg.enableAllSongTweaker) return;
+  if (!cfg.tetrioPlusEnabled) return;
 
   const bgmtweak = document.getElementById('bgmtweak');
   const observer = new MutationObserver((list, observer) => {

@@ -1,5 +1,7 @@
 (async function setupMapUI() {
   let storage = await getDataSourceForDomain(window.location);
+  let { tetrioPlusEnabled } = await storage.get('tetrioPlusEnabled');
+  if (!tetrioPlusEnabled) return;
   let { enableCustomMaps } = await storage.get('enableCustomMaps');
   if (!enableCustomMaps) return;
 

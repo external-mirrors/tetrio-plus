@@ -15,11 +15,16 @@ async function getDataForDomain(urlString) {
   try {
     let {
       allowURLPackLoader,
-      whitelistedLoaderDomains
+      whitelistedLoaderDomains,
+      tetrioPlusEnabled
     } = await browser.storage.local.get([
       'allowURLPackLoader',
-      'whitelistedLoaderDomains'
+      'whitelistedLoaderDomains',
+      'tetrioPlusEnabled'
     ]);
+
+    if (!tetrioPlusEnabled)
+      throw 'TETR.IO PLUS is disabled';
 
     if (!allowURLPackLoader)
       throw 'URL pack loading is disabled';
@@ -53,6 +58,7 @@ async function getDataForDomain(urlString) {
             Object.assign(sanitizedData, pairs);
           }
         });
+        sanitizedData.tetrioPlusEnabled = true;
 
         console.log("Loaded content pack from " + url + ". Result:\n" + result);
         return sanitizedData;

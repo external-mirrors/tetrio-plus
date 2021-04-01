@@ -19,6 +19,12 @@ mainWindow.webContents.session.webRequest.onBeforeRequest(
       let origin = request.referrer;
       const dataSource = await getDataSourceForDomain(origin);
 
+      let { tetrioPlusEnabled } = await dataSource.get('tetrioPlusEnabled');
+      if (!tetrioPlusEnabled) {
+        console.log(`[${name} filter] Tetrio plus disabled, ignoring ${url}`);
+        return;
+      }
+
       // greenlog('Data source for origin', origin, Object.keys(dataSource));
       // greenlog(`onBeforeRequest: Considering ${request.url}...`);
 

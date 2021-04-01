@@ -108,13 +108,19 @@ var migrate = (() => {
   });
 
   /*
-    v0.17.0 - Music graph update 2
-    Added
+    v0.17.0 - Small music graph update + general bugfixes
+    Added:
+    - tetrioPlusEnabled
+    - musicGraph[].audioStart
+    - musicGraph[].audioEnd
   */
   migrations.push({
     version: '0.17.0',
     run: async dataSource => {
-      await dataSource.set({ version: '0.17.0' });
+      await dataSource.set({
+        version: '0.17.0',
+        tetrioPlusEnabled: true
+      });
 
       let { musicGraph: json } = await dataSource.get('musicGraph');
       if (json) {
