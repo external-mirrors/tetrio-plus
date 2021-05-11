@@ -30,6 +30,7 @@
       "source/lib/base64-recoder.js",
       "source/bootstrap/domain-specific-storage-fetcher.js",
       "source/bootstrap/browser/createRewriteFilter.js",
+      "source/bootstrap/browser/icon-updater.js",
 
       "source/filters/bootstrap-filter.js",
       "source/filters/music-graph-hooks.js",

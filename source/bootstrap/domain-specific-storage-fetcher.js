@@ -10,42 +10,53 @@ if (typeof require == 'function') {
   sanitizeAndLoadTPSE = require('../shared/tpse-sanitizer');
 }
 
+async function domainDataStatus(urlString) {
+  let {
+    allowURLPackLoader,
+    whitelistedLoaderDomains,
+    tetrioPlusEnabled
+  } = await browser.storage.local.get([
+    'allowURLPackLoader',
+    'whitelistedLoaderDomains',
+    'tetrioPlusEnabled'
+  ]);
+
+  if (!tetrioPlusEnabled)
+    return { ok: false, reason: 'TETR.IO PLUS is disabled' };
+
+  let { useContentPack } = new URL(decodeURI(urlString))
+    .search
+    .slice(1)
+    .split('&')
+    .map(e => e.split('='))
+    .reduce((obj, [key, value]) => {
+      obj[key] = value;
+      return obj;
+    }, {})
+
+  if (!useContentPack)
+    return { ok: false, reason: 'URL does not specify a content pack' };
+
+  if (!allowURLPackLoader)
+    return { ok: false, reason: 'URL pack loading is disabled' };
+
+  let url = new URL(decodeURIComponent(useContentPack));
+
+  if (whitelistedLoaderDomains.indexOf(url.origin) == -1)
+    return { ok: false, reason: 'Domain ' + url.origin + ' not whitelisted' };
+
+  return { ok: true, url: url };
+}
+
 const REQUEST_CACHE = {};
 async function getDataForDomain(urlString) {
   try {
-    let {
-      allowURLPackLoader,
-      whitelistedLoaderDomains,
-      tetrioPlusEnabled
-    } = await browser.storage.local.get([
-      'allowURLPackLoader',
-      'whitelistedLoaderDomains',
-      'tetrioPlusEnabled'
-    ]);
+    let { ok, reason, url } = await domainDataStatus(urlString);
 
-    if (!tetrioPlusEnabled)
-      throw 'TETR.IO PLUS is disabled';
-
-    if (!allowURLPackLoader)
-      throw 'URL pack loading is disabled';
-
-    let { useContentPack } = new URL(decodeURI(urlString))
-      .search
-      .slice(1)
-      .split('&')
-      .map(e => e.split('='))
-      .reduce((obj, [key, value]) => {
-        obj[key] = value;
-        return obj;
-      }, {})
-
-    if (!useContentPack)
-      throw 'URL does not specify a content pack';
-
-    let url = new URL(decodeURIComponent(useContentPack));
-
-    if (whitelistedLoaderDomains.indexOf(url.origin) == -1)
-      throw new Error('Domain ' + url.origin + ' not whitelisted');
+    if (!ok) {
+      console.log(reason);
+      return null;
+    }
 
     if (!REQUEST_CACHE[url]) {
       REQUEST_CACHE[url] = (async () => {
@@ -79,7 +90,7 @@ async function getDataForDomain(urlString) {
 
     return await REQUEST_CACHE[url];
   } catch(ex) {
-    console.log(ex);
+    console.error(ex);
     return null;
   }
 }

@@ -22,179 +22,204 @@ const app = new Vue({
         </span>
       </h1>
       <p class="tagline">Unofficial TETR.IO Customization Tool</p>
-      <option-toggle storageKey="tetrioPlusEnabled">
-        <span :title="(
-          'Toggles ALL FEATURES (that use request rewriting or injected scripts' +
-          ', at least) on or off. Great for troubleshooting, but this is NOT ' +
-          'AS GOOD AS UNINSTALLING TETR.IO PLUS.'
-        )">
-          TETR.IO PLUS enabled
-        </span>
+
+      <option-toggle storageKey="tetrioPlusEnabled" mode="hide">
+        <fieldset class="section">
+          <legend>TETR.IO PLUS disabled</legend>
+          TETR.IO PLUS is disabled.<br>
+          Enable it in the 'management' section below.
+        </fieldset>
       </option-toggle>
 
+      <!-- Update check result -->
       <template v-if="updateHref">
         <a href="#" @click.prevent="openInBrowser(updateHref)">
           {{ updateStatus }}
         </a>
       </template>
-      <template v-else>{{ updateStatus}}</template>
+      <template v-else>{{ updateStatus }}</template>
 
-      <fieldset class="section contentPackInfo" v-if="contentPack">
-        <legend>Content Pack</legend>
-        <div v-if="contentPackIssue" style="max-width: 400px">
-          This page is attempting to use a remote content pack, but
-          {{ contentPackIssue }}.
-        </div>
-        <div v-else>
-          This page is using a remote content pack.<br>
-          <a class="longLink" :href="contentPack">{{ contentPack }}</a><br>
-          <button @click="openSettingsIO(contentPack)">Install this pack</button>
-          <button @click="clearPack" v-if="isElectron">Stop</button>
-        </div>
-      </fieldset>
+      <!-- Main customization entries -->
+      <option-toggle storageKey="tetrioPlusEnabled" mode="show">
+        <fieldset class="section contentPackInfo" v-if="contentPack">
+          <legend>Content Pack</legend>
+          <div v-if="contentPackIssue" style="max-width: 400px">
+            This page is attempting to use a remote content pack, but
+            {{ contentPackIssue }}.
+          </div>
+          <div v-else>
+            This page is using a remote content pack.<br>
+            <a class="longLink" :href="contentPack">{{ contentPack }}</a><br>
+            <button @click="openSettingsIO(contentPack)">Install this pack</button>
+            <button @click="clearPack" v-if="isElectron">Stop</button>
+          </div>
+        </fieldset>
 
-      <fieldset class="section">
-        <legend>Skins</legend>
-        <skin-changer />
-      </fieldset>
-      <fieldset class="section">
-        <legend>Sound effects</legend>
-        <sfx-manager />
-      </fieldset>
-      <fieldset class="section">
-        <legend>Music</legend>
-        <music-manager />
-      </fieldset>
-      <fieldset class="section">
-        <legend>Backgrounds</legend>
-        <background-manager />
-      </fieldset>
-      <fieldset class="section">
-        <legend>Custom features</legend>
-        <option-toggle storageKey="enableAllSongTweaker">
-          <span :title="(
-            'Adds a field to the in-game music tweaker that allows you to ' +
-            'set the occurance rate for all songs at once.'
-          )">
-            Enable 'All Songs' in music tweaker
-          </span>
-        </option-toggle>
-        <div class="option-group">
-          <option-toggle storageKey="enableCustomMaps">
+        <fieldset class="section">
+          <legend>Skins</legend>
+          <skin-changer />
+        </fieldset>
+        <fieldset class="section">
+          <legend>Sound effects</legend>
+          <sfx-manager />
+        </fieldset>
+        <fieldset class="section">
+          <legend>Music</legend>
+          <music-manager />
+        </fieldset>
+        <fieldset class="section">
+          <legend>Backgrounds</legend>
+          <background-manager />
+        </fieldset>
+        <fieldset class="section">
+          <legend>Custom features</legend>
+          <option-toggle storageKey="enableAllSongTweaker">
             <span :title="(
-              'Enables using custom maps for singleplayer. Open the editor ' +
-              'and set the map string under solo -> custom -> meta.'
+              'Adds a field to the in-game music tweaker that allows you to ' +
+              'set the occurance rate for all songs at once.'
             )">
-              Enable custom maps
+              Enable 'All Songs' in music tweaker
             </span>
           </option-toggle>
-          <div>
-            <option-toggle inline storageKey="enableTouchControls">
+          <div class="option-group">
+            <option-toggle storageKey="enableCustomMaps">
               <span :title="(
-                'Allows you to control the game using touch inputs. Inputs ' +
-                'are mapped to two virtual joysticks on each side of the page. ' +
-                'Left up = harddrop, left down = softdrop, left left = move left ' +
-                'left right = move right. right up = 180 spin, right left = ccw ' +
-                'spin, right right = cw spin, right down = hold.'
+                'Enables using custom maps for singleplayer. Open the editor ' +
+                'and set the map string under solo -> custom -> meta.'
               )">
-                Enable touch controls
+                Enable custom maps
               </span>
             </option-toggle>
-            <option-toggle inline storageKey="enableTouchControls" mode="show">
-              <button @click="openTouchEditor">Edit</button>
-            </option-toggle>
-            <option-toggle storageKey="enableEmoteTab">
+            <div>
+              <option-toggle inline storageKey="enableTouchControls">
+                <span :title="(
+                  'Allows you to control the game using touch inputs. Inputs ' +
+                  'are mapped to two virtual joysticks on each side of the page. ' +
+                  'Left up = harddrop, left down = softdrop, left left = move left ' +
+                  'left right = move right. right up = 180 spin, right left = ccw ' +
+                  'spin, right right = cw spin, right down = hold.'
+                )">
+                  Enable touch controls
+                </span>
+              </option-toggle>
+              <option-toggle inline storageKey="enableTouchControls" mode="show">
+                <button @click="openTouchEditor">Edit</button>
+              </option-toggle>
+              <option-toggle storageKey="enableEmoteTab">
+                <span :title="(
+                  'Shows an emote picker when pressing tab in chat'
+                )">
+                  Enable emote picker
+                </span>
+              </option-toggle>
+            </div>
+            <option-toggle storageKey="enableOSD">
               <span :title="(
-                'Shows an emote picker when pressing tab in chat'
+                'Shows what keys are pressed, for streaming or recording. ' +
+                'Works on replays too!'
               )">
-                Enable emote picker
+                Enable key OSD
               </span>
             </option-toggle>
           </div>
-          <option-toggle storageKey="enableOSD">
-            <span :title="(
-              'Shows what keys are pressed, for streaming or recording. ' +
-              'Works on replays too!'
-            )">
-              Enable key OSD
-            </span>
-          </option-toggle>
-        </div>
-      </fieldset>
-      <fieldset class="section">
-        <legend>Miscellaneous</legend>
-        <div class="option-group">
-          <url-pack-loader />
-          <option-toggle storageKey="bypassBootstrapper">
-            <span :title="(
-              'Disables integrity checks on the tetrio.js file and loads ' +
-              'it directly. Fixes stacktraces but may make the anticheat ' +
-              'angery.'
-            )">
-              Bypass bootstrapper
-            </span>
-          </option-toggle>
-          <option-toggle storageKey="openDevtoolsOnStart" v-if="isElectron">
-            <span :title="(
-              'Opens the developer tools as soon as the game launches. ' +
-              'Works even if you can\\'t open them via hotkey'
-            )">
-              Open devtools automatically
-            </span>
-          </option-toggle>
-          <option-toggle storageKey="hideTetrioPlusOnStartup" v-if="isElectron">
-            <span :title="(
-              'Hides this window on startup. You can press ctrl-t to reopen it.'
-            )">
-              Hide Tetrio Plus window on startup
-            </span>
-          </option-toggle>
-          <div v-if="isElectron">
-            <option-toggle inline storageKey="blockAds">
-              <span title="Blocks ad scripts">
-                Block Ads
-              </span>
-            </option-toggle>
-            <option-toggle inline storageKey="blockAds" mode="show">
-              <a
-                href='#'
-                @click.prevent="openMonetizationInfo"
-                class="warning-icon"
-                :title="(
-                  'Please consider supporting the game!' +
-                  ' Click this link to learn more.'
-                )"
-              >please read</a>
-            </option-toggle>
-            <option-toggle storageKey="enableUpdateCheck" @changed="updateCheck()">
-              <span title="Notifies you if an update is available">
-                Enable update check
-              </span>
-            </option-toggle>
-          </div>
-          <div v-if="isElectron">
-            <button @click="uninstall">Uninstall TETR.IO PLUS</button>
-          </div>
+        </fieldset>
+        <fieldset class="section">
+          <legend>Miscellaneous</legend>
+          <div class="option-group">
+            <url-pack-loader />
 
-          <option-toggle
-            storageKey="debugBreakTheGame"
-            mode="trigger"
-            v-if="!debugMode"
-            @trigger="enableDebugMode()"
-          ></option-toggle>
-          <option-toggle storageKey="debugBreakTheGame" v-if="debugMode">
-            <span title="Has a minor chance of completely breaking the game 100% of the time">
-              Break the game (May break the game)
+            <option-toggle storageKey="bypassBootstrapper">
+              <span :title="(
+                'Disables integrity checks on the tetrio.js file and loads ' +
+                'it directly. Fixes stacktraces but causes issues with ' +
+                'game updates applying properly.'
+              )">
+                Bypass bootstrapper (deprecated)
+              </span>
+            </option-toggle>
+
+            <option-toggle storageKey="openDevtoolsOnStart" v-if="isElectron">
+              <span :title="(
+                'Opens the developer tools as soon as the game launches. ' +
+                'Works even if you can\\'t open them via hotkey'
+              )">
+                Open devtools automatically
+              </span>
+            </option-toggle>
+
+            <option-toggle storageKey="hideTetrioPlusOnStartup" v-if="isElectron">
+              <span :title="(
+                'Hides this window on startup. You can press ctrl-t to reopen it.'
+              )">
+                Hide Tetrio Plus window on startup
+              </span>
+            </option-toggle>
+
+            <div v-if="isElectron">
+              <option-toggle inline storageKey="blockAds">
+                <span title="Blocks ad scripts">
+                  Block Ads
+                </span>
+              </option-toggle>
+              <option-toggle inline storageKey="blockAds" mode="show">
+                <a
+                  href='#'
+                  @click.prevent="openMonetizationInfo"
+                  class="warning-icon"
+                  :title="(
+                    'Please consider supporting the game!' +
+                    ' Click this link to learn more.'
+                  )"
+                >please read</a>
+              </option-toggle>
+              <option-toggle storageKey="enableUpdateCheck" @changed="updateCheck()">
+                <span title="Notifies you if an update is available">
+                  Enable update check
+                </span>
+              </option-toggle>
+            </div>
+
+            <option-toggle
+              storageKey="debugBreakTheGame"
+              mode="trigger"
+              v-if="!debugMode"
+              @trigger="enableDebugMode()"
+            ></option-toggle>
+            <option-toggle storageKey="debugBreakTheGame" v-if="debugMode">
+              <span title="Has a minor chance of completely breaking the game 100% of the time">
+                Break the game (May break the game)
+              </span>
+            </option-toggle>
+          </div>
+        </fieldset>
+      </option-toggle>
+
+
+      <fieldset class="section">
+        <legend>Management</legend>
+        <div class="option-group">
+          <option-toggle storageKey="tetrioPlusEnabled">
+            <span :title="(
+              'Toggles ALL FEATURES (that use request rewriting or injected scripts' +
+              ', at least) on or off. Great for troubleshooting, but this is NOT ' +
+              'AS GOOD AS UNINSTALLING TETR.IO PLUS.'
+            )">
+              TETR.IO PLUS enabled
             </span>
           </option-toggle>
           <theme-manager v-if="!isElectron" />
-        </div>
-        <div class="control-group">
-          <button @click="openSettingsIO()" title="Opens the settings manager">
-            Manage data / import TPSE
-          </button>
+          <div v-if="isElectron">
+            <button @click="uninstall">Uninstall TETR.IO PLUS</button>
+          </div>
+          <div class="control-group">
+            <button @click="openSettingsIO()" title="Opens the settings manager">
+              Manage data / import TPSE
+            </button>
+          </div>
         </div>
       </fieldset>
+
+      <!-- Footer -->
       <fieldset class="section legendless">
         <strong>Hard refresh (<kbd>ctrl-F5</kbd>) Tetrio after making changes.</strong><br>
         <a href="https://gitlab.com/UniQMG/tetrio-plus" @click="openSource($event)">
