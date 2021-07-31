@@ -1,4 +1,5 @@
 const html = arg => arg.join(''); // NOOP, for editor integration.
+const ctx = new AudioContext();
 
 export default {
   template: html`
@@ -10,6 +11,7 @@ export default {
       <audio ref="player" :src="editingSrc" controls></audio>
       <div class="timer" style="font-family: monospace;">
         Current time: {{ msTime }}ms
+        <template v-if="playingBuffer">[approximate]</template>
       </div>
       <div class="control-group">
         <button
@@ -23,6 +25,10 @@ export default {
           title="Sets the loop end point to the current position of the player">
           Set loop end
         </button>
+      </div>
+      <div class="control-group" v-if="song.metadata.loop">
+        <button @click="restartLooped()">Listen looped from this point</button>
+        <button @click="stopLooped()" :disabled="!playingBuffer">Stop</button>
       </div>
       <div class="option-pairs-group">
         <div class="option-pair">
@@ -38,6 +44,10 @@ export default {
         <div class="option-pair">
           <label>Loop length (ms)</label>
           <input type="number" v-model.number="song.metadata.loopLength"></input>
+        </div>
+        <div class="option-pair">
+          <label>Loop end (ms)</label>
+          <input type="number" v-model.number="loopEnd"></input>
         </div>
         <div class="option-pair" title="The name of the song">
           <label>Name</label>
@@ -81,10 +91,17 @@ export default {
   data: () => ({
     cachedSrc: null,
     updateInterval: null,
-    currentTime: 0
+    currentTime: 0,
+    playingBuffer: null
   }),
   mounted() {
     this.updateInterval = setInterval(() => {
+      if (this.playingBuffer) {
+        this.currentTime += 16/1000;
+        if (this.currentTime > this.loopEnd/1000)
+          this.currentTime -= this.song.metadata.loopLength/1000;
+        return;
+      }
       if (!this.$refs.player) return;
       this.currentTime = this.$refs.player.currentTime;
     }, 16);
@@ -93,12 +110,27 @@ export default {
     clearInterval(this.updateInterval);
   },
   computed: {
+    loopEnd: {
+      get() {
+        return (
+          this.song.metadata.loopStart +
+          this.song.metadata.loopLength
+        );
+      },
+      set(end) {
+        this.song.metadata.loopLength = end - this.song.metadata.loopStart;
+      }
+    },
     editingSrc() {
       let key = 'song-' + this.song.id;
       browser.storage.local.get(key).then(result => {
         this.cachedSrc = result[key];
       });
       return this.cachedSrc;
+    },
+    async decodedAudioAPIBuffer() {
+      let buffer = await (await fetch(this.editingSrc)).arrayBuffer();
+      return await ctx.decodeAudioData(buffer);
     },
     msTime() {
       return Math.floor(this.currentTime * 1000);
@@ -108,6 +140,26 @@ export default {
     }
   },
   methods: {
+    async restartLooped() {
+      this.stopLooped();
+      this.$refs.player.pause();
+
+      let source = ctx.createBufferSource();
+      source.buffer = await this.decodedAudioAPIBuffer;
+      source.connect(ctx.destination);
+      this.playingBuffer = source;
+
+      source.loopStart = this.song.metadata.loopStart/1000;
+      source.loopEnd = this.loopEnd/1000;
+      source.loop = true;
+      source.start(0, this.currentTime);
+    },
+    stopLooped() {
+      if (this.playingBuffer) {
+        this.playingBuffer.stop();
+        this.playingBuffer = null;
+      }
+    },
     setLoopStart() {
       this.song.metadata.loop = true;
       this.song.metadata.loopStart = this.msTime;
