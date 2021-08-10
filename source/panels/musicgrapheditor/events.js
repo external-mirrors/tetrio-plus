@@ -93,5 +93,6 @@ export const eventHasTarget = {
   'fork': true,
   'goto': true,
   'kill': false,
-  'random': false
+  'random': false,
+  'dispatch': false
 }

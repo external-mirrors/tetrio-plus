@@ -94,6 +94,7 @@ export default {
         locationMultiplier: 1,
         crossfade: false,
         crossfadeDuration: 1,
+        dispatchEvent: '',
         // seconds for time-passed, value for text-combo, text-b2b, text-spike
         value: 0,
         valueOperator: '==', // == != > <,

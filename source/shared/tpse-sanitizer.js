@@ -305,7 +305,7 @@ async function sanitizeAndLoadTPSE(data, storage) {
           return `ERROR: Expected array at [].triggers`;
 
         for (let trigger of node.triggers) {
-          if (['fork', 'goto', 'kill', 'random'].indexOf(trigger.mode) == -1)
+          if (['fork', 'goto', 'kill', 'random', 'dispatch'].indexOf(trigger.mode) == -1)
             return `ERROR: Expected enum value at [].triggers[].mode`;
 
           if (typeof trigger.target != 'number')
@@ -313,6 +313,9 @@ async function sanitizeAndLoadTPSE(data, storage) {
 
           if (typeof trigger.event != 'string')
             return `ERROR: Expected string value at [].triggers[].event`;
+
+          if (typeof trigger.dispatchEvent != 'string')
+            return `ERROR: Expected string value at [].triggers[].dispatchEvent`;
 
           if (typeof trigger.preserveLocation != 'boolean')
             return `ERROR: Expected boolean value at [].triggers[].preserveLocation`;

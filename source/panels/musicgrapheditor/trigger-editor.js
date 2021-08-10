@@ -10,10 +10,10 @@ const html = arg => arg.join(''); // NOOP, for editor integration.
 export default {
   template: html`
     <div>
-      <!-- <pre>{{ trigger }}</pre> -->
       <div>
         <b>Event</b>
         <select v-model="trigger.event">
+          <option :value="custom ? trigger.event : 'CUSTOM'">CUSTOM</option>
           <option
             v-for="evt of events"
             :value="evt"
@@ -30,6 +30,10 @@ export default {
         <button @click="shiftTrigger(node, trigger, 1)" class="icon-button">
           🔽
         </button>
+      </div>
+      <div v-if="custom">
+        <b>Name</b>
+        <input type="text" v-model="trigger.event" />
       </div>
       <div v-if="eventValueStrings[trigger.event]">
         <b>{{ eventValueStrings[trigger.event] }}</b>
@@ -48,10 +52,17 @@ export default {
           <option value="fork">Create new node (fork)</option>
           <option value="goto">Go to node (goto)</option>
           <option value="kill">Stop executing (kill)</option>
+          <option value="dispatch">
+            Dispatch a global custom event (dispatch)
+          </option>
           <option value="random" :disabled="trigger.event == 'random-target'">
             Run a random-target trigger (random)
           </option>
         </select>
+      </div>
+      <div v-if="trigger.mode == 'dispatch'">
+        <b>Target</b>
+        <input type="text" v-model="trigger.dispatchEvent" />
       </div>
       <div v-if="hasTarget(trigger)">
         <b>Target</b>
@@ -105,6 +116,12 @@ export default {
     }
   },
   computed: {
+    eventSet() {
+      return new Set(this.events);
+    },
+    custom() {
+      return !this.eventSet.has(this.trigger.event);
+    },
     ...clipboard.computed
   },
   methods: {

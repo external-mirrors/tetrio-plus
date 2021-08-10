@@ -4,14 +4,11 @@
   scripts, and I need to call a function on an event's detail object
 */
 (async () => {
-  console.log('loading osd');
   [...document.getElementsByClassName('tetrio-plus-osd')].forEach(c => c.remove());
-  console.log('fetching iconset');
   const { iconSet, baseIconURL } = await new Promise(res => {
     window.addEventListener(
       "baseIconURL",
       evt => {
-        console.log('recieved event');
         // json stringify/parse to prevent
         // `Permission denied to access property "then"`
         // even though you can send objects through
@@ -19,7 +16,6 @@
       },
       { once: true }
     );
-    console.log('dispatching event');
     window.dispatchEvent(new CustomEvent("getBaseIconURL"));
   });
 

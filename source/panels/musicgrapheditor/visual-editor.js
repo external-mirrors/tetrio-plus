@@ -76,6 +76,15 @@ export default {
               font-size="8px"
             >🎲</text>
           </marker>
+          <marker id="global" viewBox="0 0 10 12" refX="5" refY="5"
+              markerWidth="24" markerHeight="24">
+            <text
+              stroke="black"
+              dominant-baseline="hanging"
+              font-family="monospace"
+              font-size="8px"
+            >🌐</text>
+          </marker>
         </defs>
 
         <g :transform="svgTransform">
@@ -139,9 +148,13 @@ export default {
         if (!target) target = { id: -1, x: node.x, y: node.y };
 
         let label = trigger.event;
+        if (events.indexOf(trigger.event) == -1)
+          label = '🌐' + label;
         if (eventValueExtendedModes[trigger.event])
           label += ` ${trigger.valueOperator} ${trigger.value}`;
         label += ' ' + trigger.mode;
+        if (trigger.mode == 'dispatch')
+          label += ' ' + trigger.dispatchEvent;
 
         let targetType = 'target';
         if (trigger.target == node.id)
@@ -245,6 +258,11 @@ export default {
         if (trigger.mode == 'kill') {
           startCap = null;
           endCap = 'x';
+        }
+
+        if (trigger.mode == 'dispatch') {
+          startCap = null;
+          endCap = 'global';
         }
 
         return {

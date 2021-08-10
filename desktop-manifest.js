@@ -44,7 +44,13 @@ manifest.browser_specific_settings.desktop_client = {
     "source/content/animated-bg.js",
     "source/content/osd.js",
     "source/content/emote-tab.js",
-    "source/content/music-graph-hook-handler.js",
+
+    "source/content/music-graph/01-init.js",
+    "source/content/music-graph/03-node.js",
+    "source/content/music-graph/04-dispatch-event.js",
+    "source/content/music-graph/05-game-event-handlers.js",
+    "source/content/music-graph/06-api.js",
+
     "source/content/custom-maps.js",
     "source/content/bgmtweak-enhancer.js"
   ],

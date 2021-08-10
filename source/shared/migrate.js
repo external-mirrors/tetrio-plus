@@ -125,7 +125,6 @@ var migrate = (() => {
       let { musicGraph: json } = await dataSource.get('musicGraph');
       if (json) {
         let musicGraph = JSON.parse(json);
-        console.log("migrator parsed", musicGraph, "from", json);
 
         let x = 0;
         for (let node of musicGraph) {
@@ -133,6 +132,27 @@ var migrate = (() => {
           node.audioEnd = 0;
         }
 
+        await dataSource.set({ musicGraph: JSON.stringify(musicGraph) });
+      }
+    }
+  });
+
+  /*
+    v0.18.0 - Small music graph update + general bugfixes
+    added:
+    - musicGraph[].triggers[].dispatchEvent
+  */
+  migrations.push({
+    version: '0.18.0',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.18.0' });
+
+      let { musicGraph: json } = await dataSource.get('musicGraph');
+      if (json) {
+        let musicGraph = JSON.parse(json);
+        for (let node of musicGraph)
+          for (let trigger of node)
+            trigger.dispatchEvent = '';
         await dataSource.set({ musicGraph: JSON.stringify(musicGraph) });
       }
     }

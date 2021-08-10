@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tetr.io+",
-  "version": "0.17.1",
+  "version": "0.18.0",
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
 
@@ -69,7 +69,13 @@
       "source/content/touch-controls.js",
       "source/content/animated-bg.js",
       "source/content/osd.js",
-      "source/content/music-graph-hook-handler.js",
+
+      "source/content/music-graph/01-init.js",
+      "source/content/music-graph/03-node.js",
+      "source/content/music-graph/04-dispatch-event.js",
+      "source/content/music-graph/05-game-event-handlers.js",
+      "source/content/music-graph/06-api.js",
+
       "source/content/custom-maps.js",
       "source/content/bgmtweak-enhancer.js"
     ],
@@ -106,10 +112,10 @@
     "resources/osd/old/icon-rotate180.png",
     "resources/osd/old/icon-hold.png",
 
-
     "source/injected/osd.js",
     "source/injected/emote-tab.js",
-    "source/injected/touch-controls.js"
+    "source/injected/touch-controls.js",
+    "source/injected/music-graph-api.js"
   ],
 
   "browser_specific_settings": {
