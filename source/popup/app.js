@@ -159,14 +159,6 @@ const app = new Vue({
                 Hide Tetrio Plus window on startup
               </span>
             </option-toggle>
-            
-            <option-toggle storageKey="windowTitleStatus" v-if="isElectron">
-              <span :title="(
-                'Uses your Discord rich presence data to append a status to the window title.'
-              )">
-                Update the window title according to in-game status
-              </span>
-            </option-toggle>
 
             <div v-if="isElectron">
               <option-toggle inline storageKey="blockAds">
@@ -229,6 +221,17 @@ const app = new Vue({
               Manage data / import TPSE
             </button>
           </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="section" v-if="isElectron">
+        <legend>Tweaks</legend>
+        <div class="option-group">
+          <option-toggle storageKey="windowTitleStatus" v-if="isElectron">
+            <span title="Shows rich presence data in the TETR.IO window title.">
+              Show status in window title
+            </span>
+          </option-toggle>
         </div>
       </fieldset>
 
