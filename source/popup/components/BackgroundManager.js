@@ -101,7 +101,8 @@ export default {
             'All normal backgrounds will be available in the music graph. ' +
             'This overrides all other possible background options.'
           )">
-          Music graph backgrounds (EXPERIMENTAL)
+            Music graph backgrounds (EXPERIMENTAL)
+          </span>
         </option-toggle>
       </div>
 
