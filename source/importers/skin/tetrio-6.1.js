@@ -5,8 +5,9 @@ export const extrainputs = [];
 export function convertNewTetrioToConnected(image) {
   const canvas = window.document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = 1024;
-  canvas.height = 1024;
+  const f = 2;
+  canvas.width = 1024*f;
+  canvas.height = 1024*f;
 
   let srcBlockSize = image.width * 48 / 256;
   let srcColumns = 5;
@@ -17,10 +18,10 @@ export function convertNewTetrioToConnected(image) {
     ctx.save();
     let rowsToCopy = 6;
     switch (true) {
-      case block < 4: ctx.translate(block*48*4, 0); break;
-      case block < 8: ctx.translate((block-4)*48*4, 48*6); break;
-      case block == 8: ctx.translate(4*48*4, 0); rowsToCopy = 4; break;
-      case block == 9: ctx.translate(4*48*4, 48*4); rowsToCopy = 4; break;
+      case block < 4: ctx.translate(block*48*f*4, 0); break;
+      case block < 8: ctx.translate((block-4)*48*f*4, 48*f*6); break;
+      case block == 8: ctx.translate(4*48*f*4, 0); rowsToCopy = 4; break;
+      case block == 9: ctx.translate(4*48*f*4, 48*f*4); rowsToCopy = 4; break;
     }
     for (let dx = 0; dx < 4; dx++) {
       for (let dy = 0; dy < rowsToCopy; dy++) {
@@ -28,10 +29,10 @@ export function convertNewTetrioToConnected(image) {
         let src_y = Math.floor(block / srcColumns) * srcBlockSize;
         let src_w = srcBlockSize;
         let src_h = srcBlockSize;
-        let dest_x = 48 * dx;
-        let dest_y = 48 * dy;
-        let dest_w = 48;
-        let dest_h = 48;
+        let dest_x = 48*f * dx;
+        let dest_y = 48*f * dy;
+        let dest_w = 48*f;
+        let dest_h = 48*f;
         ctx.drawImage(image,src_x,src_y,src_w,src_h,dest_x,dest_y,dest_w,dest_h);
       }
     }
@@ -41,11 +42,15 @@ export function convertNewTetrioToConnected(image) {
   return canvas;
 }
 
+import { KEYS, Validator } from './util.js';
 export function test(files) {
   if (files.length != 1) return false;
-  if (files[0].type == 'image/gif' || files[0].type == 'image/svg+xml')
-    return false;
-  return files[0].image.width == 256 && files[0].image.height == 256;
+  return new Validator(files[0])
+    .blockMime('image/gif')
+    .blockMime('image/svg+xml')
+    .filename(KEYS.UNCONNECTED)
+    .dimension(256, 256)
+    .isAllowed();
 }
 import { load as loadconnected } from './tetrio-6.1-connected.js';
 export async function load(files, storage) {

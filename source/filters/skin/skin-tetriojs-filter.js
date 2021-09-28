@@ -1,10 +1,10 @@
-createRewriteFilter("UHD Disabler", "https://tetr.io/js/tetrio.js*", {
+createRewriteFilter("UHD Forcer", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
     let res = await storage.get(['skin', 'ghost']);
     return res.skin || res.ghost;
   },
   onStop: async (storage, url, src, callback) => {
-    let newSrc = src.replace(/["']uhd["']\s*:\s*["']hd["']/, "'hd':'hd'")
+    let newSrc = src.replace(/["']uhd["']\s*:\s*["']hd["']/, "'uhd':'uhd'")
     if (newSrc == src) console.warn('UHD Disabler hook broke (1/1)');
     callback({ type: 'text/javascript', data: newSrc, encoding: 'text' });
   }

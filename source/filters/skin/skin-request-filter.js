@@ -1,4 +1,4 @@
-createRewriteFilter('Custom skin', 'https://tetr.io/res/skins/minos/connected.png', {
+createRewriteFilter('Custom skin', 'https://tetr.io/res/skins/minos/connected.2x.png', {
   enabledFor: async (storage, url) => {
     let { skin } = await storage.get('skin');
     return !!skin;
@@ -8,7 +8,7 @@ createRewriteFilter('Custom skin', 'https://tetr.io/res/skins/minos/connected.pn
     callback({ type: 'image/png', data: skin, encoding: 'base64-data-url' });
   }
 });
-createRewriteFilter('Custom skin (ghost)', 'https://tetr.io/res/skins/ghost/connected.png', {
+createRewriteFilter('Custom skin (ghost)', 'https://tetr.io/res/skins/ghost/connected.2x.png', {
   enabledFor: async (storage, url) => {
     let { ghost } = await storage.get('ghost');
     return !!ghost;
