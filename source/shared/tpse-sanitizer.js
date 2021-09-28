@@ -442,7 +442,12 @@ async function sanitizeAndLoadTPSE(data, storage) {
   const results = [];
   let { from, to } = await migrate({
     get(keys) { return data }, // It's technically complient
-    set(pairs) { Object.assign(data, pairs) }
+    set(pairs) { Object.assign(data, pairs) },
+    delete(keys) {
+      if (!Array.isArray(keys)) keys = [keys];
+      for (let key of keys)
+        delete data[key];
+    }
   });
   if (from != to) {
     results.push(`[Data pack migrated from v${from} to v${to}]`)
