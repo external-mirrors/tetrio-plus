@@ -7,6 +7,7 @@ export function test(files) {
   let aspect = files[0].image.width / files[0].image.height;
   return aspect == 12.4;
 }
+import { load as loadtetrioraster } from './tetrio-raster.js';
 export async function load(files, storage) {
   let file = files[0];
   let svg = await (await window.fetch(files[0].data)).text();
@@ -17,16 +18,6 @@ export async function load(files, storage) {
   canvas.height = file.image.height;
   ctx.drawImage(file.image, 0, 0);
 
-  let png = canvas.toDataURL('image/png');
-  await storage.set({
-    skinSvg: svg,
-    skinPng: png,
-    skinAnim: png,
-    skinAnimMeta: {
-      frames: 1,
-      frameWidth: canvas.width,
-      frameHeight: canvas.height,
-      delay: 60
-    }
-  });
+  let data = canvas.toDataURL('image/png');
+  await loadtetrioraster([{ ...file, image: canvas, data }], storage);
 }

@@ -162,6 +162,25 @@ var migrate = (() => {
     }
   });
 
+  /*
+    v0.18.2 - Partial update for new skin format
+    Removed: skinSvg, skinPng, skinAnim, skinAnimMeta
+    Added: skin, ghost
+  */
+  migrations.push({
+    version: '0.18.2',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.18.2' });
+      let { skinSvg } = await dataSource.get(['skinSvg'])
+
+      // TODO: Implement a real migration for this data
+      // (importers are es6, migrate.js unfortunately isn't.)
+
+      await dataSource.delete(['skinSvg', 'skinPng', 'skinAnim', 'skinAnimMeta'])
+
+    }
+  })
+
   return async function migrate(dataSource) {
     let { version: initialVersion} = await dataSource.get('version');
     if (!initialVersion) initialVersion = '0.0.0';

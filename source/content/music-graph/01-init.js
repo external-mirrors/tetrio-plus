@@ -1,4 +1,3 @@
-console.log('music graph 01-init.js');
 const modules = [];
 function musicGraph(module) {
   modules.push(module);

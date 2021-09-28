@@ -64,50 +64,16 @@ async function sanitizeAndLoadTPSE(data, storage) {
     advancedSkinLoading: parseBoolean('advancedSkinLoading'),
     windowTitleStatus: electronOnly(parseBoolean('windowTitleStatus')),
     musicGraphBackground: parseBoolean('musicGraphBackground'),
-    skinSvg: async svgText => {
-      try {
-        let parser = new DOMParser();
-        let svg = parser.parseFromString(svgText, 'application/xhtml+xml');
-        if (svg.documentElement.nodeName.indexOf('parsererror') > -1)
-          return 'ERROR: svg is invalid';
-
-        await storage.set({ skinSvg: svgText });
-        return 'success';
-      } catch(ex) {
-        return 'ERROR: unexpected error: ' + ex;
-      }
-    },
-    skinPng: async dataUri => {
+    skin: async dataUri => {
       if (typeof dataUri != 'string' || !/^data:image\/.+?;base64,/.test(dataUri))
         return `ERROR: Missing/invalid image`
-      await storage.set({ skinPng: dataUri });
+      await storage.set({ skin: dataUri });
       return 'success';
     },
-    skinAnim: async dataUri => {
+    ghost: async dataUri => {
       if (typeof dataUri != 'string' || !/^data:image\/.+?;base64,/.test(dataUri))
         return `ERROR: Missing/invalid image`
-      await storage.set({ skinAnim: dataUri });
-      return 'success';
-    },
-    skinAnimMeta: async object => {
-      if (typeof object != 'object')
-        return `ERROR: Expected object`;
-
-      if (typeof object.frames != 'number' || object.frames < 1)
-        return `ERROR: Expected positive numerical value at frame`;
-      if (typeof object.frameWidth != 'number' || object.frameWidth < 1)
-        return `ERROR: Expected positive numerical value at frameWidth`;
-      if (typeof object.frameHeight != 'number' || object.frameHeight < 1)
-        return `ERROR: Expected positive numerical value at frameHeight`;
-      if (typeof object.delay != 'number' || object.delay < 1)
-        return `ERROR: Expected positive numerical value at delay`;
-
-      let whitelist = ['frames', 'frameWidth', 'frameHeight', 'delay'];
-      for (let key of Object.keys(object))
-        if (whitelist.indexOf(key) == -1)
-          return `ERROR: Unexpected value at ${key}`;
-
-      await storage.set({ skinAnimMeta: object });
+      await storage.set({ ghost: dataUri });
       return 'success';
     },
     customSoundAtlas: async (atlas, importData) => {

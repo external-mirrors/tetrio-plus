@@ -1,5 +1,6 @@
 createRewriteFilter("Animated skins", "https://tetr.io/js/tetrio.js*", {
   enabledFor: async (storage, request) => {
+    return false; // TODONOW: fix
     let res = await storage.get(['advancedSkinLoading', 'skinAnimMeta']);
     return res.advancedSkinLoading && res.skinAnimMeta;
   },

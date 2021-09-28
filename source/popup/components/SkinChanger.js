@@ -44,13 +44,11 @@ export default {
   data: () => ({ cachedSkin: null, skinBlob: null }),
   computed: {
     skinUrl() {
-      browser.storage.local.get('skinSvg').then(({ skinSvg: newSkin }) => {
-        if (newSkin != this.cachedSkin) this.cachedSkin = newSkin;
+      browser.storage.local.get('skin').then(({ skin }) => {
+        if (skin != this.cachedSkin) this.cachedSkin = skin;
       });
       if (!this.cachedSkin) return false;
-      let blob = new Blob([this.cachedSkin], { type: 'image/svg+xml' });
-      this.skinBlob = URL.createObjectURL(blob);
-      return this.skinBlob;
+      return this.cachedSkin;
     }
   },
   methods: {
@@ -71,17 +69,12 @@ export default {
           type: 'detached_panel',
           url: browser.extension.getURL('source/panels/skinpicker/index.html'),
           width: 659,
-          height: 387
+          height: 550
         });
       }
     },
     resetSkin() {
-      browser.storage.local.remove([
-        'skinSvg',
-        'skinPng',
-        'skinAnim',
-        'skinAnimMeta'
-      ]).then(() => {
+      browser.storage.local.remove(['skin', 'ghost']).then(() => {
         this.cachedSkin = null;
       });
     }

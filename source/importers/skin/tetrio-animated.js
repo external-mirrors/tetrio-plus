@@ -61,13 +61,14 @@ export async function load(files, storage, options) {
   console.error(options);
 
   await loadraster([files[0]], storage); // populate normal skins too
-  await storage.set({
-    skinAnim: canvas.toDataURL('image/png'),
-    skinAnimMeta: {
-      frames: files.length,
-      frameWidth: canvas.width,
-      frameHeight: step,
-      delay: options.delay || 30
-    }
-  });
+  // TODO: fix this
+  // await storage.set({
+  //   skinAnim: canvas.toDataURL('image/png'),
+  //   skinAnimMeta: {
+  //     frames: files.length,
+  //     frameWidth: canvas.width,
+  //     frameHeight: step,
+  //     delay: options.delay || 30
+  //   }
+  // });
 }

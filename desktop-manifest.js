@@ -45,6 +45,8 @@ manifest.browser_specific_settings.desktop_client = {
     "source/content/osd.js",
     "source/content/emote-tab.js",
 
+    "source/content/connected-skins.js",
+
     "source/content/music-graph/01-init.js",
     "source/content/music-graph/03-node.js",
     "source/content/music-graph/04-dispatch-event.js",

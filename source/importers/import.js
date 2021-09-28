@@ -3,7 +3,11 @@ import * as tetrioraster from './skin/tetrio-raster.js';
 import * as tetrioanim from './skin/tetrio-animated.js';
 import * as jstrisraster from './skin/jstris-raster.js';
 import * as jstrisanim from './skin/jstris-animated.js';
-import { automatic, guessFormat } from './skin/automatic.js';
+import * as tetrio61 from './skin/tetrio-6.1.js';
+import * as tetrio61ghost from './skin/tetrio-6.1-ghost.js';
+import * as tetrio61connected from './skin/tetrio-6.1-connected.js';
+import * as tetrio61connectedghost from './skin/tetrio-6.1-connected-ghost.js';
+import { loaders, automatic, guessFormat } from './skin/automatic.js';
 
 import { decodeDefaults, decodeAudio } from './sfx/decode.js';
 import encode from './sfx/encode.js';
@@ -18,15 +22,17 @@ import automaticAny from './automatic.js';
 
 const importers = {
   skin: {
-    loaders: [tetriosvg, tetrioraster, tetrioanim, jstrisraster, jstrisanim],
-    knownAspectRatios: [['Tetrio', 12.4], ['Jstris', 9]],
+    loaders: Object.values(loaders),
+    knownAspectRatios: [['TETR.IO 6.1', 1], ['Tetrio', 12.4], ['Jstris', 9]],
     guessFormat: guessFormat, // file[] -> string|null
     automatic: automatic, // file[], storage, options
     tetriosvg: tetriosvg.load, // file[1], storage
     tetrioraster: tetrioraster.load, // file[1], storage
     tetrioanim: tetrioanim.load, // file[], storage, options
     jstrisraster: jstrisraster.load, // file[1], storage
-    jstrisanim: jstrisanim.load // file[1], storage, options
+    jstrisanim: jstrisanim.load, // file[1], storage, options
+    tetrio61: tetrio61.load, // file[1], storage, options
+    tetrio61connected: tetrio61connected.load // file[1], storage, options
   },
   sfx: {
     decodeAudio, // ArrayBuffer -> AudioBuffer

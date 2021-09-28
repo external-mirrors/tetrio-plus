@@ -1,42 +1,20 @@
-createRewriteFilter('SVG', 'https://tetr.io/res/minos.svg', {
+createRewriteFilter('Custom skin', 'https://tetr.io/res/skins/minos/connected.png', {
   enabledFor: async (storage, url) => {
-    let { skinSvg } = await storage.get('skinSvg');
-    return !!skinSvg;
+    let { skin } = await storage.get('skin');
+    return !!skin;
   },
   onStop: async (storage, url, src, callback) => {
-    let { skinSvg } = await storage.get('skinSvg');
-    callback({ type: 'image/svg+xml', data: skinSvg, encoding: 'text' });
+    let { skin } = await storage.get('skin');
+    callback({ type: 'image/png', data: skin, encoding: 'base64-data-url' });
   }
 });
-
-// Tetrio uses a png texture instead of svg textures on low and medium graphics
-// The PNGs are generated at upload-time. The animated texture atlas is also
-// fetched through here if the 'animated' query parameter is set.
-createRewriteFilter('PNG', 'https://tetr.io/res/minos.png*', {
+createRewriteFilter('Custom skin (ghost)', 'https://tetr.io/res/skins/ghost/connected.png', {
   enabledFor: async (storage, url) => {
-    let animated = /[\?\&]animated/.test(url);
-    if (animated) {
-      return !!(await storage.get('skinAnim')).skinAnim;
-    } else {
-      return !!(await storage.get('skinPng')).skinPng;
-    }
+    let { ghost } = await storage.get('ghost');
+    return !!ghost;
   },
   onStop: async (storage, url, src, callback) => {
-    let animated = /[\?\&]animated/.test(url);
-    if (animated) {
-      let { skinAnim } = await storage.get('skinAnim');
-      callback({
-        type: 'image/png',
-        data: skinAnim,
-        encoding: 'base64-data-url'
-      });
-    } else {
-      let { skinPng } = await storage.get('skinPng');
-      callback({
-        type: 'image/png',
-        data: skinPng,
-        encoding: 'base64-data-url'
-      });
-    }
+    let { ghost } = await storage.get('ghost');
+    callback({ type: 'image/png', data: ghost, encoding: 'base64-data-url' });
   }
 });

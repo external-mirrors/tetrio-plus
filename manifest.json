@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tetr.io+",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
 
@@ -69,6 +69,8 @@
       "source/content/touch-controls.js",
       "source/content/animated-bg.js",
       "source/content/osd.js",
+
+      "source/content/connected-skins.js",
 
       "source/content/music-graph/01-init.js",
       "source/content/music-graph/03-node.js",
