@@ -1,6 +1,7 @@
 export const name = 'Tetrio svg';
 export const desc = 'An SVG at a 12.4 aspect ratio with 12 blocks';
 export const extrainputs = [];
+
 export function test(files) {
   if (files.length != 1) return false;
   if (files[0].type != 'image/svg+xml') return false;
