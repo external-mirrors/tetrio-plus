@@ -18,8 +18,7 @@ export default {
           title="This is the current block skin you are using."
           class="skin"
           :src="skinUrl"
-          v-if="skinUrl"
-          @load="rmSkinBlob">
+          v-if="skinUrl">
         <div class="no-skin" v-else>
           No skin set
         </div>
@@ -41,21 +40,75 @@ export default {
     </div>
   `,
   components: { OptionToggle },
-  data: () => ({ cachedSkin: null, skinBlob: null }),
+  data: () => ({
+    cached: { skin: null, ghost: null }
+  }),
+  mounted() {
+    this.loadSkin();
+  },
   computed: {
     skinUrl() {
-      browser.storage.local.get('skin').then(({ skin }) => {
-        if (skin != this.cachedSkin) this.cachedSkin = skin;
-      });
-      if (!this.cachedSkin) return false;
-      return this.cachedSkin;
+      if (!this.cached.skin && !this.cached.ghost)
+        return null;
+
+      let canvas = document.createElement('canvas');
+      let ctx = canvas.getContext('2d');
+      canvas.width = 372;
+      canvas.height = 30;
+
+      function makeImage(src) {
+        if (!src) return null;
+        let img = new Image();
+        img.crossOrigin = 'Anonymous'; // WHY?? It's a *data url*
+        img.src = src;
+        return img;
+      }
+
+      let sources = {
+        ghost: makeImage(this.cached.ghost),
+        skin: makeImage(this.cached.skin)
+      };
+
+      let bs = 96; // block size
+      let blocks = [
+        { source:  'skin', x: bs* 0, y: bs* 4 }, // z, *4 = get all-borders block
+        { source:  'skin', x: bs* 4, y: bs* 4 }, // l
+        { source:  'skin', x: bs* 8, y: bs* 4 }, // o
+        { source:  'skin', x: bs*12, y: bs* 4 }, // s
+        { source:  'skin', x: bs* 0, y: bs*10 }, // i
+        { source:  'skin', x: bs* 4, y: bs*10 }, // j
+        { source:  'skin', x: bs* 8, y: bs*10 }, // t
+        { source: 'ghost', x: bs* 0, y: bs* 4 }, // ghost
+        { source:  'skin', x: bs*12, y: bs*10 }, // hold
+        { source:  'skin', x: bs*16, y: bs* 3 }, // garbage
+        { source:  'skin', x: bs*16, y: bs* 7 }, // dark garbage
+        { source: 'ghost', x: bs* 4, y: bs* 4 }, // topout
+      ];
+      for (let i = 0; i < 12; i++) {
+        let { source, x, y } = blocks[i];
+        if (!sources[source]) continue;
+        ctx.drawImage(
+          sources[source],
+          x, y, bs, bs,
+          i*31, 0, 30, 30
+        );
+      }
+
+      return canvas.toDataURL('image/png');
     }
   },
   methods: {
-    rmSkinBlob() {
-      if (!this.skinBlob) return;
-      URL.revokeObjectURL(this.skinBlob);
-      console.log("Cleared blob");
+    loadSkin() {
+      browser.storage.local.get(['skin', 'ghost']).then(({ skin, ghost }) => {
+        if (ghost != this.cached.ghost) this.cached.ghost = ghost;
+        if (skin != this.cached.skin) this.cached.skin = skin;
+      });
+    },
+    resetSkin() {
+      browser.storage.local.remove(['skin', 'ghost']).then(() => {
+        this.cached.skin = null;
+        this.cached.ghost = null;
+      });
     },
     async openImageChanger() {
       let { name } = await browser.runtime.getBrowserInfo();
@@ -72,11 +125,6 @@ export default {
           height: 550
         });
       }
-    },
-    resetSkin() {
-      browser.storage.local.remove(['skin', 'ghost']).then(() => {
-        this.cachedSkin = null;
-      });
     }
   }
 }
