@@ -2,6 +2,9 @@ if (typeof require == 'function') {
   var migrate = require('./migrate');
   var DOMParser = require('xmldom').DOMParser;
 }
+if (window.migrate) { // module issues
+  var migrate = window.migrate;
+}
 
 /**
  * @param {Object} data the data object to load
