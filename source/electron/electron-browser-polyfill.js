@@ -186,7 +186,11 @@
               keystore.set({ keys });
 
               let {path} = new Store({ name: 'tpkey-'+key, cwd: 'tetrioplus' });
-              await promisify(fs.unlink)(path);
+              try {
+                await promisify(fs.unlink)(path);
+              } catch(ex) {
+                console.warn("Failed to delete file: ", ex);
+              }
             }
           },
           async clear() {
