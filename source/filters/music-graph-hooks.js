@@ -28,7 +28,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       src = src.replace(rgx, ($, pre, argument, post, effect) => {
         match = true;
         return pre + (`
-          if (!${effect}.patched) {
+          if (${effect} && !${effect}.patched) {
             let original = ${effect}.create.bind(${effect});
             ${effect}.patched = true
             ${effect}.create = (...args) => {
