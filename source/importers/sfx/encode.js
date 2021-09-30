@@ -1,13 +1,13 @@
 const sampleRate = 44100;
 const channels = 2;
 const quality = 0.5;
-export default async function encode(sprites, storage) {
+export default async function encode(sprites, storage, options) {
   let encoder = new window.OggVorbisEncoder(sampleRate, channels, quality);
 
   let atlas = {};
   let currentOffset = 0;
   for (let { name, buffer } of sprites) {
-    console.error('buffer', name, buffer.duration, '@', buffer.sampleRate);
+    options?.log?.('buffer', name, buffer.duration, '@', buffer.sampleRate);
     let duration = buffer.duration * 1000;
     let offset = currentOffset;
     currentOffset += duration;

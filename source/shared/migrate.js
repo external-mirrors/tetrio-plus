@@ -190,7 +190,7 @@ var migrate = (() => {
       if (!version) version = '0.0.0';
       let target = migration.version;
 
-      console.log("Testing migration", version, target, compare(version, target));
+      // console.log("Testing migration", version, target, compare(version, target));
       if (compare(version, target) == -1) {
         console.log("Running migration", migration);
         await migration.run(dataSource);
@@ -207,3 +207,5 @@ var migrate = (() => {
 
 if (typeof module !== 'undefined')
   module.exports = migrate;
+else if (typeof window !== 'undefined')
+  window.migrate = migrate;

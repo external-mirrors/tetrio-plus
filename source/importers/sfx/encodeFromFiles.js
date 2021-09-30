@@ -10,13 +10,16 @@ export async function test(files) {
   });
 }
 
-export async function load(files, storage) {
-  let sprites = await decodeDefaults(status => console.error(status));
+export async function load(files, storage, options) {
+  let sprites = await decodeDefaults(status => options?.log?.(status));
 
   for (let file of files) {
     let noExt = file.name.split('.').slice(0, -1).join('.');
     let sprite = sprites.filter(sprite => sprite.name == noExt)[0];
     if (!sprite) continue;
+    if (!file.buffer) {
+      file.buffer = await (await fetch(file.data)).arrayBuffer();
+    }
     sprite.buffer = await decodeAudio(file.buffer);
     sprite.duration = sprite.buffer.duration;
     sprite.offset = -1;

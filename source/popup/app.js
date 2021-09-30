@@ -5,8 +5,8 @@ import SfxManager from './components/SfxManager.js';
 import MusicManager from './components/MusicManager.js';
 import BackgroundManager from './components/BackgroundManager.js';
 import UrlPackLoader from './components/URLPackLoader.js';
+import '../shared/drop-handler.js';
 const html = arg => arg.join(''); // NOOP, for editor integration.
-
 const app = new Vue({
   template: html`
     <div id="app">

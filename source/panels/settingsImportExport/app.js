@@ -1,3 +1,5 @@
+import '../../shared/drop-handler.js';
+
 let match = /install=([^=]+)/.exec(new URL(window.location).search);
 if (match) {
   console.log(match);

@@ -29,8 +29,6 @@ export async function load(files, storage, options) {
   for (let i = 0; i < files.length; i++)
     ctx.drawImage(files[i].image, i%16 * 1024, Math.floor(i/16) * 1024, 1024, 1024);
 
-  console.log({ files, canvas, data: canvas.toDataURL('image/png') });
-
   await loadconnraster([files[0]], storage); // non-animated fallback
   await storage.set({
     skinAnim: canvas.toDataURL('image/png'),

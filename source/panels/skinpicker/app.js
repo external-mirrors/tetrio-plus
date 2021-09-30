@@ -1,4 +1,4 @@
-import filehelper from './filehelper.js';
+import filehelper from '../../shared/filehelper.js';
 import importer from '../../importers/import.js';
 const html = arg => arg.join(''); // NOOP, for editor integration.
 
@@ -62,13 +62,6 @@ const app = new Vue({
   methods: {
     async load() {
       let files = await filehelper(this.$refs.files);
-      for (let file of files) {
-        file.image = new Image();
-        file.image.src = file.data;
-        file.image.onerror = () => alert('Failed to load image');
-        await new Promise(res => file.image.onload = res);
-      }
-
       console.log("Files", files);
 
       // Check if aspect ratios are valid

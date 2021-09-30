@@ -54,7 +54,7 @@ export function guessFormat(files) {
 
 export async function automatic(files, storage, options) {
   let format = guessFormat(files);
-  console.error("Guessing skin format", format)
+  options?.log?.("Guessing skin format", format)
   let loader = multiloaders[format];
   if (!loader) throw new Error('Unable to determine format.');
   return await loader.load(files, storage, options);

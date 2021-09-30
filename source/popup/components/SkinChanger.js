@@ -41,78 +41,70 @@ export default {
   `,
   components: { OptionToggle },
   data: () => ({
-    cached: { skin: null, ghost: null }
+    skinUrl: null
   }),
   mounted() {
     this.loadSkin();
   },
-  computed: {
-    skinUrl() {
-      if (!this.cached.skin && !this.cached.ghost)
-        return null;
-
-      let canvas = document.createElement('canvas');
-      let ctx = canvas.getContext('2d');
-      canvas.width = 372;
-      canvas.height = 30;
-
-      function makeImage(src) {
-        if (!src) return null;
-        let img = new Image();
-        img.crossOrigin = 'Anonymous'; // WHY?? It's a *data url*
-        img.src = src;
-        return img;
-      }
-
-      let sources = {
-        ghost: makeImage(this.cached.ghost),
-        skin: makeImage(this.cached.skin)
-      };
-
-      let bs = 96; // block size
-      let blocks = [
-        { source:  'skin', x: bs* 0, y: bs* 4 }, // z, *4 = get all-borders block
-        { source:  'skin', x: bs* 4, y: bs* 4 }, // l
-        { source:  'skin', x: bs* 8, y: bs* 4 }, // o
-        { source:  'skin', x: bs*12, y: bs* 4 }, // s
-        { source:  'skin', x: bs* 0, y: bs*10 }, // i
-        { source:  'skin', x: bs* 4, y: bs*10 }, // j
-        { source:  'skin', x: bs* 8, y: bs*10 }, // t
-        { source: 'ghost', x: bs* 0, y: bs* 3 }, // ghost
-        { source:  'skin', x: bs*12, y: bs*10 }, // hold
-        { source:  'skin', x: bs*16, y: bs* 3 }, // garbage
-        { source:  'skin', x: bs*16, y: bs* 7 }, // dark garbage
-        { source: 'ghost', x: bs* 4, y: bs* 3 }, // topout
-      ];
-      for (let i = 0; i < 12; i++) {
-        let { source, x, y } = blocks[i];
-        if (!sources[source]) continue;
-        ctx.drawImage(
-          sources[source],
-          x, y, bs, bs,
-          i*31, 0, 30, 30
-        );
-      }
-
-      // BUG: loads blank sometimes?
-      return canvas.toDataURL('image/png');
-    }
-  },
   methods: {
     loadSkin() {
-      browser.storage.local.get(['skin', 'ghost']).then(({ skin, ghost }) => {
-        this.cached.ghost = ghost;
-        this.cached.skin = skin;
+      this.skinUrl = null;
+      browser.storage.local.get(['skin', 'ghost']).then(async ({ skin, ghost }) => {
+        if (!skin && !ghost) return null;
+
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+        canvas.width = 372;
+        canvas.height = 30;
+
+        async function makeImage(src) {
+          if (!src) return null;
+          let img = new Image();
+          img.crossOrigin = 'Anonymous'; // WHY?? It's a *data url*
+          img.src = src;
+          await new Promise(r => img.onload = r);
+          return img;
+        }
+
+        let sources = {
+          ghost: await makeImage(ghost),
+          skin: await makeImage(skin)
+        };
+
+        let bs = 96; // block size
+        let blocks = [
+          { source:  'skin', x: bs* 0, y: bs* 4 }, // z, *4 = get all-borders block
+          { source:  'skin', x: bs* 4, y: bs* 4 }, // l
+          { source:  'skin', x: bs* 8, y: bs* 4 }, // o
+          { source:  'skin', x: bs*12, y: bs* 4 }, // s
+          { source:  'skin', x: bs* 0, y: bs*10 }, // i
+          { source:  'skin', x: bs* 4, y: bs*10 }, // j
+          { source:  'skin', x: bs* 8, y: bs*10 }, // t
+          { source: 'ghost', x: bs* 0, y: bs* 3 }, // ghost
+          { source:  'skin', x: bs*12, y: bs*10 }, // hold
+          { source:  'skin', x: bs*16, y: bs* 3 }, // garbage
+          { source:  'skin', x: bs*16, y: bs* 7 }, // dark garbage
+          { source: 'ghost', x: bs* 4, y: bs* 3 }, // topout
+        ];
+        for (let i = 0; i < 12; i++) {
+          let { source, x, y } = blocks[i];
+          if (!sources[source]) continue;
+          ctx.drawImage(
+            sources[source],
+            x, y, bs, bs,
+            i*31, 0, 30, 30
+          );
+        }
+
+        this.skinUrl = canvas.toDataURL('image/png');
       });
     },
-    resetSkin() {
-      browser.storage.local.remove([
+    async resetSkin() {
+      await browser.storage.local.remove([
         'skin', 'skinAnim', 'skinAnimMeta',
         'ghost', 'ghostAnim', 'ghostAnimMeta'
-      ]).then(() => {
-        this.cached.skin = null;
-        this.cached.ghost = null;
-      });
+      ]);
+      await this.loadSkin();
     },
     async openImageChanger() {
       let { name } = await browser.runtime.getBrowserInfo();

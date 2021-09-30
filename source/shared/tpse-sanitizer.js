@@ -512,3 +512,5 @@ async function sanitizeAndLoadTPSE(data, storage) {
 
 if (typeof module !== 'undefined')
   module.exports = sanitizeAndLoadTPSE;
+else if (typeof window !== 'undefined')
+  window.sanitizeAndLoadTPSE = sanitizeAndLoadTPSE;
