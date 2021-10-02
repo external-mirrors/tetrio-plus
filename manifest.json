@@ -12,7 +12,7 @@
     "storage",
     "*://*.tetr.io/*"
   ],
-"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  
   "page_action": {
     "default_icon": "icons/tetrio-256.png",
     "default_title": "TETR.IO PLUS",
