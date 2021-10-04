@@ -1,8 +1,6 @@
 # TETR.IO PLUS
 TETR.IO block skin, music, sfx customizer and also some other things.
 
-[![forthebadge](https://forthebadge.com/images/badges/contains-technical-debt.svg)](https://forthebadge.com)
-
 ## Warnings
 * **This software is not associated with or created by Tetr.io or osk**
 * **This is provided AS-IS, it's not terribly polished, its not particularly
