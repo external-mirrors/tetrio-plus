@@ -1,20 +1,22 @@
+import { ReadableStreamBuffer, WritableStreamBuffer } from 'stream-buffers';
 import { OfflineAudioContext } from 'web-audio-engine';
+import GIFGroover from './lib/GIFGroover.js';
 import fetch, { Response } from 'node-fetch';
+import { Blob, FileReader } from 'vblob';
+import { Canvas, Image } from 'canvas';
+import ffmpeg from 'fluent-ffmpeg';
 import { Readable } from 'stream';
 import path from 'path';
+import 'node-fetch';
 import fs from 'fs';
-import { Canvas, Image } from 'canvas';
-import { Blob, FileReader } from 'vblob';
-import ffmpeg from 'fluent-ffmpeg';
-import { ReadableStreamBuffer, WritableStreamBuffer } from 'stream-buffers';
 
 global.self = global;
 global.OggVorbisEncoderConfig = { TOTAL_MEMORY: 64 * 1024**2 };
 global.print = console.error;
-let ove_path = path.join(__dirname, '../source/lib/OggVorbisEncoder.js');
-let ove = fs.readFileSync(ove_path);
+let ove = fs.readFileSync(path.join(__dirname, '../source/lib/OggVorbisEncoder.js'));
 new Function(ove)();
-
+let jszip = fs.readFileSync(path.join(__dirname, '../source/lib/jszip.min.js'));
+new Function(jszip)();
 
 // Web API polyfills
 Object.assign(global, {
@@ -23,6 +25,7 @@ Object.assign(global, {
     // Not actually polyfills but used to feature-detect & polyfill other stuff
     IS_NODEJS_POLYFILLED: true,
     ffmpeg,
+    GIFGroover,
     ReadableStreamBuffer,
     WritableStreamBuffer,
 
@@ -30,11 +33,6 @@ Object.assign(global, {
     FileReader,
     OggVorbisEncoder,
     OfflineAudioContext,
-    // OfflineAudioContext: function(...args) {
-    //   let ctx = new OfflineAudioContext(...args);
-    //   ctx.decodeAudioData = buf => decode(buf);
-    //   return ctx;
-    // },
     Image,
     document: {
       createElement(el) {
@@ -46,10 +44,9 @@ Object.assign(global, {
       if (url instanceof Readable)
         return new Response(url);
 
-      let dataUrl = /^data:.+\/(.+);base64,(.*)$/;
-      if (dataUrl.test(url)) {
-        let [_1,_2,data] = /^data:.+\/(.+);base64,(.*)$/.exec(url);
-        let buffer = Buffer.from(data, 'base64');
+      let dataUrl = /^data:.{0,100};base64,/.exec(url);
+      if (dataUrl) {
+        let buffer = Buffer.from(url.slice(dataUrl[0].length), 'base64');
         return { // mock response
           async text() { return buffer.toString(); },
           async arrayBuffer() { return buffer; }
@@ -67,4 +64,3 @@ Object.assign(global, {
     }
   }
 });
-window.GIFGroover = require('./lib/GIFGroover.js').default;

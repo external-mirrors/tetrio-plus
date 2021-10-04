@@ -9,8 +9,9 @@ export default async function automatic(importers, files, storage, options) {
     if (options.zipdepth > 5)
       throw new Error("Refusing to open a zip nested more than 5 layers deep");
 
-    let results = await files.map(async file => {
-      let buffer = await (await fetch(file.data)).arrayBuffer()
+    let results = await Promise.all(files.map(async file => {
+      let res = await window.fetch(file.data);
+      let buffer = await (res.arrayBuffer());
       let zip = await JSZip.loadAsync(buffer);
       let mimes = {
         'png': 'image/png',
@@ -36,7 +37,7 @@ export default async function automatic(importers, files, storage, options) {
       (options&&options.log||(()=>{}))("Importing files from zip " + file.name + "...");
       options.zipdepth = (options.zipdepth || 0) + 1;
       return await automatic(importers, files, storage, options);
-    });
+    }));
     return { type: 'multi', results };
   }
   if (files.every(file => file.name.endsWith('.tpse'))) {

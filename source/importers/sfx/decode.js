@@ -1,7 +1,7 @@
 const sampleRate = 44100;
 const channels = 2;
 
-export async function decodeAudio(buffer) {
+export async function decodeAudio(buffer, status=(()=>{})) {
   if (window.IS_NODEJS_POLYFILLED) {
     let input = new window.ReadableStreamBuffer({
       frequency: 1,
@@ -14,13 +14,13 @@ export async function decodeAudio(buffer) {
     await new Promise((res, rej) => {
       let proc = window.ffmpeg({ source: input, logger: console })
         .toFormat('wav')
-        .on('stderr', line => console.error('FFMPEG>' + line))
+        .on('stderr', line => status('FFMPEG>' + line))
         .on('end', () => {
-          console.log('ffmpeg done');
+          status('ffmpeg done');
           res();
         })
         .on('error', ex => {
-          console.error(ex);
+          status('ffmpeg error: ' + ex);
           rej(ex);
         })
         .pipe(output);

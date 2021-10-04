@@ -9,15 +9,6 @@ import path from 'path';
 import mime from 'mime-types';
 import { Image } from 'canvas';
 
-process.on('uncaughtException', ex => {
-  console.error('uncaughtException', ex);
-  process.exit(1);
-});
-process.on('unhandledRejection', (ex, pr) => {
-  console.error('unhandledRejection', ex, pr);
-  process.exit(1);
-});
-
 function forceInt(value) {
   let int = parseInt(value);
   if (isNaN(int)) throw new Error('Expected numeric delay value');
@@ -33,33 +24,37 @@ program
   .command('import <files...>')
   .description('Imports files')
   .action(async filenames => {
-    let files = filenames.map(filename => {
+    let files = await Promise.all(filenames.map(async filename => {
       let file = {
         name: path.basename(filename),
         type: mime.lookup(filename)
-      }
+      };
       let buffer = fs.readFileSync(filename);
       file.buffer = buffer;
       file.data = `data:${file.type};base64,${buffer.toString('base64')}`;
       if (file.type.startsWith('image')) {
         file.image = new Image();
-        file.image.src = file.data;
         file.image.onerror = ex => { throw ex; }
+        let pr = new Promise(res => file.image.onload = res);
+        file.image.src = file.data;
+        await pr;
       }
       return file;
-    });
+    }));
 
     console.error(`${files.length} input file(s)`);
     for (let file of files)
       console.error(`[${file.type}] ${file.name}`);
 
-    await importer.automatic(files, storage, {
+    let result = await importer.automatic(files, storage, {
       delay: program.delay,
-      combine: program.combine
+      combine: program.combine,
+      log: (...ex) => console.error(...ex)
     }).catch(ex => {
       console.error("Error: " + ex);
       process.exit(1);
     });
+    console.error(result);
 
     let compiled = JSON.stringify(tpse, null, 2);
     if (program.output) {
@@ -68,6 +63,7 @@ program
       console.log(compiled);
     }
     console.error("Done");
+    process.exit(0);
   });
 
 program.parse(process.argv);

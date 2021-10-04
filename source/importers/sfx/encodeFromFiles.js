@@ -18,7 +18,7 @@ export async function load(files, storage, options) {
     let sprite = sprites.filter(sprite => sprite.name == noExt)[0];
     if (!sprite) continue;
     if (!file.buffer) {
-      file.buffer = await (await fetch(file.data)).arrayBuffer();
+      file.buffer = await (await window.fetch(file.data)).arrayBuffer();
     }
     sprite.buffer = await decodeAudio(file.buffer);
     sprite.duration = sprite.buffer.duration;
