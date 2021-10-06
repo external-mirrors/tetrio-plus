@@ -43,8 +43,8 @@ export default async function automatic(importers, files, storage, options) {
   if (files.every(file => file.name.endsWith('.tpse'))) {
     (options&&options.log||(()=>{}))("Guessing import type TPSE");
     for (let file of files) {
-      let json = await (await window.fetch(file.data)).json()
-      await sanitizeAndLoadTPSE(json, storage);
+      let json = JSON.parse(await (await window.fetch(file.data)).text());
+      await window.sanitizeAndLoadTPSE(json, storage);
     }
     return { type: 'tpse' };
   }
