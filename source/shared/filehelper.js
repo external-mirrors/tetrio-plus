@@ -28,9 +28,10 @@ export default async function readfiles(input) {
 export async function populateImage(file) {
   if (file.type.startsWith('image/')) {
     file.image = new window.Image();
-    file.image.src = file.data;
     file.image.onerror = () => rej(new Error('Failed to load image'));
-    await new Promise(res => file.image.onload = res);
+    let pr = new Promise(res => file.image.onload = res);
+    file.image.src = file.data;
+    await pr;
   }
   return file;
 }
