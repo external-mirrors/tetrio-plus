@@ -157,10 +157,7 @@ const app = new Vue({
           return el.mino;
         });
       }).join('');
-      if (this.bag.length > 0)
-        this.mapString += '?' + this.bag;
-      if (this.hold && this.hold.length > 0)
-        this.mapString += '?' + this.hold;
+      this.mapString += `?${this.bag}?${this.hold}`;
     },
     loadMapString(mapString) {
       let x = 0, y = 0;
