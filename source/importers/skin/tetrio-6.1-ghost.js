@@ -16,8 +16,6 @@ export function test(files) {
 import t61g_t61cg from './converters/tetrio61ghost_tetrio61connectedghost.js';
 import { load as loadconnectedghost } from './tetrio-6.1-connected-ghost.js';
 export async function load(files, storage) {
-  await storage.set({ intermediate2: files[0].data });
-
   let file = files[0];
   let image = t61g_t61cg(file.image);
   let data = image.toDataURL('image/png');
