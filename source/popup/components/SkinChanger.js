@@ -73,15 +73,15 @@ export default {
 
         let bs = 96; // block size
         let blocks = [
-          { source:  'skin', x: bs* 0, y: bs* 4 }, // z, *4 = get all-borders block
-          { source:  'skin', x: bs* 4, y: bs* 4 }, // l
-          { source:  'skin', x: bs* 8, y: bs* 4 }, // o
-          { source:  'skin', x: bs*12, y: bs* 4 }, // s
-          { source:  'skin', x: bs* 0, y: bs*10 }, // i
-          { source:  'skin', x: bs* 4, y: bs*10 }, // j
-          { source:  'skin', x: bs* 8, y: bs*10 }, // t
+          { source:  'skin', x: bs* 0, y: bs* 3 }, // z, *3 = get all-borders block
+          { source:  'skin', x: bs* 4, y: bs* 3 }, // l
+          { source:  'skin', x: bs* 8, y: bs* 3 }, // o
+          { source:  'skin', x: bs*12, y: bs* 3 }, // s
+          { source:  'skin', x: bs* 0, y: bs* 9 }, // i
+          { source:  'skin', x: bs* 4, y: bs* 9 }, // j
+          { source:  'skin', x: bs* 8, y: bs* 9 }, // t
           { source: 'ghost', x: bs* 0, y: bs* 3 }, // ghost
-          { source:  'skin', x: bs*12, y: bs*10 }, // hold
+          { source:  'skin', x: bs*12, y: bs* 9 }, // hold
           { source:  'skin', x: bs*16, y: bs* 3 }, // garbage
           { source:  'skin', x: bs*16, y: bs* 7 }, // dark garbage
           { source: 'ghost', x: bs* 4, y: bs* 3 }, // topout
