@@ -32,6 +32,7 @@ manifest.browser_specific_settings.desktop_client = {
     "source/filters/emote-tab-tetriojs-filter.js",
     "source/filters/osd-request-filter.js",
     "source/filters/debug-tetriojs-filter.js",
+    "source/filters/board-request-filter.js",
     "source/filters/adblocker-filter.js"
   ],
   "preload_scripts": [

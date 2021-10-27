@@ -42,6 +42,7 @@
       "source/filters/bg/animated-bg-tetriojs-filter.js",
       "source/filters/bg/bg-tetriojs-filter.js",
       "source/filters/bg/bg-request-filter.js",
+      "source/filters/board-request-filter.js",
       "source/filters/adblocker-filter.js",
 
       "source/bootstrap/content-script-communicator.js",

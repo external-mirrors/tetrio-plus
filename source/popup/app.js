@@ -156,7 +156,7 @@ const app = new Vue({
               <span :title="(
                 'Hides this window on startup. You can press ctrl-t to reopen it.'
               )">
-                Hide Tetrio Plus window on startup
+                Hide TETR.IO PLUS window on startup
               </span>
             </option-toggle>
 
@@ -195,6 +195,12 @@ const app = new Vue({
                 Break the game (May break the game)
               </span>
             </option-toggle>
+
+            <div class="control-group" v-if="debugMode">
+              <button @click="openStorageTool()" title="Opens storage tool">
+                Open arbitrary storage writer tool
+              </button>
+            </div>
           </div>
         </fieldset>
       </option-toggle>
@@ -381,6 +387,14 @@ const app = new Vue({
       browser.tabs.create({
         url: browser.extension.getURL(
           'source/panels/touchcontroleditor/index.html'
+        ),
+        active: true
+      });
+    },
+    openStorageTool() {
+      browser.tabs.create({
+        url: browser.extension.getURL(
+          'source/panels/storagetool/index.html'
         ),
         active: true
       });
