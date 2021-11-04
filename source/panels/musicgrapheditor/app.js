@@ -12,6 +12,14 @@ const app = new Vue({
         <div class="pane-header">
           <button @click="save">Save changes</button>
           <span :style="{ opacity: this.saveOpacity }">Saved!</span>
+          <span style="float: right; margin-right: 4px">
+            <button @click="undo" :disabled="history.undo.length <= 1">
+              Undo (x{{ history.undo.length-1 }})
+            </button>
+            <button @click="redo" :disabled="history.redo.length == 0">
+              Redo (x{{ history.redo.length }})
+            </button>
+          </span>
         </div>
         <div class="node-list">
           <node-editor
@@ -19,6 +27,7 @@ const app = new Vue({
             :key="node.id"
             :nodes="nodes"
             :node="node"
+            @change="pushState"
             @pasteNode="pasteNode"
             @focus="focus"
           />
@@ -27,10 +36,11 @@ const app = new Vue({
         <button @click="pasteNode()" :disabled="!copiedNode">Paste node</button>
         <div class="scroll-past-end"></div>
       </div>
-      <visual-editor :nodes="nodes" @focus="focus" />
+      <visual-editor :nodes="nodes" @focus="focus" @change="pushState" />
     </div>
   `,
   data: {
+    history: { undo: [], redo: [] },
     nodes: [],
     maxId: 0,
     saveOpacity: 0,
@@ -41,6 +51,23 @@ const app = new Vue({
     ...clipboard.computed
   },
   methods: {
+    pushState() {
+      this.history.undo.push(JSON.stringify(this.nodes));
+      this.history.redo.splice(0);
+      let length = this.history.undo.reduce((acc, el) => acc + el.length, 0);
+      if (length > 1024*1024 && this.history.undo.length > 10)
+        this.history.undo.splice(0, 1);
+    },
+    undo() {
+      let state = this.history.undo.pop();
+      this.history.redo.push(JSON.stringify(this.nodes));
+      this.nodes = JSON.parse(this.history.undo[this.history.undo.length-1]);
+    },
+    redo() {
+      let state2 = this.history.redo.pop();
+      this.history.undo.push(state2);
+      this.nodes = JSON.parse(state2);
+    },
     addNode() {
       let node = {
         id: ++this.maxId,
@@ -61,6 +88,7 @@ const app = new Vue({
         y: 0
       };
       this.nodes.push(node);
+      this.$nextTick(() => this.$emit('change'));
       return node;
     },
     save() {
@@ -81,6 +109,7 @@ const app = new Vue({
       let copy = JSON.parse(JSON.stringify(this.copiedNode));
       copy.id = ++this.maxId;
       this.nodes.splice(index, 0, copy);
+      this.$emit('change');
     },
     focus(node) {
       if (typeof node == 'number')
@@ -129,11 +158,19 @@ const app = new Vue({
       if (!musicGraph) return;
       this.nodes = JSON.parse(musicGraph);
       this.maxId = Math.max(...this.nodes.map(node => node.id));
+    }).then(() => {
+      this.pushState();
     });
     window.addEventListener('keydown', event => {
       switch (event.key) {
         case 'z':
-          if (!event.ctrlKey) break;
+          if (!event.ctrlKey || this.history.undo.length <= 1) break;
+          this.undo();
+          break;
+
+        case 'y':
+          if (!event.ctrlKey || this.history.redo.length == 0) break;
+          this.redo();
           break;
 
         case 'Escape':
@@ -148,6 +185,7 @@ const app = new Vue({
             this.nodes.splice(index, 1);
           }
           this.selected.splice(0);
+          this.pushState();
           break;
       }
     });

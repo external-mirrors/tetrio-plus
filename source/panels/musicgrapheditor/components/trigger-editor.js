@@ -12,7 +12,7 @@ export default {
     <div>
       <div>
         <b>Event</b>
-        <select v-model="trigger.event">
+        <select v-model="trigger.event" @change="this.$emit('change')">
           <option :value="custom ? trigger.event : 'CUSTOM'">CUSTOM</option>
           <option
             v-for="evt of events"
@@ -33,22 +33,28 @@ export default {
       </div>
       <div v-if="custom">
         <b>Name</b>
-        <input type="text" v-model="trigger.event" />
+        <input type="text" @change="this.$emit('change')" v-model="trigger.event" />
       </div>
       <div v-if="eventValueStrings[trigger.event]">
         <b>{{ eventValueStrings[trigger.event] }}</b>
         <select v-model="trigger.valueOperator"
-                v-if="eventValueExtendedModes[trigger.event]">
+                v-if="eventValueExtendedModes[trigger.event]"
+                @change="this.$emit('change')">
           <option value="==" default>Equal to</option>
           <option value="!=">Not equal to</option>
           <option value=">">Greater than</option>
           <option value="<">Less than</option>
         </select>
-        <input type="number" v-model.number="trigger.value" min="0" />
+        <input
+          type="number"
+          @change="this.$emit('change')"
+          v-model.number="trigger.value"
+          min="0"
+        />
       </div>
       <div>
         <b>Mode</b>
-        <select v-model="trigger.mode">
+        <select v-model="trigger.mode" @change="this.$emit('change')">
           <option value="fork">Create new node (fork)</option>
           <option value="goto">Go to node (goto)</option>
           <option value="kill">Stop executing (kill)</option>
@@ -63,11 +69,15 @@ export default {
       </div>
       <div v-if="trigger.mode == 'dispatch'">
         <b>Target</b>
-        <input type="text" v-model="trigger.dispatchEvent" />
+        <input
+          type="text"
+          @change="this.$emit('change')"
+          v-model="trigger.dispatchEvent"
+        />
       </div>
       <div v-if="hasTarget(trigger)">
         <b>Target</b>
-        <select v-model="trigger.target">
+        <select v-model="trigger.target" @change="this.$emit('change')">
           <option :value="node.id" v-for="node of nodes">
             {{ node.name }}
           </option>
@@ -76,13 +86,18 @@ export default {
       </div>
       <template v-if="allowsPreserveLocation(trigger)">
         <div class="form-control">
-          <input type="checkbox" v-model="trigger.preserveLocation" />
+          <input
+            type="checkbox"
+            @change="this.$emit('change')"
+            v-model="trigger.preserveLocation"
+          />
           Preserve location after jumping
         </div>
         <div class="form-control" v-if="trigger.preserveLocation">
           Length ratio <input
             type="number"
             v-model.number="trigger.locationMultiplier"
+            @change="this.$emit('change')"
             step="0.001"
             min="0.001"
           />
@@ -93,13 +108,18 @@ export default {
       </template>
       <template v-if="allowsCrossfade(trigger)">
         <div class="form-control">
-          <input type="checkbox" v-model="trigger.crossfade" />
+          <input
+            type="checkbox"
+            v-model="trigger.crossfade"
+            @change="this.$emit('change')"
+          />
           Crossfade
         </div>
         <div class="form-control" v-if="trigger.crossfade">
           Crossfade duration <input
             type="number"
             v-model.number="trigger.crossfadeDuration"
+            @change="this.$emit('change')"
             step="0.001"
             min="0"
           />s
@@ -154,9 +174,11 @@ export default {
       let index = node.triggers.indexOf(trigger);
       node.triggers.splice(index, 1);
       node.triggers.splice(index+dir, 0, trigger);
+      this.$emit('change');
     },
     removeTrigger(node, trigger) {
       node.triggers.splice(node.triggers.indexOf(trigger), 1);
+      this.$emit('change');
     },
     copyTrigger(trigger) {
       this.copiedTrigger = trigger;

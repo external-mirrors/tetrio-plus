@@ -23,7 +23,7 @@ export default {
       </legend>
 
       <div v-show="!node.hidden">
-        <node-music-editor :node="node" />
+        <node-music-editor :node="node" @change="this.$emit('change')" />
 
         <div v-if="(reverseLinkLookupTable[node.id] || []).size > 0"
              class="section">
@@ -36,7 +36,13 @@ export default {
         Triggers
         <div class="triggers section">
           <div class="trigger" v-for="(trigger, i) of node.triggers" :trigger-index="i">
-            <trigger-editor :nodes="nodes" :node="node" :trigger="trigger" @focus="focus"/>
+            <trigger-editor
+              :nodes="nodes"
+              :node="node"
+              :trigger="trigger"
+              @focus="focus"
+              @change="this.$emit('change')"
+            />
           </div>
           <div class="paste-and-trigger-controls">
             <button @click="addTrigger(node)">
@@ -101,14 +107,17 @@ export default {
           target: { x: 100, y:  0 }
         }
       });
+      this.$emit('change');
     },
     shiftNode(node, dir) {
       let index = this.nodes.indexOf(node);
       this.nodes.splice(index, 1);
       this.nodes.splice(index+dir, 0, node);
+      this.$emit('change');
     },
     removeNode(node) {
       this.nodes.splice(this.nodes.indexOf(node), 1);
+      this.$emit('change');
     },
     copyNode(node) {
       this.copiedNode = node;
@@ -118,14 +127,17 @@ export default {
       this.pasteNode(nodeBefore);
       let index = this.nodes.indexOf(this.copiedNode);
       if (index !== -1) this.nodes.splice(index, 1);
+      this.$emit('change');
     },
     pasteNode(nodeBefore) {
       this.$emit('pasteNode', nodeBefore);
+      this.$emit('change');
     },
     pasteTrigger(target) {
       if (!this.copiedTrigger) return;
       let copy = JSON.parse(JSON.stringify(this.copiedTrigger));
       target.triggers.push(copy);
+      this.$emit('change');
     }
   }
 }

@@ -349,6 +349,8 @@ export default {
         this.nodes.push(node);
         clipboard.selected.push(node);
       }
+      if (musicGraph.length > 0)
+        this.$emit('change');
     }
   },
   mounted() {
@@ -420,9 +422,7 @@ export default {
       })
       .on('dragmove', event => {
         let node = this.getNodeFromElem(event.target);
-        let set = clipboard.selected.indexOf(node) !== -1
-          ? clipboard.selected
-          : [node];
+        let set = clipboard.selected.indexOf(node) !== -1 ? clipboard.selected : [node];
         for (let node of set) {
           node.x += event.dx;
           node.y += event.dy;
@@ -430,8 +430,12 @@ export default {
       })
       .on('dragend', event => {
         let node = this.getNodeFromElem(event.target);
-        node.x = this.round(node.x, 20);
-        node.y = this.round(node.y, 20);
+        let set = clipboard.selected.indexOf(node) !== -1 ? clipboard.selected : [node];
+        for (let node of set) {
+          node.x = this.round(node.x, 20);
+          node.y = this.round(node.y, 20);
+        }
+        this.$emit('change');
       })
       .on('tap', event => {
         let node = this.getNodeFromElem(event.target);
@@ -510,14 +514,9 @@ export default {
         coord.y += event.dy;
       })
       .on('dragend', event => {
-        let trigger = this.getTriggerFromElem(event.target);
-        let coord = trigger.anchor[this.getHandleTypeFromElem(event.target)];
-
-
-        // let snapXoff =
-
-        // coord.x = this.round(coord.x, 10);
-        // coord.y = this.round(coord.y, 10);
+        // let trigger = this.getTriggerFromElem(event.target);
+        // let coord = trigger.anchor[this.getHandleTypeFromElem(event.target)];
+        this.$emit('change');
       })
   }
 }
