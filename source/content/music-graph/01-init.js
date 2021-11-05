@@ -42,18 +42,25 @@ function musicGraph(module) {
   }
 
   // A list of events that use == != > < valueOperators
-  const eventValueExtendedModes = [
-    'text-spike',
-    'text-combo',
-    'board-height-player',
-    'board-height-enemy'
-  ];
+  const eventValueExtendedModes =  {
+    'fx-countdown': true,
+    'fx-offense-player': true,
+    'fx-offense-enemy': true,
+    'fx-defense-player': true,
+    'fx-defense-enemy': true,
+    'fx-combo-player': true,
+    'fx-combo-enemy': true,
+    'fx-line-clear-player': true,
+    'fx-line-clear-enemy': true,
+    'board-height-player': true,
+    'board-height-enemy': true
+  };
   // A list of events that use the value field
-  const eventValueEnabled = [
-    'time-passed',
-    'text-b2b-combo',
+  const eventValueEnabled = {
+    'time-passed': true,
+    'text-b2b-combo': true,
     ...eventValueExtendedModes
-  ];
+  };
 
   let globalVolume = 0;
   let lastUpdate = 0;

@@ -238,10 +238,10 @@ musicGraph(musicGraph => {
         debug.push('\n​ ​ ​ ​ ');
         debug.push(trigger.event + ' ');
 
-        if (eventValueExtendedModes.indexOf(trigger.event) > -1)
+        if (eventValueExtendedModes[trigger.event])
           debug.push(trigger.valueOperator + ' ');
 
-        if (eventValueEnabled.indexOf(trigger.event) > -1)
+        if (eventValueEnabled[trigger.event])
           debug.push(trigger.value + ' ');
 
         debug.push(trigger.mode + ' ');
