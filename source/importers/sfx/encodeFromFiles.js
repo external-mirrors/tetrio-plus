@@ -29,7 +29,7 @@ export async function load(files, storage, options) {
   let modified = [];
 
   for (let file of files) {
-    let noExt = file.name.split('.').slice(0, -1).join('.');
+    let [_, noExt, _ext] = /([^/]+?)(\..{0,5})?$/.exec(file.name) || [];
     let sprite = sprites.filter(sprite => sprite.name == noExt)[0];
     if (!sprite) continue;
     modified.push(noExt);
