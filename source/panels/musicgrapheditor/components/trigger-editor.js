@@ -78,7 +78,7 @@ export default {
         <button
           @click="trigger.predicateExpression = '$ >= 0'"
           :disabled="showExpressionEditor"
-          style="padding: 1px 2px;"
+          style="padding: 1px 2px; font-size: 0.8rem"
         >Add predicate</button>
       </div>
 

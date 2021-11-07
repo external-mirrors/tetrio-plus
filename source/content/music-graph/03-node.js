@@ -29,6 +29,16 @@ musicGraph(musicGraph => {
   gameCanvas.style.backgroundPosition = 'center';
   gameCanvas.style.backgroundSize = 'cover';
 
+  const background = document.createElement('div');
+  background.id = "tetrio-plus-background-layers";
+  background.style.position = 'fixed';
+  background.style.zIndex = -1;
+  background.style.width = '100vw';
+  background.style.height = '100vh';
+  background.style.top = '0px';
+  background.style.left = '0px';
+  document.body.appendChild(background);
+
   /**
    * If the nodes in the music graphs are like classes, then the Node is
    * an instance of one of those classes. It has internal state and uses
@@ -49,17 +59,34 @@ musicGraph(musicGraph => {
     static recalculateBackground() {
       if (!backgroundsEnabled) return;
 
-      let backgrounds = nodes
+      let sortedNodes = nodes
         .filter(node => node.source.background)
         .sort((a, b) => {
           a = a.source.backgroundLayer;
           b = b.source.backgroundLayer;
           return a == b ? 0 : (a > b ? -1 : 1);
         })
-        .map(node => `url(${imageCache[node.source.id].src})`)
-        .join(', ');
+        .reverse();
 
-      gameCanvas.style.backgroundImage = backgrounds || null;
+      for (let i = 0; i < sortedNodes.length; i++) {
+        let tag = imageCache[sortedNodes[i].source.id];
+
+        let matches = background.children[i] && (
+          (background.children[i] instanceof HTMLVideoElement) ==
+          (tag instanceof HTMLVideoElement)
+        );
+
+        if (!matches) {
+          background.insertBefore(tag.cloneNode(), background.children[i+1]);
+        } else {
+          background.children[i].src = tag.src;
+        }
+      }
+
+      while (background.children.length > sortedNodes.length)
+        background.children[background.children.length - 1].remove();
+
+      gameCanvas.style.backgroundImage = null;
     }
 
     setSource(source, startTime=0, audioDelay=0, crossfade=false) {
@@ -192,7 +219,7 @@ musicGraph(musicGraph => {
           console.warn(`[TETR.IO PLUS] Music graph: error evaluating predicate ${trigger.predicateExpression}`, ex);
         }
       }
-      
+
       return true;
     }
 

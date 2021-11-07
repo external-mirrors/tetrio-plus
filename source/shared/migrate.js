@@ -204,7 +204,7 @@ var migrate = (() => {
 
 
   /*
-    v0.20.0 - Even more music graph stuff
+    v0.21.0 - Even more music graph stuff
     added:
     - musicGraph[].triggers[].expression
     - musicGraph[].triggers[].variable
@@ -284,6 +284,23 @@ var migrate = (() => {
         }
         await dataSource.set({ musicGraph: JSON.stringify(musicGraph) });
       }
+    }
+  });
+
+  /*
+    v0.21.3 - Slightly Better Backgrounds
+    added:
+    - backgrounds[].type
+  */
+  migrations.push({
+    version: '0.21.3',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.21.3' });
+      let { backgrounds } = await dataSource.get('backgrounds');
+      if (backgrounds)
+        for (let bg of backgrounds)
+          bg.type = 'image';
+      await dataSource.set({ backgrounds });
     }
   });
 

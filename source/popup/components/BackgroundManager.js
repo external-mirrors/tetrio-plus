@@ -19,7 +19,7 @@ export default {
             <span
               class="warning-icon"
               :title="(
-                'Tetrio already supports custom backgrounds. This feature serves them ' +
+                'TETR.IO already supports custom backgrounds. This feature serves them ' +
                 'from the extension instead of requiring an external file host. This ' +
                 'option will be overriden by a custom background set through the ' +
                 'game\\'s options menu. '
@@ -57,8 +57,6 @@ export default {
 
         <option-toggle
           storageKey="transparentBgEnabled"
-          enabledIfKey="bgEnabled"
-          :invertEnabled="true"
           v-if="isElectron"
         >
           <span title="Makes the window transparent, showing other windows below it">
@@ -74,12 +72,6 @@ export default {
                 )"
               >⚠️</span>
             </option-toggle>
-          </option-toggle>
-          <option-toggle inline storageKey="bgEnabled" mode="show">
-            <span
-              class="warning-icon"
-              title="Incompatible with custom backgrounds"
-            >❌</span>
           </option-toggle>
         </option-toggle>
 
@@ -101,7 +93,7 @@ export default {
             'All normal backgrounds will be available in the music graph. ' +
             'This overrides all other possible background options.'
           )">
-            Music graph backgrounds (EXPERIMENTAL)
+            Music graph backgrounds
           </span>
         </option-toggle>
       </div>
@@ -187,8 +179,8 @@ export default {
         browser.windows.create({
           type: 'detached_panel',
           url: browser.extension.getURL('source/panels/bgpicker/index.html'),
-          width: 600,
-          height: 285
+          width: 645,
+          height: 425
         });
       }
     },

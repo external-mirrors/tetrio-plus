@@ -56,7 +56,9 @@ createRewriteFilter("Tetrio.js BG", "https://tetr.io/js/tetrio.js*", {
     src = src.replace(
       /(let \w+=)(\[["']\.\.\/res\/bg.+?\])/,
       (fullmatch, varInit, value) => {
-        let rewrite = varInit + b64Recode(backgrounds.map(bg => {
+        let rewrite = varInit + b64Recode(backgrounds.filter(bg => {
+          return bg.type == 'image';
+        }).map(bg => {
           return `../res/bg/1.jpg?bgId=${bg.id}`
         }));
         // console.log(

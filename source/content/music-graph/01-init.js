@@ -10,12 +10,14 @@ function musicGraph(module) {
   if (!tetrioPlusEnabled) return;
   let {
     music,
+    backgrounds,
     musicGraph,
     musicEnabled,
     musicGraphEnabled,
     musicGraphBackground
   } = await storage.get([
     'music',
+    'backgrounds',
     'musicGraph',
     'musicEnabled',
     'musicGraphEnabled',
@@ -88,19 +90,41 @@ function musicGraph(module) {
   let cache = [];
   for (let el of Object.values(graph)) {
     if (!el.background) continue;
-    let img = new Image();
-    img.src = '/res/bg/1.jpg?bgId=' + el.background;
-    musicGraphData.imageCache[el.id] = img;
-  }
 
-  // Force images to preload as background images?
-  // seems to prevent first-time lag in electron at least
-  let div = document.createElement('div');
-  div.style.display = 'none';
-  div.style.backgroundImage = Object.values(musicGraphData.imageCache)
-    .map(el => `url(${el.src})`)
-    .join(', ')
-  document.body.appendChild(div);
+    let bg = backgrounds.filter(e => e.id == el.background)[0];
+    let ext = bg?.filename?.split('.')?.slice(-1)?.[0] || 'png';
+
+    if (bg.type == 'video') {
+      let video = document.createElement('video');
+      let url = window.location.origin + '/res/bg/1.jpg?bgId=' + el.background;
+      let mime = ext == 'mp4' ? 'video/mp4' : 'video/webm';
+      let wrongBlob = await (await fetch(url)).blob();
+      let rightBlob = wrongBlob.slice(0, wrongBlob.size, mime);
+      video.src = URL.createObjectURL(rightBlob);
+      video.preload = 'auto';
+      video.muted = true;
+      video.loop = true;
+      video.autoplay = true;
+      video.style.width = '100vw';
+      video.style.height = '100vh';
+      video.style.position = 'absolute';
+      video.style.objectFit = 'cover';
+      musicGraphData.imageCache[el.id] = video;
+    } else {
+      let img = new Image();
+      img.src = '/res/bg/1.jpg?bgId=' + el.background;
+      img.style.width = '100vw';
+      img.style.height = '100vh';
+      img.style.position = 'absolute';
+      img.style.objectFit = 'cover';
+      musicGraphData.imageCache[el.id] = img;
+    }
+  }
+  for (let node of Object.values(musicGraphData.imageCache)) {
+    let cloned = node.cloneNode();
+    cloned.style.display = 'none';
+    document.body.appendChild(cloned); // force preload
+  }
 
   for (let module of modules)
     module(musicGraphData);
