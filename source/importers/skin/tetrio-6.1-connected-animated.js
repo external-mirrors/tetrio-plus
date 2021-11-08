@@ -24,10 +24,14 @@ export async function load(files, storage, options) {
   let canvas = window.document.createElement('canvas');
   canvas.width = 1024 * Math.min(16, files.length);
   canvas.height = 1024 * Math.ceil(files.length/16);
+  let memUse = Math.floor((canvas.width * canvas.height * 4) / 1024**3 * 100) / 100;
+  (options&&options.log||(()=>{}))(`Target size: ${canvas.width}x${canvas.height} (~${memUse} GiB)`);
   let ctx = canvas.getContext('2d');
 
-  for (let i = 0; i < files.length; i++)
+  for (let i = 0; i < files.length; i++) {
+    if (typeof global != 'undefined' && global.gc) global.gc();
     ctx.drawImage(files[i].image, i%16 * 1024, Math.floor(i/16) * 1024, 1024, 1024);
+  }
 
   let frame = canvas.toDataURL('image/png');
   if (frame == "data:,") throw new Error("Final texture too large");

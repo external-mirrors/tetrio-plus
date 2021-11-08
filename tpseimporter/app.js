@@ -18,7 +18,7 @@ const manifest = require('../manifest.json');
 program.version(manifest.version);
 program.option('-c, --no-combine', 'Don\'t combine animated skin frames');
 program.option('-d, --delay <number>', 'Animated skin frame delay', forceInt, 0);
-program.option('-o, --output <number>', 'Output file');
+program.option('-o, --output <string>', 'Output file');
 
 program
   .command('import <files...>')
@@ -51,7 +51,7 @@ program
       combine: program.combine,
       log: (...ex) => console.error(...ex)
     }).catch(ex => {
-      console.error("Error: " + ex);
+      console.error("Error:", ex);
       process.exit(1);
     });
     console.error(result);

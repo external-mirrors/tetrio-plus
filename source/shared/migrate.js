@@ -315,7 +315,7 @@ var migrate = (() => {
 
       // console.log("Testing migration", version, target, compare(version, target));
       if (compare(version, target) == -1) {
-        console.log("Running migration", migration);
+        // console.log("Running migration", migration);
         await migration.run(dataSource);
       }
     }
