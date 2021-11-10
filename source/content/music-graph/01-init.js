@@ -121,9 +121,8 @@ function musicGraph(module) {
     }
   }
   for (let node of Object.values(musicGraphData.imageCache)) {
-    let cloned = node.cloneNode();
-    cloned.style.display = 'none';
-    document.body.appendChild(cloned); // force preload
+    node.style.opacity = 0;
+    document.body.appendChild(node); // force preload
   }
 
   for (let module of modules)

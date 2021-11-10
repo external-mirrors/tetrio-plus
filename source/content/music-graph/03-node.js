@@ -66,25 +66,25 @@ musicGraph(musicGraph => {
           b = b.source.backgroundLayer;
           return a == b ? 0 : (a > b ? -1 : 1);
         })
-        .reverse();
+        .reverse()
+        .map(node => {
+          let el = imageCache[node.source.id];
+          el.style.opacity = 1;
+          return el;
+        });
 
-      for (let i = 0; i < sortedNodes.length; i++) {
-        let tag = imageCache[sortedNodes[i].source.id];
+      let justRemoved = new Set(background.children);
 
-        let matches = background.children[i] && (
-          (background.children[i] instanceof HTMLVideoElement) ==
-          (tag instanceof HTMLVideoElement)
-        );
+      while (background.lastChild)
+        background.lastChild.remove();
+      background.append(...sortedNodes);
 
-        if (!matches) {
-          background.insertBefore(tag.cloneNode(), background.children[i+1]);
-        } else {
-          background.children[i].src = tag.src;
-        }
-      }
+      for (let node in sortedNodes)
+        justRemoved.delete(node);
 
-      while (background.children.length > sortedNodes.length)
-        background.children[background.children.length - 1].remove();
+      for (let el in justRemoved)
+        if (el instanceof HTMLVideoElement)
+          el.currentTime = 0;
 
       gameCanvas.style.backgroundImage = null;
     }

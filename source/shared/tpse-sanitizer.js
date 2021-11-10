@@ -171,7 +171,7 @@ async function sanitizeAndLoadTPSE(data, storage) {
           return `ERROR: Unexpected extra keys at []`;
 
         let img = importData['background-' + bg.id];
-        if (typeof img != 'string' || !/^data:image\/.+?;base64,/.test(img))
+        if (typeof img != 'string' || !/^data:.+?;base64,/.test(img))
           return `ERROR: Missing/invalid image ${bg.id}`
 
         toSet['background-' + bg.id] = img;
