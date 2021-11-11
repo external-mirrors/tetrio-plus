@@ -13,7 +13,7 @@ export default {
     <div>
       <div>
         <b>Event</b>
-        <select v-model="trigger.event" @change="$emit('change')">
+        <select v-model="trigger.event" style="font-size: 0.825rem" @change="$emit('change')">
           <option :value="custom ? trigger.event : 'CUSTOM'">CUSTOM</option>
           <option
             v-for="evt of events"
