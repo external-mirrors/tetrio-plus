@@ -1,4 +1,27 @@
 musicGraph(({ dispatchEvent }) => {
+    for (let menu of document.querySelectorAll("[data-menuview]")) {
+      let type = menu.getAttribute('data-menuview');
+      let wasHidden = true;
+
+      let observer = new MutationObserver(mutations => {
+        for (let mut of mutations) {
+          let hidden = mut.target.classList.contains("hidden");
+          if (wasHidden == hidden) continue;
+          wasHidden = hidden;
+
+          let evt = hidden ? 'menu-close-' + type : 'menu-open-' + type;
+          dispatchEvent(evt, null);
+        }
+      });
+      
+      observer.observe(menu, {
+        attributes: true,
+        attributeFilter: ['class'],
+        childList: false,
+        CharacterData: false
+      });
+    }
+
     function locationHeuristic(size, spatialization) {
       if (size == 'tiny') return 'enemy'; // If tiny, always an enemy
       // Solo spatialization is exactly 0

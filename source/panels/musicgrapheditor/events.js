@@ -35,6 +35,36 @@ export const events = [
 });
 
 [
+  "home",
+  "play1p",
+  "playmulti",
+  "about",
+  "multilisting",
+  "lobby",
+  "victory",
+  "multilog",
+  "endleague",
+  "league",
+  "40l",
+  "blitz",
+  "zen",
+  "custom",
+  "results",
+  "tetra",
+  "tetra_records",
+  "tetra_me",
+  "tetra_players",
+  "config",
+  "config_bgmtweak",
+  "config_account",
+  "config_account_orders",
+  "config_electron"
+].forEach(evt => {
+  events.push(`menu-${evt}-open`);
+  events.push(`menu-${evt}-close`);
+});
+
+[
   "allclear", "applause", "boardappear", "btb_1", "btb_2", "btb_3", "btb_break",
   "clearbtb", "clearline", "clearquad", "clearspin", "clutch", "combo_1",
   "combo_10", "combo_10_power", "combo_11", "combo_11_power", "combo_12",
