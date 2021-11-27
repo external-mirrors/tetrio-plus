@@ -24,48 +24,92 @@
   add(emotes.verified, user.verified);
   add(emotes.staff, user.role == 'admin');
 
-  const chat = document.getElementById('room_chat');
-  const ingamechat = document.getElementById('ingame_chat');
-  const chatbox = document.getElementById('chat_input');
-  const ingamechatbox = document.getElementById('ingame_chat_input');
-
   const picker = document.createElement('div');
   picker.classList.add('tetrioplus-emote-picker');
   picker.classList.add('chat-message');
   for (let { name, url, allowed } of emoteList) {
-    let img = document.createElement('img');
-    img.classList.toggle('disallowed', !allowed);
-    picker.appendChild(img);
+    let el = document.createElement('div');
+    el.classList.add('emote');
+    el.classList.toggle('disallowed', !allowed);
+    el.setAttribute('data-emote', name);
+
     if (allowed) {
-      img.addEventListener('click', () => {
-        if (picker.parentElement == ingamechat) {
-          ingamechatbox.value += `:${name}:`;
-        } else {
-          chatbox.value += `:${name}:`;
-        }
+      el.addEventListener('click', () => {
+        let input = picker.parentElement.id == 'room_chat'
+          ? document.getElementById('chat_input')
+          : document.getElementById('ingame_chat_input');
+        let pre = input.value.slice(0, input.selectionStart+1);
+        let post = input.value.slice(input.selectionStart);
+        input.value = pre.replace(/:[^:]*$/, `:${name}:`) + post;
+        picker.remove();
       });
     }
+
+    let img = document.createElement('img');
     img.src = '/res/' + url;
+    el.appendChild(img);
+
+    let label = document.createElement('span');
+    label.classList.add('label');
+    label.innerText = `:${name}:`;
+    if (!allowed)
+      label.innerText += ` (can't use)`;
+    el.appendChild(label);
+
+    picker.appendChild(el);
   }
 
-  chatbox.addEventListener('keydown', evt => {
-    if (evt.key != 'Tab') return;
-    evt.preventDefault();
-    if (picker.parentElement != chat) {
-      chat.appendChild(picker);
-      picker.classList.toggle('visible', true);
-    } else {
-      picker.classList.toggle('visible');
+  function updateEmotes(input, anchor) {
+    let sliced = input.value.slice(0, input.selectionStart+1);
+    let emote = /(?::[^:]+)?:([^:]*)$/.exec(sliced)?.[1];
+    if (emote === undefined) {
+      picker.remove();
+      return;
     }
-  });
-  ingamechatbox.addEventListener('keydown', evt => {
-    if (evt.key != 'Tab') return;
-    evt.preventDefault();
-    if (picker.parentElement != ingamechat) {
-      ingamechat.appendChild(picker);
-      picker.classList.toggle('visible', true);
-    } else {
-      picker.classList.toggle('visible');
+    anchor.appendChild(picker);
+
+    let count = 0;
+    let activeSet = false;
+    for (let img of picker.children) {
+      let match = img.getAttribute('data-emote').startsWith(emote);
+      img.classList.toggle('match', match);
+      if (match) count++;
+      if (!activeSet && match && !img.classList.contains('disallowed')) {
+        img.classList.add('active');
+        activeSet = true;
+      } else {
+        img.classList.remove('active');
+      }
     }
-  });
+    picker.classList.toggle('list', count <= 17); // 17 = # of ranks
+  }
+
+  let elements = [
+    ['chat_input', 'room_chat'],
+    ['ingame_chat_input', 'ingame_chat']
+  ].map(list => list.map(id => document.getElementById(id)));
+
+  for (let [input, messages] of elements) {
+    input.addEventListener('input', () => updateEmotes(input, messages));
+    input.addEventListener('keydown', (evt) => {
+      if (!picker.isConnected) return;
+      let pickable = [...picker.querySelectorAll('.match:not(.disallowed)')];
+      let currentPick = picker.querySelector('.match.active') || pickable[0];
+      if (evt.key == 'ArrowUp' || evt.key == 'ArrowDown') {
+        let delta = evt.key == 'ArrowUp' ? -1 : 1;
+        let newIndex = pickable.indexOf(currentPick) + delta;
+        newIndex = (newIndex % pickable.length + pickable.length) % pickable.length;
+        currentPick.classList.remove('active');
+        pickable[newIndex].classList.add('active');
+        evt.stopImmediatePropagation();
+        evt.preventDefault();
+      }
+      if (evt.key == 'Enter') {
+        if (!currentPick) return;
+        currentPick.click();
+        evt.stopImmediatePropagation();
+        evt.preventDefault();
+      }
+    })
+  }
 })()
