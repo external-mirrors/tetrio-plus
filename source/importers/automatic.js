@@ -28,15 +28,25 @@ export default async function automatic(importers, files, storage, options) {
         'mp3': 'audio/mpeg',
         'ogg': 'audio/ogg',
         'wav': 'audio/wav',
-      }
-      let files = await Promise.all(Object.values(zip.files).map(async file => {
+      };
+      (options&&options.log||(()=>{}))("Importing files from zip " + file.name + "...");
+      let files = await Promise.all(Object.values(zip.files).filter(file => {
+        if (file.dir) return false; // skip directories
+        // MacOS is user-hostile and litters these files everywhere
+        // and then ACTIVELY HIDES THEM FROM THE USER
+        // Also it stores metadata as ".$filename", meaning
+        // `foo.png` -> `__MACOSX/.foo.png`, despite not being a png file.
+        if (file.name.includes("__MACOSX")) return false;
+        if (file.name.includes(".DS_Store")) return false;
+        return true;
+      }).map(async file => {
+        (options&&options.log||(()=>{}))(`${file.name}`);
         return populateImage({
           name: file.name,
           type: mimes[file.name.split('.').slice(-1)[0]] || 'application/octet-stream',
           data: 'data:application/octet-stream;base64,' + await file.async('base64')
         })
       }));
-      (options&&options.log||(()=>{}))("Importing files from zip " + file.name + "...");
       options.zipdepth = (options.zipdepth || 0) + 1;
       return await automatic(importers, files, storage, options);
     }));
