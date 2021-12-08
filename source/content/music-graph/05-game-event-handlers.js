@@ -1,6 +1,19 @@
 musicGraph(({ dispatchEvent }) => {
+    let elements = [];
     for (let menu of document.querySelectorAll("[data-menuview]")) {
-      let type = menu.getAttribute('data-menuview');
+      elements.push({
+        type: `menu-${menu.getAttribute('data-menuview')}`,
+        element: menu
+      });
+    }
+    for (let id of ['forfeit', 'retry', 'replay', 'spectate']) {
+      elements.push({
+        type: `hud-${id}`,
+        element: document.getElementById(id)
+      });
+    }
+
+    for (let { type, element } of elements) {
       let wasHidden = true;
 
       let observer = new MutationObserver(mutations => {
@@ -8,11 +21,11 @@ musicGraph(({ dispatchEvent }) => {
           let hidden = mut.target.classList.contains("hidden");
           if (wasHidden == hidden) continue;
           wasHidden = hidden;
-          dispatchEvent(`menu-${type}-${hidden ? 'close' : 'open'}`, null);
+          dispatchEvent(`${type}-${hidden ? 'close' : 'open'}`, null);
         }
       });
 
-      observer.observe(menu, {
+      observer.observe(element, {
         attributes: true,
         attributeFilter: ['class'],
         childList: false,

@@ -54,6 +54,13 @@ musicGraph(musicGraph => {
       this.startedAt = null;
       this.children = [];
       this.variables = {};
+      this.background = {
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+        opacity: 0
+      };
     }
 
     static recalculateBackground() {
@@ -70,17 +77,22 @@ musicGraph(musicGraph => {
         .map(node => {
           let el = imageCache[node.source.id];
           el.style.opacity = 1;
-          return el;
+          return [node, el];
         });
 
       let justRemoved = new Set(background.children);
 
       while (background.lastChild)
         background.lastChild.remove();
-      background.append(...sortedNodes);
+      background.append(...sortedNodes.map(([node, _]) => node));
 
-      for (let node in sortedNodes)
-        justRemoved.delete(node);
+      for (let [node, el] of sortedNodes) {
+        el.style.left = `${node.background.x}vw`;
+        el.style.top = `${node.background.y}vh`;
+        el.style.width = `${node.background.width}vw`;
+        el.style.height = `${node.background.height}vh`;
+        justRemoved.delete(el);
+      }
 
       for (let el in justRemoved)
         if (el instanceof HTMLVideoElement)
@@ -106,7 +118,18 @@ musicGraph(musicGraph => {
           case 'time-passed':
             this.timeouts.push(setTimeout(
               () => this.runTrigger(trigger, null, SYNC_DELAY/1000),
-              trigger.timePassedDuration*1000 - SYNC_DELAY
+              trigger.timePassedDuration*1000 - SYNC_DELAY + audioDelay*1000
+            ));
+            break;
+          case 'repeating-time-passed':
+            this.timeouts.push(setTimeout(
+              () => {
+                this.timeouts.push(setInterval(
+                  () => this.runTrigger(trigger, null, SYNC_DELAY/1000),
+                  trigger.timePassedDuration*1000
+                ));
+              },
+              SYNC_DELAY + audioDelay*1000
             ));
             break;
         }
@@ -189,6 +212,70 @@ musicGraph(musicGraph => {
       return context.currentTime - this.startedAt;
     }
 
+    static _constrain(val, lower=0, upper=1) {
+      if (isNaN(+val)) return 0;
+      return Math.min(Math.max(val, lower), upper);
+    }
+
+    get computedVariables() {
+      let node = this;
+      return {
+        get $volume() {
+          return node.volume
+        },
+        set $volume(val) {
+          node.volume = Node._constrain(val, 0, 1);
+        },
+        $age: node.currentTime,
+        $time: context.currentTime,
+
+        // WIP
+        get $bg_x() { return node.background.x },
+        get $bg_y() { return node.background.y },
+        get $bg_width() { return node.background.width },
+        get $bg_height() { return node.background.height },
+        get $bg_opacity() { return node.background.opacity },
+        get $bg_paused() { return imageCache[node.source.id]?.paused || 0 },
+        get $bg_time() { return imageCache[node.source.id]?.currentTime || 0 },
+
+        set $bg_x(val) {
+          node.background.x = Node._constrain(val, -100, 100);
+          Node.recalculateBackground();
+        },
+        set $bg_y(val) {
+          node.background.y = Node._constrain(val, -100, 100);
+          Node.recalculateBackground();
+        },
+        set $bg_width(val) {
+          node.background.width = Node._constrain(val, 0, 100);
+          Node.recalculateBackground();
+        },
+        set $bg_height(val) {
+          node.background.height = Node._constrain(val, 0, 100);
+          Node.recalculateBackground();
+        },
+        set $bg_opacity(val) {
+          node.background.opacity = Node._constrain(val, 0, 1);
+          Node.recalculateBackground();
+        },
+        set $bg_paused(val) {
+          let video = imageCache[node.source.id];
+          if (!(video instanceof HTMLVideoElement)) return;
+          if (val) {
+            video.pause();
+          } else {
+            video.play();
+          }
+        },
+        set $bg_time(val) {
+          let video = imageCache[node.source.id];
+          if (!(video instanceof HTMLVideoElement)) return;
+          video.currentTime = Node._constrain(val, 0, video.duration);
+          video.pause();
+        }
+      }
+    }
+
     destroy() {
       this.destroyed = true;
       if (this.audio)
@@ -209,12 +296,14 @@ musicGraph(musicGraph => {
     }
 
     testTrigger(trigger, value) {
-      if (typeof value == 'number') this.variables.$ = value;
-
       if (trigger.predicateExpression.trim().length > 0) {
         try {
-          let value = ExpVal.get(trigger.predicateExpression).evaluate(this.variables);
-          if (!value) return false;
+          let expValue = ExpVal.get(trigger.predicateExpression).evaluate({
+            ...this.variables,
+            ...this.computedVariables,
+            $: value || 0
+          });
+          if (!expValue) return false;
         } catch(ex) {
           console.warn(`[TETR.IO PLUS] Music graph: error evaluating predicate ${trigger.predicateExpression}`, ex);
         }
@@ -278,7 +367,11 @@ musicGraph(musicGraph => {
         case 'dispatch':
           try {
             let val = trigger.dispatchExpression.trim().length > 0
-              ? ExpVal.get(trigger.dispatchExpression).evaluate({ ...this.variables, $: value })
+              ? ExpVal.get(trigger.dispatchExpression).evaluate({
+                  ...this.variables,
+                  ...this.computedVariables,
+                  $: value
+                })
               : null;
             musicGraph.dispatchEvent(trigger.dispatchEvent, val);
           } catch(ex) {
@@ -288,13 +381,19 @@ musicGraph(musicGraph => {
 
         case 'set':
           try {
-            console.log(trigger.setExpression);
-            let val = ExpVal.get(trigger.setExpression).evaluate(this.variables);
-            console.log("set", trigger)
-            this.variables[trigger.setVariable] = val;
+            let val = ExpVal.get(trigger.setExpression).evaluate({
+              ...this.variables,
+              ...this.computedVariables,
+              $: value
+            });
+            let computed = this.computedVariables;
+            if (typeof computed[trigger.setVariable] !== 'undefined') {
+              computed[trigger.setVariable] = val;
+            } else {
+              this.variables[trigger.setVariable] = val;
+            }
           } catch(ex) {
             console.warn('[TETR.IO PLUS] Music graph: error running trigger', trigger, ex);
-            debugger;
           }
           break;
       }
@@ -308,7 +407,7 @@ musicGraph(musicGraph => {
         debug.push('\n​ ​ ​ ​');
         debug.push(' ' + trigger.event);
 
-        if (trigger.event == 'time-passed')
+        if (['repeating-time-passed', 'time-passed'].includes(trigger.event))
           debug.push(' ' + trigger.timePassedDuration + 's');
 
         debug.push(' ' + trigger.mode);

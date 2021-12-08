@@ -8,11 +8,11 @@ class ExpVal {
     let exp = expr.trim();
     const tokenizers = {
       literal: /^-?[0-9]+(?:\.[0-9]*)?/,
-      operator: /^(?:\*\*|==|>=|<=|!=|>|<|&&|\|\||[+\-*/%~])/,
+      operator: /^(?:!|\*\*|==|>=|<=|!=|>|<|&&|\|\||[+\-*/%~])/,
       leftparan: /^\(/,
       rightparan: /^\)/,
       function: /^[A-Za-z]+\(/,
-      variable: /^\$|^[A-Za-z]\w*/,
+      variable: /^[A-Za-z$]\w*/,
       comma: /^,/
     };
     const precedence = {
@@ -106,6 +106,12 @@ class ExpVal {
       if(a, b, c) {
         return (a ? b : c) || 0;
       },
+      floor: Math.floor,
+      ceil: Math.ceil,
+      round: Math.round,
+      sin: Math.sin,
+      cos: Math.cos,
+      tan: Math.tan,
       max: Math.max,
       min: Math.min
     })
@@ -132,25 +138,30 @@ class ExpVal {
         args.splice(0);
       }
       if (token.type == 'operator') {
-        req(2);
-        let a = stack.pop();
-        let b = stack.pop();
-        switch (token.value) {
-          case  '+': stack.push(b  + a); break;
-          case  '-': stack.push(b  - a); break;
-          case  '*': stack.push(b  * a); break;
-          case  '/': stack.push(b  / a); break;
-          case  '%': stack.push(b  % a); break;
-          case '**': stack.push(b ** a); break;
-          case '==': stack.push(b == a); break;
-          case '>=': stack.push(b >= a); break;
-          case '<=': stack.push(b <= a); break;
-          case  '>': stack.push(b  > a); break;
-          case  '<': stack.push(b  < a); break;
-          case '!=': stack.push(b != a); break;
-          case '&&': stack.push(b && a); break;
-          case '||': stack.push(b || a); break;
-          default: throw new Error("Unknown operator " + token.value);
+        if (token.value == '!') {
+          req(1);
+          stack.push(+!stack.pop());
+        } else {
+          req(2);
+          let a = stack.pop();
+          let b = stack.pop();
+          switch (token.value) {
+            case  '+': stack.push(b  + a); break;
+            case  '-': stack.push(b  - a); break;
+            case  '*': stack.push(b  * a); break;
+            case  '/': stack.push(b  / a); break;
+            case  '%': stack.push(b  % a); break;
+            case '**': stack.push(b ** a); break;
+            case '==': stack.push(b == a); break;
+            case '>=': stack.push(b >= a); break;
+            case '<=': stack.push(b <= a); break;
+            case  '>': stack.push(b  > a); break;
+            case  '<': stack.push(b  < a); break;
+            case '!=': stack.push(b != a); break;
+            case '&&': stack.push(b && a); break;
+            case '||': stack.push(b || a); break;
+            default: throw new Error("Unknown operator " + token.value);
+          }
         }
       }
     }

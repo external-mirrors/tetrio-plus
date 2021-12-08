@@ -38,11 +38,10 @@ export default {
         <input type="text" @change="$emit('change')" v-model="trigger.event" />
       </div>
 
-      <div v-if="trigger.event == 'time-passed'">
+      <div v-if="['repeating-time-passed', 'time-passed'].includes(trigger.event)">
         <b>Seconds</b>
         <input
           type="number"
-          v-if="trigger.event == 'time-passed'"
           @change="$emit('change')"
           v-model.number="trigger.timePassedDuration"
         />

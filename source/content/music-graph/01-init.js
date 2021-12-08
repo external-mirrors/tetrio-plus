@@ -61,6 +61,7 @@ function musicGraph(module) {
   // A list of events that use the value field
   const eventValueEnabled = {
     'time-passed': true,
+    'repeating-time-passed': true,
     'text-b2b-combo': true,
     ...eventValueExtendedModes
   };
@@ -108,16 +109,18 @@ function musicGraph(module) {
       video.autoplay = true;
       video.style.width = '100vw';
       video.style.height = '100vh';
-      video.style.position = 'absolute';
+      video.style.position = 'fixed';
       video.style.objectFit = 'cover';
+      video.style['z-index'] = '-1';
       musicGraphData.imageCache[el.id] = video;
     } else {
       let img = new Image();
       img.src = '/res/bg/1.jpg?bgId=' + el.background;
       img.style.width = '100vw';
       img.style.height = '100vh';
-      img.style.position = 'absolute';
+      img.style.position = 'fixed';
       img.style.objectFit = 'cover';
+      img.style['z-index'] = '-1';
       musicGraphData.imageCache[el.id] = img;
     }
   }

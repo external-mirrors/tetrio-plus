@@ -2,6 +2,7 @@
 export const events = [
   'node-end',
   'time-passed',
+  'repeating-time-passed',
   'random-target',
   'parent-node-destroyed',
 
@@ -62,6 +63,10 @@ export const events = [
 ].forEach(evt => {
   events.push(`menu-${evt}-open`);
   events.push(`menu-${evt}-close`);
+});
+['forfeit', 'retry', 'replay', 'spectate'].forEach(evt => {
+  events.push(`hud-${evt}-open`);
+  events.push(`hud-${evt}-close`);
 });
 
 [

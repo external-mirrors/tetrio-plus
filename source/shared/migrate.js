@@ -261,9 +261,11 @@ var migrate = (() => {
         let musicGraph = JSON.parse(json);
         for (let node of musicGraph) {
           for (let trigger of node.triggers) {
-            trigger.timePassedDuration = trigger.event == 'time-passed'
-              ? trigger.value
-              : 0;
+            trigger.timePassedDuration = (
+              ['repeating-time-passed', 'time-passed'].includes(trigger.event)
+                ? trigger.value
+                : 0
+            );
             trigger.predicateExpression = (
               eventValueExtendedModes[trigger.event] &&
               trigger.valueOperator != 'any'

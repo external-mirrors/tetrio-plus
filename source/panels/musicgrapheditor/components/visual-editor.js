@@ -345,14 +345,20 @@ export default {
 
       let musicGraph = null;
       let result = await sanitizeAndLoadTPSE({
-        version: '0.20.0',
+        version: '0.21.3',
         musicGraph: event.clipboardData.getData('text')
       }, {
         async set(pairs) {
           if (pairs.musicGraph)
             musicGraph = JSON.parse(pairs.musicGraph);
         }
+      }, {
+        skipFileDependencies: true
       });
+      if (result.includes('ERROR')) {
+        alert(`Paste failed:\n${result}`);
+        return;
+      }
       console.log("pasted", result, musicGraph);
       if (!musicGraph) return;
 
