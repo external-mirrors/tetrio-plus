@@ -162,6 +162,10 @@ const app = new Vue({
       this.pushState();
     });
     window.addEventListener('keydown', event => {
+      let tag = event.explicitOriginalTarget.tagName;
+      if (['INPUT', 'TEXTAREA'].includes(tag))
+        return;
+
       switch (event.key) {
         case 'z':
           if (!event.ctrlKey || this.history.undo.length <= 1) break;
