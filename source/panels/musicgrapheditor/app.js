@@ -1,4 +1,4 @@
-import VisualEditor from './components/visual-editor.js';
+import VisualEditor from './components/visual-editor/visual-editor.js';
 import NodeEditor from './components/node-editor.js';
 import * as clipboard from './clipboard.js';
 const html = arg => arg.join(''); // NOOP, for editor integration.
@@ -154,7 +154,7 @@ const app = new Vue({
     this.maxId = 0;
 
     browser.storage.local.get('musicGraph').then(({ musicGraph }) => {
-      console.log("Loaded", musicGraph);
+      // console.log("Loaded", musicGraph);
       if (!musicGraph) return;
       this.nodes = JSON.parse(musicGraph);
       this.maxId = Math.max(...this.nodes.map(node => node.id));

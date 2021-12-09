@@ -57,7 +57,7 @@ export default {
         >{{ eventValueExtendedModes[trigger.event] || "Predicate" }}</expression-editor>
       </div>
 
-      <div>
+      <div style="white-space: nowrap;">
         <b>Mode</b>
         <select v-model="trigger.mode" @change="$emit('change')">
           <option value="fork">Create new node (fork)</option>
