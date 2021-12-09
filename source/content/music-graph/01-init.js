@@ -3,7 +3,7 @@ function musicGraph(module) {
   modules.push(module);
 }
 
-(async () => {
+(async function initializeMusicGraph(createRoot=true) {
   if (window.location.pathname != '/') return;
   let storage = await getDataSourceForDomain(window.location);
   let { tetrioPlusEnabled } = await storage.get('tetrioPlusEnabled');
@@ -78,15 +78,104 @@ function musicGraph(module) {
 
   const musicGraphData = {
     nodes: [],
+    cleanup: [],
     audioContext,
     graph,
     imageCache: {},
+    sendDebugEvent,
     audioBuffers,
     eventValueExtendedModes,
     eventValueEnabled,
     getGlobalVolume,
     backgroundsEnabled: musicGraphBackground
   };
+
+  musicGraphData.cleanup.push(() => {
+    audioContext.close();
+  });
+
+  // Event stream for the music graph debugger
+  let port = null;
+  function reconnect() {
+    port = browser.runtime.connect({
+      name: 'music-graph-event-stream'
+    });
+    port.onDisconnect.addListener(() => {
+      console.log("port disconnected");
+      setTimeout(() => reconnect(), 1000);
+    });
+
+    // Catch the debugger up to the existing state...
+    for (let node of musicGraphData.nodes) {
+      sendDebugEvent('node-created', {
+        instanceId: node.id
+      });
+      sendDebugEvent('node-source-set', {
+        instanceId: node.id,
+        sourceId: node.source.id,
+        lastSourceId: null
+      });
+      for (let [name, value] of Object.values(node.variables)) {
+        sendDebugEvent('node-set-variable', {
+          instanceId: node.id,
+          sourceId: node.source.id,
+          variable: name,
+          value: value
+        });
+      }
+    }
+
+    port.onMessage.addListener(async msg => {
+      if (msg.type == 'reload') {
+        console.log("RELOADING MUSIC GRAPH");
+
+        try {
+          // Clean up old graph...
+          port.disconnect();
+          port = null;
+          let resurrections = [];
+          for (let node of musicGraphData.nodes) {
+            console.log("Preparing for", node, "'s resurrection...");
+            resurrections.push({
+              id: node.id,
+              sourceId: node.source.id,
+              time: node.currentTime,
+              variables: node.variables,
+              children: node.children.map(child => child.id)
+            });
+            musicGraphData.cleanup.push(() => node.destroy());
+          }
+          console.log("Resurrections", resurrections);
+          for (let handler of musicGraphData.cleanup)
+            handler();
+
+          // Start new graph and copy what nodes we can
+          let newGraphData = await initializeMusicGraph(false);
+          console.log("R E S U R R E C T I O N");
+          for (let {id, sourceId, time, variables, children} of resurrections) {
+            let source = newGraphData.graph[sourceId];
+            console.log("Reviving", sourceId);
+            if (!source) continue;
+            let node = new newGraphData.Node();
+            Object.assign(node.variables, variables);
+            node.children = children
+              .map(childId => newGraphData.nodes.filter(node => node.id == childId)[0])
+              .filter(e => e);
+            newGraphData.nodes.push(node);
+            node.setSource(source, time, 0, false, true);
+          }
+        } catch(ex) {
+          alert("Failed to reload music graph: " + ex);
+          console.error(ex);
+        }
+      }
+    });
+  }
+  reconnect();
+  function sendDebugEvent(name, data) {
+    if (!port) return;
+    port.postMessage({ type: 'event', name, data });
+  }
 
   // cache images so they can appear instantly
   let cache = [];
@@ -132,14 +221,17 @@ function musicGraph(module) {
   for (let module of modules)
     module(musicGraphData);
 
-  for (let graphObject of Object.values(graph)) {
-    if (graphObject.type != 'root') continue;
-    let node = new musicGraphData.Node();
-    musicGraphData.nodes.push(node);
-    node.setSource(graphObject);
+  if (createRoot) {
+    for (let graphObject of Object.values(graph)) {
+      if (graphObject.type != 'root') continue;
+      let node = new musicGraphData.Node();
+      musicGraphData.nodes.push(node);
+      node.setSource(graphObject);
+    }
   }
 
-  console.log("[TETR.IO PLUS] Music graph ready")
+  console.log("[TETR.IO PLUS] Music graph ready");
+  return musicGraphData;
 })().catch(ex => {
   console.error("[TETR.IO PLUS] Music graph error:", ex);
 });

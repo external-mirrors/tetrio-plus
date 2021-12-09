@@ -1,4 +1,4 @@
-musicGraph(({ dispatchEvent }) => {
+musicGraph(({ dispatchEvent, cleanup }) => {
     let elements = [];
     for (let menu of document.querySelectorAll("[data-menuview]")) {
       elements.push({
@@ -24,6 +24,7 @@ musicGraph(({ dispatchEvent }) => {
           dispatchEvent(`${type}-${hidden ? 'close' : 'open'}`, null);
         }
       });
+      cleanup.push(() => observer.disconnect());
 
       observer.observe(element, {
         attributes: true,
@@ -41,6 +42,10 @@ musicGraph(({ dispatchEvent }) => {
       // Duel enemy spatialization is 0.4499...
       return 'enemy';
     }
+
+    let controller = new AbortController();
+    cleanup.push(() => controller.abort());
+
     document.addEventListener('tetrio-plus-fx', evt => {
       try {
       let type = locationHeuristic(evt.detail.type, evt.detail.spatialization);
@@ -101,7 +106,7 @@ musicGraph(({ dispatchEvent }) => {
           break;
       }
       } catch(ex) { console.error(ex)}
-    });
+    }, { signal: controller.signal });
     document.addEventListener('tetrio-plus-actiontext', evt => {
       // console.log('IJ actiontext', evt.detail.type, evt.detail.text);
       let type = locationHeuristic(evt.detail.type, evt.detail.spatialization);
@@ -157,7 +162,7 @@ musicGraph(({ dispatchEvent }) => {
             dispatchEvent('text-b2b-reset-' + type);
           break;
       }
-    });
+    }, { signal: controller.signal });
     document.addEventListener('tetrio-plus-actionsound', evt => {
       // arg 1: sound effect name
       // arg 2: 'full' for active board or general sfx, 'tiny' for other boards
@@ -170,12 +175,12 @@ musicGraph(({ dispatchEvent }) => {
       let name = evt.detail.args[0];
       let type = locationHeuristic(evt.detail.args[1], evt.detail.args[2]);
       dispatchEvent(`sfx-${name}-${type}`);
-    });
+    }, { signal: controller.signal });
     document.addEventListener('tetrio-plus-actionheight', evt => {
       // The 'height' is actually the *unfilled* portion of the board,
       // but we want the filled portion to pass for the event
       let height = 40 - evt.detail.height;
       let type = locationHeuristic(evt.detail.type, evt.detail.spatialization);
       dispatchEvent(`board-height-${type}`, height);
-    });
+    }, { signal: controller.signal });
   });

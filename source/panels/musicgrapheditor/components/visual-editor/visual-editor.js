@@ -3,12 +3,20 @@ const html = arg => arg.join(''); // NOOP, for editor integration.
 
 import veSvgContainer from './ve-svg-container.js';
 import veSvgNodeLinks from './ve-svg-node-links.js';
+import veLiveNode from './ve-live-node.js';
 import veNode from './ve-node.js';
 import utils from './ve-utils-mixin.js';
 
 export default {
   template: html`
     <div ref="editor" class="visual-editor" :style="editorStyle" tabindex="0">
+      <!-- <pre style="
+        margin: 2px;
+        background-color: white;
+        max-width: 100%;
+        width: max-content;
+        position: fixed;
+      ">Live instances: {{ liveInstances }}\nRecent events: {{ recentEvents }}</pre> -->
       <ve-node
         v-for="node of nodes"
         :key="node.id"
@@ -16,24 +24,55 @@ export default {
         :nodes="nodes"
         :node="node"
       />
+      <div style="display: contents">
+        <ve-live-node
+          v-for="instance of liveInstances"
+          v-if="isFinite(instance.sourceId)"
+          :key="instance.instanceId"
+          :camera="camera"
+          :nodes="nodes"
+          :node="getNodeById(instance.sourceId)"
+          :instance="instance"
+          :index="liveInstancesByNode[instance.sourceId].indexOf(instance)"
+        />
+      </div>
       <ve-svg-container :camera="camera" :select-rect="selectRect">
         <ve-svg-node-links
           v-for="node of nodes"
           :key="node.id"
           :nodes="nodes"
           :node="node"
+          :events="recentTriggerFires[node.id] || []"
         />
       </ve-svg-container>
     </div>
   `,
   props: ['nodes'],
-  components: { veSvgContainer, veSvgNodeLinks, veNode },
+  components: { veSvgContainer, veSvgNodeLinks, veLiveNode, veNode },
   mixins: [utils],
   data: () => ({
     camera: { x: 0, y: 0 },
-    selectRect: null
+    selectRect: null,
+    liveInstances: [],
+    recentEvents: [],
+    recentTriggerFires: {}, // node -> array
+    port: null
   }),
   computed: {
+    liveInstanceById() {
+      let map = {};
+      for (let node of this.liveInstances)
+        map[node.instanceId] = node;
+      return map;
+    },
+    liveInstancesByNode() {
+      let map = {};
+      for (let node of this.liveInstances) {
+        if (!map[node.sourceId]) map[node.sourceId] = [];
+        map[node.sourceId].push(node);
+      }
+      return map;
+    },
     editorStyle() {
       return {
         '--bg-x': this.camera.x + 'px',
@@ -51,12 +90,11 @@ export default {
     round(val, step) {
       return Math.round(val / step) * step;
     },
-
     async copy(event) {
       let active = document.activeElement;
       if (active != this.$refs.editor && active != document.body) return;
 
-      let data = JSON.stringify(clipboard.selected);
+      let data = JSON.stringify(clipboard.selected, null, 2);
       event.clipboardData.setData('text/plain', data);
       event.preventDefault();
     },
@@ -98,13 +136,119 @@ export default {
       }
       if (musicGraph.length > 0)
         this.$emit('change');
+    },
+    onDebugMessage(msg) {
+      if (msg.type != 'event') return;
+      // console.log(msg.type, msg.name, Object.entries(msg.data).map(e => `${e[0]}: ${e[1]}`).join(', '));
+      switch (msg.name) {
+        case 'event-dispatched': {
+          this.recentEvents = [
+            ...this.recentEvents
+              .filter(evt => evt.name != msg.data.name)
+              .slice(-25),
+            msg.data
+          ];
+          break;
+        }
+
+        case 'node-created': {
+          this.liveInstances.push({
+            ...msg.data,
+            sourceId: null,
+            variables: {},
+            recentTriggers: []
+          });
+          break;
+        }
+
+        case 'node-destroyed': {
+          let i = this.liveInstances.findIndex(({ instanceId }) => {
+            return instanceId == msg.data.instanceId;
+          });
+          if (i == -1) break;
+          this.liveInstances.splice(i, 1);
+          break;
+        }
+
+        case 'node-source-set': {
+          let instance = this.liveInstanceById[msg.data.instanceId];
+          if (!instance) break;
+          if (isFinite(msg.data.lastSourceId) && (msg.data.lastSourceId != instance.sourceId)) {
+            // Ensure forks are animated
+            instance.sourceId = msg.data.lastSourceId;
+            this.$nextTick(() => instance.sourceId = msg.data.sourceId);
+          } else {
+            instance.sourceId = msg.data.sourceId;
+          }
+          // msg.data.lastSourceId
+          break;
+        }
+
+        case 'node-set-variable': {
+          let instance = this.liveInstanceById[msg.data.instanceId];
+          if (!instance) break;
+          this.$set(instance.variables, msg.data.variable, msg.data.value);
+          break;
+        }
+
+        case 'node-run-trigger': {
+          if (!this.recentTriggerFires[msg.data.sourceId])
+            this.$set(this.recentTriggerFires, msg.data.sourceId, []);
+
+          let recent = this.recentTriggerFires[msg.data.sourceId];
+          recent.push({
+            instance: msg.data.instanceId,
+            trigger: msg.data.trigger,
+            success: msg.data.success,
+            value: msg.data.value,
+            date: Date.now(),
+            age: 0,
+            maxAge: 500
+          });
+          break;
+        }
+
+      }
+    },
+    tickRecentEvents() {
+      for (let key of Object.keys(this.recentTriggerFires)) {
+        this.recentTriggerFires[key] = this.recentTriggerFires[key].filter(el=>{
+          el.age = Date.now() - el.date;
+          return el.age < el.maxAge;
+        });
+      }
     }
   },
   mounted() {
+    setInterval(() => this.tickRecentEvents(), 16);
+
     this.copy = this.copy.bind(this);
     this.paste = this.paste.bind(this);
     window.addEventListener('copy', this.copy);
     window.addEventListener('paste', this.paste);
+    window.ve = this;
+
+    this.$root.$on('save', () => {
+      if (!this.port) return;
+      this.port.postMessage({ type: 'reload' });
+    });
+
+    browser.runtime.onConnect.addListener(port => {
+      if (port.name != 'music-graph-event-stream') return;
+      if (this.port) {
+        port.disconnect();
+        return;
+      }
+      console.log("Music graph instance connected");
+      port.onMessage.addListener(msg => this.onDebugMessage(msg));
+      port.onDisconnect.addListener(() => {
+        this.liveInstances = [];
+        this.recentEvents = [];
+        this.recentTriggerFires = {};
+        this.port = null;
+      });
+      this.port = port;
+    });
 
     interact('.visual-editor svg text')
       .on('tap', event => {

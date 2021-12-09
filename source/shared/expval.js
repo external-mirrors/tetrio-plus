@@ -8,7 +8,7 @@ class ExpVal {
     let exp = expr.trim();
     const tokenizers = {
       literal: /^-?[0-9]+(?:\.[0-9]*)?/,
-      operator: /^(?:!|\*\*|==|>=|<=|!=|>|<|&&|\|\||[+\-*/%~])/,
+      operator: /^(?:\*\*|==|>=|<=|!=|>|<|&&|\|\||[+\-*/%~])/,
       leftparan: /^\(/,
       rightparan: /^\)/,
       function: /^[A-Za-z]+\(/,
@@ -138,30 +138,25 @@ class ExpVal {
         args.splice(0);
       }
       if (token.type == 'operator') {
-        if (token.value == '!') {
-          req(1);
-          stack.push(+!stack.pop());
-        } else {
-          req(2);
-          let a = stack.pop();
-          let b = stack.pop();
-          switch (token.value) {
-            case  '+': stack.push(b  + a); break;
-            case  '-': stack.push(b  - a); break;
-            case  '*': stack.push(b  * a); break;
-            case  '/': stack.push(b  / a); break;
-            case  '%': stack.push(b  % a); break;
-            case '**': stack.push(b ** a); break;
-            case '==': stack.push(b == a); break;
-            case '>=': stack.push(b >= a); break;
-            case '<=': stack.push(b <= a); break;
-            case  '>': stack.push(b  > a); break;
-            case  '<': stack.push(b  < a); break;
-            case '!=': stack.push(b != a); break;
-            case '&&': stack.push(b && a); break;
-            case '||': stack.push(b || a); break;
-            default: throw new Error("Unknown operator " + token.value);
-          }
+        req(2);
+        let a = stack.pop();
+        let b = stack.pop();
+        switch (token.value) {
+          case  '+': stack.push(b  + a); break;
+          case  '-': stack.push(b  - a); break;
+          case  '*': stack.push(b  * a); break;
+          case  '/': stack.push(b  / a); break;
+          case  '%': stack.push(b  % a); break;
+          case '**': stack.push(b ** a); break;
+          case '==': stack.push(b == a); break;
+          case '>=': stack.push(b >= a); break;
+          case '<=': stack.push(b <= a); break;
+          case  '>': stack.push(b  > a); break;
+          case  '<': stack.push(b  < a); break;
+          case '!=': stack.push(b != a); break;
+          case '&&': stack.push(b && a); break;
+          case '||': stack.push(b || a); break;
+          default: throw new Error("Unknown operator " + token.value);
         }
       }
     }

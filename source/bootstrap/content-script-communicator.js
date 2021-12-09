@@ -3,6 +3,7 @@ const TABS_TO_URL = {
 }
 
 browser.runtime.onConnect.addListener(port => {
+  if (port.name != 'info-channel') return;
   console.log("New content script connection");
   port.onMessage.addListener(async (msg, sender) => {
     console.log(msg);

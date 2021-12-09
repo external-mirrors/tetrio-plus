@@ -183,6 +183,48 @@ input:invalid {
 
   border-radius: 9999px;
 }
+.visual-editor .live-node {
+  --size: 16px;
+  --padding: 2px;
+  --x: 0px;
+  --y: 0px;
+  
+  transform: translate(
+    calc(var(--x) + var(--padding)),
+    calc(var(--y) - (var(--size) + var(--padding)))
+  );
+  box-sizing: border-box;
+  position: fixed;
+
+  width: var(--size);
+  height: var(--size);
+
+  background-color: cyan;
+  border-radius: var(--size);
+  border: 2px solid black;
+}
+.visual-editor .live-node:not(.no-transition) {
+  transition: transform 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.visual-editor .live-node.frozen {
+  background-color: red;
+}
+.visual-editor .live-node:not(:hover) > .live-node-tooltip:not(:hover) {
+  display: none;
+}
+.visual-editor .live-node > .live-node-tooltip {
+  position: fixed;
+  transform: translateY(calc(-50% + var(--size)/2));
+}
+.visual-editor .live-node > .live-node-tooltip > .tooltip-inner {
+  background-color: white;
+  margin-left: var(--size);
+  padding: 4px;
+  border: 2px solid black;
+}
+.visual-editor .live-node > .live-node-tooltip > .tooltip-inner > pre {
+  margin: 0px;
+}
 
 .error {
   color: red;
@@ -222,4 +264,7 @@ input:invalid {
 }
 .visual-editor .node-anchor {
   z-index: 3;
+}
+.visual-editor .live-node {
+  z-index: 4;
 }

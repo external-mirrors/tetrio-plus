@@ -101,6 +101,7 @@ const app = new Vue({
         if (this.saveOpacity <= 0)
           clearTimeout(timeout);
       }, 50);
+      this.$emit('save');
     },
     pasteNode(nodeBefore) {
       if (!this.copiedNode) return;

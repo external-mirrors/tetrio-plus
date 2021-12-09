@@ -3,6 +3,7 @@ musicGraph(musicGraph => {
     nodes,
     audioContext: context,
     imageCache,
+    sendDebugEvent,
     graph,
     eventValueEnabled,
     eventValueExtendedModes,
@@ -48,6 +49,9 @@ musicGraph(musicGraph => {
     constructor() {
       // console.log("Created new node");
       this.id = nonce++;
+      sendDebugEvent('node-created', {
+        instanceId: this.id
+      });
       this.audio = null; // AudioBufferSourceNode
       this.volume = null; // GainNode
       this.timeouts = [];
@@ -101,9 +105,13 @@ musicGraph(musicGraph => {
       gameCanvas.style.backgroundImage = null;
     }
 
-    setSource(source, startTime=0, audioDelay=0, crossfade=false) {
+    setSource(source, startTime=0, audioDelay=0, crossfade=false, suppressEmptyNodeEnd=false) {
       if (this.destroyed) return;
-      // console.log(`Node ${this?.source?.name} -> ${source.name}`)
+      sendDebugEvent('node-source-set', {
+        instanceId: this.id,
+        sourceId: source.id,
+        lastSourceId: this.source?.id
+      });
       this.source = source;
       Node.recalculateBackground();
 
@@ -111,7 +119,7 @@ musicGraph(musicGraph => {
         clearTimeout(timeout);
       this.timeouts.length = 0;
 
-      this.restartAudio(startTime, crossfade, audioDelay);
+      this.restartAudio(startTime, crossfade, audioDelay, suppressEmptyNodeEnd);
 
       for (let trigger of this.source.triggers) {
         switch (trigger.event) {
@@ -142,10 +150,11 @@ musicGraph(musicGraph => {
      * @param audioDelay How long to wait before starting the new audio node
      *                   and stopping the old one.
      */
-    restartAudio(startTime, crossfade=false, audioDelay=0) {
+    restartAudio(startTime, crossfade=false, audioDelay=0, suppressEmptyNodeEnd=false) {
       if (this.destroyed) return;
       if (!this.source.audio) {
-        this.runTriggersByName('node-end', null);
+        if (!suppressEmptyNodeEnd)
+          this.runTriggersByName('node-end', null);
         return;
       }
 
@@ -277,6 +286,10 @@ musicGraph(musicGraph => {
     }
 
     destroy() {
+      sendDebugEvent('node-destroyed', {
+        instanceId: this.id,
+        sourceId: this.source.id
+      });
       this.destroyed = true;
       if (this.audio)
         this.audio.stop();
@@ -313,8 +326,15 @@ musicGraph(musicGraph => {
     }
 
     runTrigger(trigger, value, audioDelay=0) {
-      if (!this.testTrigger(trigger, value))
-        return false;
+      let result = this.testTrigger(trigger, value);
+      sendDebugEvent('node-run-trigger', {
+        instanceId: this.id,
+        sourceId: this.source.id,
+        success: result,
+        trigger: this.source.triggers.indexOf(trigger),
+        value: value
+      });
+      if (!result) return false;
 
       let startTime = trigger.preserveLocation
         ? this.currentTime * trigger.locationMultiplier
@@ -370,7 +390,7 @@ musicGraph(musicGraph => {
               ? ExpVal.get(trigger.dispatchExpression).evaluate({
                   ...this.variables,
                   ...this.computedVariables,
-                  $: value
+                  $: value || 0
                 })
               : null;
             musicGraph.dispatchEvent(trigger.dispatchEvent, val);
@@ -384,13 +404,19 @@ musicGraph(musicGraph => {
             let val = ExpVal.get(trigger.setExpression).evaluate({
               ...this.variables,
               ...this.computedVariables,
-              $: value
+              $: value || 0
             });
             let computed = this.computedVariables;
             if (typeof computed[trigger.setVariable] !== 'undefined') {
               computed[trigger.setVariable] = val;
             } else {
               this.variables[trigger.setVariable] = val;
+              sendDebugEvent('node-set-variable', {
+                instanceId: this.id,
+                sourceId: this.source.id,
+                variable: trigger.setVariable,
+                value: val
+              });
             }
           } catch(ex) {
             console.warn('[TETR.IO PLUS] Music graph: error running trigger', trigger, ex);

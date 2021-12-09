@@ -1,5 +1,13 @@
 musicGraph(graph => {
-  let { Node, nodes, eventValueEnabled, eventValueExtendedModes, ExpVal } = graph;
+  let {
+    Node,
+    nodes,
+    cleanup,
+    sendDebugEvent,
+    eventValueEnabled,
+    eventValueExtendedModes,
+    ExpVal
+  } = graph;
   let recentEvents = [];
 
   let f8menu = document.getElementById('devbuildid');
@@ -8,8 +16,10 @@ musicGraph(graph => {
     console.log("[TETR.IO PLUS] Can't find '#devbuildid'?")
   } else {
     let div = document.createElement('div');
+    cleanup.push(() => div.remove());
     f8menu.parentNode.insertBefore(div, f8menu.nextSibling.nextSibling);
     div.style.fontFamily = 'monospace';
+    div.classList.add('tetrio-plus-music-graph-debug');
     setInterval(() => {
       f8menuActive = !f8menu.parentNode.classList.contains('off');
       if (!f8menuActive) return;
@@ -29,6 +39,7 @@ musicGraph(graph => {
    * @param value the event's associated value. usage varies by event.
    */
   graph.dispatchEvent = function dispatchEvent(eventName, value) {
+    sendDebugEvent('event-dispatched', { name: eventName, value });
     if (f8menuActive) {
       let str = typeof value == 'number'
         ? `${eventName} (${value})`
@@ -60,7 +71,7 @@ musicGraph(graph => {
       }
     }
 
-    for (let node of [...nodes]) // slice since events could add or remove nodes
+    for (let node of nodes.slice()) // slice since events could add or remove nodes
       for (let trigger of node.source.triggers)
         if (trigger.mode != 'create' && trigger.event == eventName)
           node.runTrigger(trigger, value, 0);

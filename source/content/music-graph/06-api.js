@@ -1,18 +1,19 @@
 musicGraph(musicGraph => {
-  let { graph, nodes, dispatchEvent } = musicGraph;
+  let { graph, nodes, dispatchEvent, cleanup } = musicGraph;
   let script = document.createElement('script');
   script.src = browser.runtime.getURL('source/injected/music-graph-api.js');
   document.head.appendChild(script);
 
   const prefix = append => 'tetrio-plus-music-graph-api-' + append;
   function createAPICall(name, validators, handler) {
+    let controller = new AbortController();
+    cleanup.push(() => controller.abort());
     document.addEventListener(prefix(name), evt => {
       let response = null;
       let nonce = evt.detail.nonce;
       let args = evt.detail.arguments;
 
       try {
-
         if (!nonce || !Array.isArray(args))
           throw new Error('Nonce or arguments missing');
 
@@ -38,7 +39,7 @@ musicGraph(musicGraph => {
       document.dispatchEvent(new CustomEvent(prefix(`${name}-response-${nonce}`), {
         detail: JSON.stringify(response)
       }));
-    });
+    }, { signal: controller.signal });
   }
 
   createAPICall(
