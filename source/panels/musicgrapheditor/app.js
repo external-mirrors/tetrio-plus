@@ -163,7 +163,7 @@ const app = new Vue({
       this.pushState();
     });
     window.addEventListener('keydown', event => {
-      let tag = event.explicitOriginalTarget.tagName;
+      let tag = event.target.tagName;
       if (['INPUT', 'TEXTAREA'].includes(tag))
         return;
 

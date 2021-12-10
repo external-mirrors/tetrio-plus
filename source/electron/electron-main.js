@@ -4,7 +4,7 @@
   Not used on firefox
 */
 
-const { app, BrowserWindow, protocol, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, protocol, ipcMain, dialog, webContents } = require('electron');
 const browser = require('./electron-browser-polyfill.js');
 const { promisify } = require('util');
 const crypto = require('crypto');
@@ -99,9 +99,10 @@ async function createTetrioPlusWindow() {
     }
   });
   tpWindow.loadURL(`tetrio-plus-internal://source/popup/index.html`);
-  greenlog("Tetrio plus window opened");
+  greenlog("TETR.IO PLUS window opened");
+  setupWindowIpcChannelBroadcasting(tpWindow);
   tpWindow.on('closed', () => {
-    greenlog("Tetrio plus window closed");
+    greenlog("TETR.IO PLUS window closed");
     tpWindow = null;
   });
   let mainWin = await mainWindow;
@@ -130,6 +131,68 @@ ipcMain.on('presence', async (e, arg) => {
     mainWin.setTitle('TETR.IO'); // this will conflict if tetrio ever decides to switch the title itself. oh well
     if (arg.state && storeGet('windowTitleStatus')) mainWin.setTitle(`TETR.IO - ${arg.state}`);
   }
+});
+
+// Jankyness warning: poor excuse of a channels implementation
+// used for polyfilling browser.runtime.connect
+let windows = new Set();
+let channels = new Map(); // webContents id -> { nonce }[]
+function setupWindowIpcChannelBroadcasting(window) {
+  greenlog("Setup window", window.webContents.id);
+  const webContents = window.webContents;
+  const id = window.webContents.id;
+  windows.add(webContents);
+  channels.set(id, []);
+
+  window.webContents.on('did-start-loading', () => {
+    redlog("Window started loading", window.webContents.history[0]);
+    for (let channel of channels.get(id).splice(0))
+      ipcBroadcast(window.webContents.id, 'tetrio-plus-close-channel', channel.nonce);
+  });
+  window.on('closed', () => {
+    redlog("Window closed", id);
+    windows.delete(webContents);
+    for (let channel of channels.get(id).splice(0))
+      ipcBroadcast(webContents.id, 'tetrio-plus-close-channel', channel.nonce);
+    channels.delete(webContents.id);
+  });
+}
+mainWindow.then(window => setupWindowIpcChannelBroadcasting(window));
+function ipcBroadcast(excludeId, channel, ...args) {
+  redlog(`ipc broadcast`, channel, ...args);
+  for (let window of windows) {
+    if (excludeId == window.id) continue;
+    window.send(channel, ...args);
+  }
+}
+// Rebroadcast channels for implementing the browser.runtime.connect API
+ipcMain.on('tetrio-plus-listening-on-channel', async (evt, nonce) => {
+  // indicates this sender is listening on this channel and that it
+  // should be automatically closed when its not doing that anymore.
+  channels.get(evt.sender.webContents.id).push({ nonce });
+})
+ipcMain.on('tetrio-plus-create-channel', async (evt, nonce, ...args) => {
+  // this sender *created* this channel, so close it when its gone.
+  channels.get(evt.sender.webContents.id).push({ nonce });
+  ipcBroadcast(null, 'tetrio-plus-create-channel', nonce, ...args);
+});
+ipcMain.on('tetrio-plus-close-channel', async (evt, nonce, ...args) => {
+  // this channel was closed by a sender or a reciever
+  let chnls = channels.get(evt.sender.webContents.id);
+  chnls = chnls.filter(channel => channel.nonce != nonce);
+  channels.set(evt.sender.webContents.id, chnls);
+  // channel close messages shouldn't be rebroadcasted to the original window
+  // because it causes issues with the music graph event broadcaster when it
+  // closes itself (since having loopbacks differs from Firefox)
+  // OTOH loopbacks are required for content-script-communicator.js since that
+  // lives in the same window as everything using it, but it doesn't care about
+  // disconnections so its safe to do this. (Also there'll never be a memory
+  // leak since the TETR.IO window can't be reopened).
+  // This may cause ISSUES in the future
+  ipcBroadcast(evt.sender.webContents.id, 'tetrio-plus-close-channel', nonce, ...args);
+});
+ipcMain.on('tetrio-plus-channel-message', async (evt, nonce, ...args) => {
+  ipcBroadcast(null, 'tetrio-plus-channel-message', nonce, ...args);
 });
 
 ipcMain.on('tetrio-plus-cmd', async (evt, arg, arg2) => {
@@ -194,6 +257,7 @@ ipcMain.on('tetrio-plus-cmd', async (evt, arg, arg2) => {
           preload: path.join(__dirname, 'electron-browser-polyfill.js')
         }
       });
+      setupWindowIpcChannelBroadcasting(panel);
       panel.loadURL(arg2.url);
       panel.on('closed', () => {
         if (tpWindow) tpWindow.reload();

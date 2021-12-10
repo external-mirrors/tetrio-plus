@@ -2,7 +2,7 @@
   const electron = typeof window != 'undefined' && window?.process?.versions?.electron;
   const node = typeof module != 'undefined' && module.exports;
   if (electron || node) {
-    console.log("Running under electron - polyfilling browser");
+    console.log("[TETR.IO PLUS] Running under electron - polyfilling browser");
 
     const { promisify } = require('util');
     const electron = require('electron');
@@ -21,6 +21,9 @@
           }
         }
       }
+      // electron.ipcRenderer.on('tetrio-plus-channel-message', (...args) => {
+      //   console.log('[TETR.IO PLUS] tetrio-plus-channel-message debug', ...args);
+      // });
     }
 
     // provided by tetrio desktop
@@ -31,11 +34,52 @@
       defaults: { keys: [] }
     });
 
-    // onConnect listeners. Since the content scripts
-    // run in the same context while under electron,
-    // these are fully syncronous
-    let globalListeners = [];
-    let connections = [];
+    function createPort(nonce, name="") {
+      const listeners = [];
+      const port = {
+        name,
+        postMessage(...args) {
+          electron.ipcRenderer.send('tetrio-plus-channel-message', nonce, ...args);
+        },
+        disconnect() {
+          electron.ipcRenderer.send('tetrio-plus-close-channel', nonce);
+        },
+        onDisconnect: {
+          addListener(listener) {
+            let disconnected = false; // May fire multiple times, only want handler called once
+            let wrappedlistener = (evt, msgnonce) => {
+              if (disconnected) return;
+              disconnected = true;
+              if (nonce != msgnonce) return;
+              listener();
+            };
+            electron.ipcRenderer.on('tetrio-plus-close-channel', wrappedlistener);
+            listeners.push(['tetrio-plus-close-channel', wrappedlistener]);
+          }
+        },
+        onMessage: {
+          addListener(listener) {
+            // Jankyness warning: I don't know how firefox actually detects channel
+            // closing, but assuming something is listening for messages on it
+            // is probably close enough
+            let wrappedlistener = (evt, msgnonce, ...args) => {
+              if (nonce != msgnonce) return;
+              listener(...args);
+            };
+            electron.ipcRenderer.on('tetrio-plus-channel-message', wrappedlistener);
+            listeners.push(['tetrio-plus-channel-message', wrappedlistener]);
+            electron.ipcRenderer.send('tetrio-plus-listening-on-channel', nonce);
+          }
+        }
+      };
+      port.onDisconnect.addListener(() => {
+        setTimeout(() => {
+          for (let [channel, handler] of listeners)
+            electron.ipcRenderer.removeListener(channel, handler);
+        });
+      });
+      return port;
+    }
 
     const browser = {
       electron: true,
@@ -66,35 +110,16 @@
         },
         onConnect: {
           addListener(callback) {
-            callback({
-              onMessage: {
-                addListener(listener) {
-                  globalListeners.push(listener)
-                }
-              },
-              postMessage(msg) {
-                for (let connection of connections)
-                  for (let listener of connection.listeners)
-                    listener(msg);
-              }
-            })
+            electron.ipcRenderer.on('tetrio-plus-create-channel', (evt, nonce, name) => {
+              callback(createPort(nonce, name));
+            });
           }
         },
-        connect() {
-          let connection = {
-            listeners: [],
-            postMessage(msg) {
-              for (let listener of globalListeners)
-                listener(msg);
-            },
-            onMessage: {
-              addListener(listener) {
-                connection.listeners.push(listener);
-              }
-            }
-          };
-          connections.push(connection);
-          return connection;
+        connect(param) {
+          let name = param?.name;
+          const nonce = Math.floor(Math.random() * 1e15);
+          electron.ipcRenderer.send('tetrio-plus-create-channel', nonce, name);
+          return createPort(nonce);
         }
       },
       theme: {

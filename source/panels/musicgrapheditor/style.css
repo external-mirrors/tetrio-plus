@@ -163,6 +163,13 @@ input:invalid {
 .visual-editor .node.selected {
   background-color: orange;
 }
+.visual-editor .node > .spawn-button {
+  position: absolute;
+  bottom: 0px;
+  border-radius: 0px;
+  border: 2px solid #888;
+  margin: 2px;
+}
 .visual-editor .node-anchor {
   --x: 0;
   --y: 0;
@@ -188,7 +195,7 @@ input:invalid {
   --padding: 2px;
   --x: 0px;
   --y: 0px;
-  
+
   transform: translate(
     calc(var(--x) + var(--padding)),
     calc(var(--y) - (var(--size) + var(--padding)))
@@ -204,6 +211,7 @@ input:invalid {
   border: 2px solid black;
 }
 .visual-editor .live-node:not(.no-transition) {
+  /* transition: transform 0.25s cubic-bezier(0.33, 1, 0.68, 1); */
   transition: transform 0.25s cubic-bezier(0.33, 1, 0.68, 1);
 }
 .visual-editor .live-node.frozen {

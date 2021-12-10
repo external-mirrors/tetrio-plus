@@ -44,28 +44,6 @@ function musicGraph(module) {
     audioBuffers[src.audio] = decoded;
   }
 
-  // A list of events that use == != > < valueOperators
-  const eventValueExtendedModes =  {
-    'fx-countdown': true,
-    'fx-offense-player': true,
-    'fx-offense-enemy': true,
-    'fx-defense-player': true,
-    'fx-defense-enemy': true,
-    'fx-combo-player': true,
-    'fx-combo-enemy': true,
-    'fx-line-clear-player': true,
-    'fx-line-clear-enemy': true,
-    'board-height-player': true,
-    'board-height-enemy': true
-  };
-  // A list of events that use the value field
-  const eventValueEnabled = {
-    'time-passed': true,
-    'repeating-time-passed': true,
-    'text-b2b-combo': true,
-    ...eventValueExtendedModes
-  };
-
   let globalVolume = 0;
   let lastUpdate = 0;
   function getGlobalVolume() {
@@ -84,8 +62,6 @@ function musicGraph(module) {
     imageCache: {},
     sendDebugEvent,
     audioBuffers,
-    eventValueExtendedModes,
-    eventValueEnabled,
     getGlobalVolume,
     backgroundsEnabled: musicGraphBackground
   };
@@ -97,37 +73,64 @@ function musicGraph(module) {
   // Event stream for the music graph debugger
   let port = null;
   function reconnect() {
+    if (port) port.disconnect();
+    console.log("[TETR.IO PLUS] Music graph attempting debugger connection");
     port = browser.runtime.connect({
       name: 'music-graph-event-stream'
     });
+
+    let reconnTimeout = setTimeout(() => {
+      // console.log("[TETR.IO PLUS] Music graph attempting reconnection");
+      reconnect();
+    }, 10000);
+
     port.onDisconnect.addListener(() => {
-      console.log("port disconnected");
-      setTimeout(() => reconnect(), 1000);
+      console.log("[TETR.IO PLUS] Music graph debugger disconnected");
+      clearTimeout(reconnTimeout);
+      setTimeout(() => reconnect(), 5000);
     });
 
-    // Catch the debugger up to the existing state...
-    for (let node of musicGraphData.nodes) {
-      sendDebugEvent('node-created', {
-        instanceId: node.id
-      });
-      sendDebugEvent('node-source-set', {
-        instanceId: node.id,
-        sourceId: node.source.id,
-        lastSourceId: null
-      });
-      for (let [name, value] of Object.values(node.variables)) {
-        sendDebugEvent('node-set-variable', {
-          instanceId: node.id,
-          sourceId: node.source.id,
-          variable: name,
-          value: value
-        });
+    port.onMessage.addListener(async (msg) => {
+      if (msg.type == 'spawn') {
+        if (!graph[msg.sourceId]) return;
+        let node = new musicGraphData.Node();
+        musicGraphData.nodes.push(node);
+        node.setSource(graph[msg.sourceId]);
+        console.log('[TETR.IO PLUS] Music graph debugger spawned node', node);
       }
-    }
-
-    port.onMessage.addListener(async msg => {
+      if (msg.type == 'kill') {
+        for (let node of musicGraphData.nodes)
+          if (node.id == msg.instanceId) {
+            node.destroy();
+            console.log("[TETR.IO PLUS] Music graph debugger destroyed node", node);
+          }
+      }
+      if (msg.type == 'hello') {
+        console.log("[TETR.IO PLUS] Music graph debugger connected");
+        clearTimeout(reconnTimeout);
+        // Catch the debugger up to the existing state...
+        sendDebugEvent('reset');
+        for (let node of musicGraphData.nodes) {
+          sendDebugEvent('node-created', {
+            instanceId: node.id
+          });
+          sendDebugEvent('node-source-set', {
+            instanceId: node.id,
+            sourceId: node.source.id,
+            lastSourceId: null
+          });
+          for (let [name, value] of Object.values(node.variables)) {
+            sendDebugEvent('node-set-variable', {
+              instanceId: node.id,
+              sourceId: node.source.id,
+              variable: name,
+              value: value
+            });
+          }
+        }
+      }
       if (msg.type == 'reload') {
-        console.log("RELOADING MUSIC GRAPH");
+        console.log("[TETR.IO PLUS] RELOADING MUSIC GRAPH");
 
         try {
           // Clean up old graph...
@@ -135,7 +138,6 @@ function musicGraph(module) {
           port = null;
           let resurrections = [];
           for (let node of musicGraphData.nodes) {
-            console.log("Preparing for", node, "'s resurrection...");
             resurrections.push({
               id: node.id,
               sourceId: node.source.id,
@@ -145,16 +147,13 @@ function musicGraph(module) {
             });
             musicGraphData.cleanup.push(() => node.destroy());
           }
-          console.log("Resurrections", resurrections);
           for (let handler of musicGraphData.cleanup)
             handler();
 
           // Start new graph and copy what nodes we can
           let newGraphData = await initializeMusicGraph(false);
-          console.log("R E S U R R E C T I O N");
           for (let {id, sourceId, time, variables, children} of resurrections) {
             let source = newGraphData.graph[sourceId];
-            console.log("Reviving", sourceId);
             if (!source) continue;
             let node = new newGraphData.Node();
             Object.assign(node.variables, variables);

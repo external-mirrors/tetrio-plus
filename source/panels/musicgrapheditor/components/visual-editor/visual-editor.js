@@ -23,6 +23,8 @@ export default {
         :camera="camera"
         :nodes="nodes"
         :node="node"
+        :connected="!!port"
+        @spawn="spawn(node)"
       />
       <div style="display: contents">
         <ve-live-node
@@ -34,6 +36,7 @@ export default {
           :node="getNodeById(instance.sourceId)"
           :instance="instance"
           :index="liveInstancesByNode[instance.sourceId].indexOf(instance)"
+          @kill="kill(instance.instanceId)"
         />
       </div>
       <ve-svg-container :camera="camera" :select-rect="selectRect">
@@ -137,10 +140,29 @@ export default {
       if (musicGraph.length > 0)
         this.$emit('change');
     },
+    spawn(node) {
+      this.port.postMessage({
+        type: 'spawn',
+        sourceId: node.id
+      });
+    },
+    kill(instanceId) {
+      this.port.postMessage({
+        type: 'kill',
+        instanceId
+      });
+    },
     onDebugMessage(msg) {
       if (msg.type != 'event') return;
       // console.log(msg.type, msg.name, Object.entries(msg.data).map(e => `${e[0]}: ${e[1]}`).join(', '));
       switch (msg.name) {
+        case 'reset': {
+          this.liveInstances = [];
+          this.recentEvents = [];
+          this.recentTriggerFires = {};
+          break;
+        }
+
         case 'event-dispatched': {
           this.recentEvents = [
             ...this.recentEvents
@@ -176,7 +198,7 @@ export default {
           if (isFinite(msg.data.lastSourceId) && (msg.data.lastSourceId != instance.sourceId)) {
             // Ensure forks are animated
             instance.sourceId = msg.data.lastSourceId;
-            this.$nextTick(() => instance.sourceId = msg.data.sourceId);
+            setTimeout(() => instance.sourceId = msg.data.sourceId, 20);
           } else {
             instance.sourceId = msg.data.sourceId;
           }
@@ -240,14 +262,18 @@ export default {
         return;
       }
       console.log("Music graph instance connected");
+      this.port = port;
       port.onMessage.addListener(msg => this.onDebugMessage(msg));
       port.onDisconnect.addListener(() => {
+        console.log("Music graph instance disconnected");
         this.liveInstances = [];
         this.recentEvents = [];
         this.recentTriggerFires = {};
         this.port = null;
       });
-      this.port = port;
+      setTimeout(() => {
+        this.port.postMessage({ type: 'hello' });
+      });
     });
 
     interact('.visual-editor svg text')
@@ -329,6 +355,7 @@ export default {
         this.$emit('change');
       })
       .on('tap', event => {
+        if (event.target.tagName == 'BUTTON') return;
         let node = this.getNodeFromElem(event.target);
         if (!event.ctrlKey && !event.shiftKey)
           clipboard.selected.splice(0);

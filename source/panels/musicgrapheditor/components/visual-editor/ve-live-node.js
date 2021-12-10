@@ -11,20 +11,33 @@ export default {
       <div class="live-node-tooltip">
         <div class="tooltip-inner">
           <pre>{{ variables }}</pre>
+          <button @click="$emit('kill')">kill</button>
         </div>
       </div>
     </div>
   `,
   props: ['camera', 'nodes', 'node', 'index', 'instance'],
-  data: () => ({ freeze: false, lastX: 0, lastY: 0, nudged: false }),
+  data: () => ({
+    freeze: false,
+    lastX: 0,
+    lastY: 0,
+    nudged: false
+  }),
   watch: {
     camera: {
       deep: true,
       handler() {
-        if (this.nudged) return;
-        this.nudged = true;
-        setTimeout(() => this.nudged = false, 50);
+        this.nudge();
       }
+    }
+  },
+  mounted() {
+    this.nudge();
+  },
+  methods: {
+    nudge() { // Prevents animation for 20ms when called, to allow 'nudging' the location
+      this.nudged++;
+      setTimeout(() => this.nudged--, 20);
     }
   },
   computed: {

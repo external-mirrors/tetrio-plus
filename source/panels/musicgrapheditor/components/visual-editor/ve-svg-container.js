@@ -68,6 +68,11 @@ export default {
     </svg>
   `,
   props: ['camera', 'selectRect'],
+  methods: {
+    editorRect() {
+      return document.querySelector('.visual-editor').getBoundingClientRect();
+    }
+  },
   computed: {
     svgTransform() {
       return `translate(${this.camera.x}, ${this.camera.y})`

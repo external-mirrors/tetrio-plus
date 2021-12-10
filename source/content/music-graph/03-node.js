@@ -5,8 +5,6 @@ musicGraph(musicGraph => {
     imageCache,
     sendDebugEvent,
     graph,
-    eventValueEnabled,
-    eventValueExtendedModes,
     audioBuffers,
     getGlobalVolume,
     backgroundsEnabled,
@@ -105,12 +103,12 @@ musicGraph(musicGraph => {
       gameCanvas.style.backgroundImage = null;
     }
 
-    setSource(source, startTime=0, audioDelay=0, crossfade=false, suppressEmptyNodeEnd=false) {
+    setSource(source, startTime=0, audioDelay=0, crossfade=false, suppressEmptyNodeEnd=false, parentSourceId=null) {
       if (this.destroyed) return;
       sendDebugEvent('node-source-set', {
         instanceId: this.id,
         sourceId: source.id,
-        lastSourceId: this.source?.id
+        lastSourceId: this.source?.id || parentSourceId
       });
       this.source = source;
       Node.recalculateBackground();
@@ -340,7 +338,7 @@ musicGraph(musicGraph => {
         ? this.currentTime * trigger.locationMultiplier
         : 0;
       switch (trigger.mode) {
-        case 'fork':
+        case 'fork': {
           var src = graph[trigger.target];
           if (!src) {
             console.error("[TETR.IO PLUS] Unknown node #" + trigger.target);
@@ -353,12 +351,14 @@ musicGraph(musicGraph => {
           var node = new Node();
           Object.assign(node.variables, this.variables);
           nodes.push(node);
-          node.setSource(src, startTime, audioDelay);
+          let crossfade = trigger.crossfade && trigger.crossfadeDuration;
+          node.setSource(src, startTime, audioDelay, crossfade, false, this.source.id);
           Node.recalculateBackground();
           this.children.push(node);
           break;
+        }
 
-        case 'goto':
+        case 'goto': {
           var src = graph[trigger.target];
           if (!src) {
             console.error("[TETR.IO PLUS] Unknown node #" + trigger.target);
@@ -367,12 +367,14 @@ musicGraph(musicGraph => {
           let crossfade = trigger.crossfade && trigger.crossfadeDuration;
           this.setSource(src, startTime, audioDelay, crossfade);
           break;
+        }
 
-        case 'kill':
+        case 'kill': {
           this.destroy();
           break;
+        }
 
-        case 'random':
+        case 'random': {
           let triggers = this.source.triggers.filter(trigger =>
             trigger.event == 'random-target' && trigger.mode != 'random'
           );
@@ -383,8 +385,9 @@ musicGraph(musicGraph => {
             SHORT_SYNC_DELAY/1000
           );
           break;
+        }
 
-        case 'dispatch':
+        case 'dispatch': {
           try {
             let val = trigger.dispatchExpression.trim().length > 0
               ? ExpVal.get(trigger.dispatchExpression).evaluate({
@@ -398,8 +401,9 @@ musicGraph(musicGraph => {
             console.warn('[TETR.IO PLUS] Music graph: error running trigger', trigger, ex);
           }
           break;
+        }
 
-        case 'set':
+        case 'set': {
           try {
             let val = ExpVal.get(trigger.setExpression).evaluate({
               ...this.variables,
@@ -422,6 +426,7 @@ musicGraph(musicGraph => {
             console.warn('[TETR.IO PLUS] Music graph: error running trigger', trigger, ex);
           }
           break;
+        }
       }
     }
 

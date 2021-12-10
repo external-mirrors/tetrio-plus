@@ -4,8 +4,6 @@ musicGraph(graph => {
     nodes,
     cleanup,
     sendDebugEvent,
-    eventValueEnabled,
-    eventValueExtendedModes,
     ExpVal
   } = graph;
   let recentEvents = [];

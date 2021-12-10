@@ -11,7 +11,7 @@
   EventTarget.prototype.addEventListenerBase = EventTarget.prototype.addEventListener;
   EventTarget.prototype.addEventListener = function(type, listener, arg) {
     if (type == 'beforeunload') {
-      console.log('Tetr.io+: Blocked beforeunload event registration');
+      console.log('TETR.IO PLUS: Blocked beforeunload event registration');
       return;
     }
     this.addEventListenerBase(type, listener, arg);

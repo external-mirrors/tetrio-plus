@@ -12,7 +12,13 @@ export default {
           '--x': (node.x + camera.x) + 'px',
           '--y': (node.y + camera.y) + 'px'
         }"
-      >{{node.name}}</div>
+      >
+        {{node.name}}
+        <button class="spawn-button" v-if="connected" @click="$emit('spawn')">
+          spawn
+        </button>
+      </div>
+
 
       <template v-for="link of links">
         <div
@@ -37,7 +43,7 @@ export default {
       </template>
     </div>
   `,
-  props: ['nodes', 'node', 'camera'],
+  props: ['nodes', 'node', 'camera', 'connected'],
   mixins: [utils],
   computed: {
     selected() {
