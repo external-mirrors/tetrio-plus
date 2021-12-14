@@ -145,7 +145,7 @@ function setupWindowIpcChannelBroadcasting(window) {
   channels.set(id, []);
 
   window.webContents.on('did-start-loading', () => {
-    redlog("Window started loading", window.webContents.history[0]);
+    greenlog("Window started loading", window.webContents.history[0]);
     for (let channel of channels.get(id).splice(0))
       ipcBroadcast(window.webContents.id, 'tetrio-plus-close-channel', channel.nonce);
   });
@@ -153,13 +153,13 @@ function setupWindowIpcChannelBroadcasting(window) {
     redlog("Window closed", id);
     windows.delete(webContents);
     for (let channel of channels.get(id).splice(0))
-      ipcBroadcast(webContents.id, 'tetrio-plus-close-channel', channel.nonce);
-    channels.delete(webContents.id);
+      ipcBroadcast(id, 'tetrio-plus-close-channel', channel.nonce);
+    channels.delete(id);
   });
 }
 mainWindow.then(window => setupWindowIpcChannelBroadcasting(window));
 function ipcBroadcast(excludeId, channel, ...args) {
-  redlog(`ipc broadcast`, channel, ...args);
+  // redlog(`ipc broadcast`, channel, ...args);
   for (let window of windows) {
     if (excludeId == window.id) continue;
     window.send(channel, ...args);
