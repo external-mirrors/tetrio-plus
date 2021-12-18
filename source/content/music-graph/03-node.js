@@ -109,7 +109,7 @@ musicGraph(musicGraph => {
         justRemoved.delete(el);
       }
 
-      for (let el in justRemoved)
+      for (let el of justRemoved)
         if (el instanceof HTMLVideoElement)
           el.currentTime = 0;
 
