@@ -192,10 +192,10 @@ export default {
     ...clipboard.computed
   },
   watch: {
-    'trigger.variable'(newVal) {
+    'trigger.setVariable'(newVal) {
       let sanitized = newVal.replace(/^[^A-Za-z_]|[^A-Za-z0-9_]/g, '_');
       if (sanitized != newVal)
-        this.trigger.variable = sanitized;
+        this.trigger.setVariable = sanitized;
     }
   },
   methods: {

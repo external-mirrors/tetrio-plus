@@ -15,6 +15,7 @@ export default {
         <br>
         <button @click="save" v-if="editing">Save</button>
       </option-toggle>
+    </div>
   `,
   components: { OptionToggle },
   mounted() {

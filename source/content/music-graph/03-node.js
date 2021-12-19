@@ -215,10 +215,10 @@ musicGraph(musicGraph => {
 
       audioSource.connect(gainNode).connect(context.destination);
       let start = startTime + this.source.audioStart;
-      let duration = startTime + (
+      let duration = (
         (this.source.audioEnd || audioSource.buffer.duration) -
         this.source.audioStart
-      );
+      ) - startTime;
       audioSource.start(context.currentTime + audioDelay, start, duration);
       this.startedAt = context.currentTime + audioDelay - startTime;
 
