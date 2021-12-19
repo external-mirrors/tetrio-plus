@@ -74,9 +74,17 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     transparentBgEnabled: electronOnly(parseBoolean('transparentBgEnabled')),
     opaqueTransparentBackground: parseBoolean('opaqueTransparentBackground'),
     openDevtoolsOnStart: electronOnly(parseBoolean('openDevtoolsOnStart')),
+
     // not included in content packs to prevent footgunning
     // tetrioPlusEnabled: parseBoolean('tetrioPlusEnabled'),
     // hideTetrioPlusOnStartup: electronOnly(parseBoolean('hideTetrioPlusOnStartup')),
+
+    // not included because dangerous
+    // allowURLPackLoader
+    // whitelistedLoaderDomains
+    // enableCustomCss
+    // customCss
+
     enableAllSongTweaker: parseBoolean('enableAllSongTweaker'),
     showLegacyOptions: parseBoolean('showLegacyOptions'),
     bypassBootstrapper: parseBoolean('bypassBootstrapper'),
@@ -330,6 +338,9 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
         if (typeof node.hidden != 'boolean')
           return `ERROR: Expected boolean value at [].hidden`;
 
+        if (typeof node.singleInstance != 'boolean')
+          return `ERROR: Expected boolean value at [].hidden`;
+
         if (typeof node.x != 'number')
           return `ERROR: Expected number at [].x`;
 
@@ -433,21 +444,22 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
           let result3 = filterValues(
             trigger.anchor.origin,
             '[].triggers[].anchor.origin',
-            [ 'x', 'y']
+            ['x', 'y']
           );
           if (!result3.success) return result3.error;
 
           let result4 = filterValues(
             trigger.anchor.target,
             '[].triggers[].anchor.target',
-            [ 'x', 'y']
+            ['x', 'y']
           );
           if (!result4.success) return result4.error;
         }
 
         let result5 = filterValues(node, '[]', [
-          'id', 'type', 'name', 'audio', 'triggers', 'hidden', 'x', 'y',
-          'effects', 'audioStart', 'audioEnd', 'background', 'backgroundLayer'
+          'id', 'type', 'name', 'audio', 'triggers', 'hidden', 'singleInstance',
+          'x', 'y', 'effects', 'audioStart', 'audioEnd', 'background',
+          'backgroundLayer'
         ]);
         if (!result5.success) return result5.error;
       }

@@ -41,6 +41,7 @@ manifest.browser_specific_settings.desktop_client = {
     "source/bootstrap/domain-specific-storage-fetcher.js",
     "source/bootstrap/content-script-communicator.js",
     "source/content/content-script.js",
+    "source/content/custom-css-loader.js",
     "source/content/touch-controls.js",
     "source/content/animated-bg.js",
     "source/content/osd.js",
