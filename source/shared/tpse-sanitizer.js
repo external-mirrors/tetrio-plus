@@ -108,6 +108,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     particle_particle: parseFile('particle_particle', /^image\/.+$/),
     particle_smoke: parseFile('particle_smoke', /^image\/.+$/),
     particle_star: parseFile('particle_star', /^image\/.+$/),
+    particle_flake: parseFile('particle_flake', /^image\/.+$/),
     skin: parseFile('skin', /^image\/.+$/),
     ghost: parseFile('ghost', /^image\/.+$/),
     skinAnim: parseFile('skinAnim', /^image\/.+$/),

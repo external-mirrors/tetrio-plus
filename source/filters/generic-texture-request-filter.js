@@ -13,11 +13,11 @@ let keys = {
   particle_fire: 'https://tetr.io/res/particles/fire.png',
   particle_particle: 'https://tetr.io/res/particles/particle.png',
   particle_smoke: 'https://tetr.io/res/particles/smoke.png',
-  particle_star: 'https://tetr.io/res/particles/star.png'
+  particle_star: 'https://tetr.io/res/particles/star.png',
+  particle_flake: 'https://tetr.io/res/particles/flake.png'
 };
 
 for (let [key, url] of Object.entries(keys)) {
-  console.log(key, url);
   createRewriteFilter(`Texture asset: ${key}`, url + '*', {
     enabledFor: async (storage, url) => {
       let res = await storage.get(key);

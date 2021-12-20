@@ -73,6 +73,11 @@ export const KEYS = {
     url: 'https://tetr.io/res/particles/star.png',
     storagekey: 'particle_star',
     filekey: '_particle_star'
+  },
+  PARTICLE_FLAKE: {
+    url: 'https://tetr.io/res/particles/flake.png',
+    storagekey: 'particle_flake',
+    filekey: '_particle_flake'
   }
 };
 
