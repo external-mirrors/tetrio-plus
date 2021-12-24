@@ -13,7 +13,7 @@ npm i node-fetch@2.6.1 whatwg-url xmldom
 cd ..
 
 mkdir -p out/tetrioplus
-git archive HEAD~ | tar -x -C out/tetrioplus
+git archive HEAD | tar -x -C out/tetrioplus
 cp app.asar out/app.asar.vanilla
 
 rm TETR.IO\ Setup.exe app-64.7z app.asar # cleanup
