@@ -26,17 +26,31 @@ function storeGet(key) {
   return val;
 }
 
-const greenlog = (...args) => console.log(
-  "\u001b[32mGL>",
-  ...args,
-  "\u001b[37m"
-);
+const LEVELS = { verbose: 0, debug: 1, log: 2, warn: 3, error: 4, critical: 5 };
+const LEVEL_NAMES = {
+  verbose: 'VRB',
+  debug: 'DBG',
+  log: 'LOG',
+  warn: 'WRN',
+  error: 'ERR',
+  critical: 'SEV'
+}
+const LOGGERS = {
+  'greenlog': { level: 'log', prefix: '\u001b[32m[TP $level $time] GL >' },
+  'redlog':   { level: 'log', prefix: '\u001b[31m[TP $level $time] RL >' },
+  'ipc':      { level: 'log', prefix: '\u001b[33m[TP $level $time] IPC>' }
+}
+const tplogger = (id, level, ...args) => {
+  if (LEVELS[LOGGERS[id]?.level] > LEVELS[level]) return;
 
-const redlog = (...args) => console.log(
-  "\u001b[31mRL>",
-  ...args,
-  "\u001b[37m"
-);
+  let time = (new Date()).toISOString().split('T')[1].split('Z')[0];
+  let prefix = LOGGERS[id].prefix
+    .replace('$time', time)
+    .replace('$level', LEVEL_NAMES[level]);
+  console.log(prefix, ...args, "\u001b[37m");
+}
+const greenlog = (...args) => tplogger('greenlog', 'log', ...args);
+const redlog = (...args) => tplogger('redlog', 'log', ...args);
 
 function modifyWindowSettings(settings) {
   if (storeGet('transparentBgEnabled')) {
@@ -133,24 +147,41 @@ ipcMain.on('presence', async (e, arg) => {
   }
 });
 
-// Jankyness warning: poor excuse of a channels implementation
-// used for polyfilling browser.runtime.connect
+// A brief summary of how the TETR.IO <-> Music Graph IPC works:
+// There's no automated disconnect event when no connection is made in the first
+// place, so when TETR.IO doesn't recieve a protocol-level acknowledgement, it
+// continually attempts to reconnect.
+// Window reload/close will automatically fire actual disconnect events once
+// either side has started 'listening' which is announced from the browser api
+// polyfill when onMessage.addListener is called.
+// TETR.IO also manually closes the channel when it reloads the music graph,
+// then restarts connection attempts afterwards.
+
 let windows = new Set();
 let channels = new Map(); // webContents id -> { nonce }[]
+function addChannel(windowId, nonce) {
+  let subchannels = channels.get(windowId);
+  if (subchannels.some(channel => channel.nonce == nonce))
+    return;
+  subchannels.push({ nonce });
+}
 function setupWindowIpcChannelBroadcasting(window) {
-  greenlog("Setup window", window.webContents.id);
+  tplogger('ipc', 'log', "Set up window", window.webContents.id);
   const webContents = window.webContents;
   const id = window.webContents.id;
   windows.add(webContents);
   channels.set(id, []);
 
-  window.webContents.on('did-start-loading', () => {
-    greenlog("Window started loading", window.webContents.history[0]);
-    for (let channel of channels.get(id).splice(0))
+  window.webContents.on('did-start-navigation', (_, url, isInPlace, isMainFrame) => {
+    if (isInPlace || !isMainFrame) return;
+    tplogger('ipc', 'log', `Window ${id} started navigation (${url})`);
+    for (let channel of channels.get(id).splice(0)) {
+      tplogger('ipc', 'log', 'killing channel', channel.nonce);
       ipcBroadcast(window.webContents.id, 'tetrio-plus-close-channel', channel.nonce);
+    }
   });
   window.on('closed', () => {
-    redlog("Window closed", id);
+    tplogger('ipc', 'log', `Window ${id} closed`);
     windows.delete(webContents);
     for (let channel of channels.get(id).splice(0))
       ipcBroadcast(id, 'tetrio-plus-close-channel', channel.nonce);
@@ -159,28 +190,31 @@ function setupWindowIpcChannelBroadcasting(window) {
 }
 mainWindow.then(window => setupWindowIpcChannelBroadcasting(window));
 function ipcBroadcast(excludeId, channel, ...args) {
-  // redlog(`ipc broadcast`, channel, ...args);
+  tplogger('ipc', 'verbose', `ipc broadcast`, channel, ...args);
   for (let window of windows) {
     if (excludeId == window.id) continue;
     window.send(channel, ...args);
   }
 }
+
 // Rebroadcast channels for implementing the browser.runtime.connect API
 ipcMain.on('tetrio-plus-listening-on-channel', async (evt, nonce) => {
+  tplogger('ipc', 'debug', "Window", evt.sender.webContents.id, "listening on channel", nonce);
   // indicates this sender is listening on this channel and that it
   // should be automatically closed when its not doing that anymore.
-  channels.get(evt.sender.webContents.id).push({ nonce });
+  addChannel(evt.sender.webContents.id, nonce);
 })
 ipcMain.on('tetrio-plus-create-channel', async (evt, nonce, ...args) => {
+  tplogger('ipc', 'debug', "Window", evt.sender.webContents.id, "created channel", nonce);
   // this sender *created* this channel, so close it when its gone.
-  channels.get(evt.sender.webContents.id).push({ nonce });
+  addChannel(evt.sender.webContents.id, nonce);
   ipcBroadcast(null, 'tetrio-plus-create-channel', nonce, ...args);
 });
 ipcMain.on('tetrio-plus-close-channel', async (evt, nonce, ...args) => {
+  tplogger('ipc', 'debug', "Window", evt.sender.webContents.id, "closed channel", nonce);
   // this channel was closed by a sender or a reciever
-  let chnls = channels.get(evt.sender.webContents.id);
-  chnls = chnls.filter(channel => channel.nonce != nonce);
-  channels.set(evt.sender.webContents.id, chnls);
+  for (let [key, subchannels] of channels.entries())
+    channels.set(key, subchannels.filter(channel => channel.nonce != nonce));
   // channel close messages shouldn't be rebroadcasted to the original window
   // because it causes issues with the music graph event broadcaster when it
   // closes itself (since having loopbacks differs from Firefox)
@@ -194,6 +228,8 @@ ipcMain.on('tetrio-plus-close-channel', async (evt, nonce, ...args) => {
 ipcMain.on('tetrio-plus-channel-message', async (evt, nonce, ...args) => {
   ipcBroadcast(null, 'tetrio-plus-channel-message', nonce, ...args);
 });
+
+
 
 ipcMain.on('tetrio-plus-cmd', async (evt, arg, arg2) => {
   switch(arg) {
@@ -248,7 +284,7 @@ ipcMain.on('tetrio-plus-cmd', async (evt, arg, arg2) => {
       break;
 
     case 'tetrio-plus-open-browser-window':
-      redlog('TPOBW: ' + JSON.stringify(arg2));
+      tplogger('ipc', 'log', 'Open browser window: ' + JSON.stringify(arg2));
       let panel = new BrowserWindow({
         width: arg2.width,
         height: arg2.height,

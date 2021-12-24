@@ -340,7 +340,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
           return `ERROR: Expected boolean value at [].hidden`;
 
         if (typeof node.singleInstance != 'boolean')
-          return `ERROR: Expected boolean value at [].hidden`;
+          return `ERROR: Expected boolean value at [].singleInstance`;
 
         if (typeof node.x != 'number')
           return `ERROR: Expected number at [].x`;

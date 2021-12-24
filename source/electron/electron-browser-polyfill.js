@@ -48,7 +48,7 @@
           addListener(listener) {
             let disconnected = false; // May fire multiple times, only want handler called once
             let wrappedlistener = (evt, msgnonce) => {
-              if (disconnected) return;
+              // if (disconnected) return;
               disconnected = true;
               if (nonce != msgnonce) return;
               listener();

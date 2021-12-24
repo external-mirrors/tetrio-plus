@@ -132,6 +132,7 @@ const app = new Vue({
         audioEnd: 0,
         triggers: [],
         hidden: false,
+        singleInstance: false,
         effects: {
           volume: 1,
           speed: 1
