@@ -193,7 +193,7 @@ export default {
   },
   watch: {
     'trigger.setVariable'(newVal) {
-      let sanitized = newVal.replace(/^[^A-Za-z_]|[^A-Za-z0-9_]/g, '_');
+      let sanitized = newVal.replace(/^[^$A-Za-z_]|[^$A-Za-z0-9_]/g, '_');
       if (sanitized != newVal)
         this.trigger.setVariable = sanitized;
     }

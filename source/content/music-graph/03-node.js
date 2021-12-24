@@ -219,7 +219,12 @@ musicGraph(musicGraph => {
         (this.source.audioEnd || audioSource.buffer.duration) -
         this.source.audioStart
       ) - startTime;
-      audioSource.start(context.currentTime + audioDelay, start, duration);
+      try {
+        audioSource.start(context.currentTime + audioDelay, start, duration);
+      } catch(ex) {
+        audioSource.start(0, 0, 0);
+        console.warn(ex);
+      }
       this.startedAt = context.currentTime + audioDelay - startTime;
 
       this.timeouts.push(setTimeout(
