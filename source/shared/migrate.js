@@ -324,6 +324,19 @@ var migrate = (() => {
     }
   });
 
+  /*
+    v0.23.4 - More music graph stuff
+    + winterCompatEnabled
+  */
+  migrations.push({
+    version: '0.23.8',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.23.8' });
+      let board = await dataSource.get('board');
+      if (board) await dataSource.set({ winterCompatEnabled: true });
+    }
+  });
+
   return async function migrate(dataSource) {
     let { version: initialVersion} = await dataSource.get('version');
     if (!initialVersion) initialVersion = '0.0.0';

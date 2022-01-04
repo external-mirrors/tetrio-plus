@@ -94,6 +94,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     windowTitleStatus: electronOnly(parseBoolean('windowTitleStatus')),
     musicGraphBackground: parseBoolean('musicGraphBackground'),
     board: parseFile('board', /^image\/.+$/),
+    winterCompatEnabled: parseBoolean('winterCompatEnabled'),
     queue: parseFile('queue', /^image\/.+$/),
     grid: parseFile('grid', /^image\/.+$/),
     particle_beam: parseFile('particle_beam', /^image\/.+$/),

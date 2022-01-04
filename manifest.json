@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Tetr.io+",
-  "version": "0.23.7",
+  "version": "0.23.8",
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
   
@@ -43,6 +43,7 @@
       "source/filters/bg/bg-tetriojs-filter.js",
       "source/filters/bg/bg-request-filter.js",
       "source/filters/generic-texture-request-filter.js",
+      "source/filters/winter-compat-filter.js",
       "source/filters/adblocker-filter.js",
 
       "source/bootstrap/content-script-communicator.js",

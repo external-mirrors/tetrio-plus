@@ -1,6 +1,6 @@
 const html = arg => arg.join('');
 import { KEYS } from '../../importers/generic-texture.js';
-
+import OptionToggle from '../../popup/components/OptionToggle.js'
 let app = new Vue({
   template: html`
     <div>
@@ -31,8 +31,17 @@ let app = new Vue({
         </div>
         <a :href="currentSrc" download>Download</a>
       </div>
+
+      <div v-if="key == 'board'" style="margin-top: 8px">
+        <option-toggle storageKey="winterCompatEnabled">
+            Enable
+            <a href="#" @click="openWinterCompatWiki">winter event compatibility</a>
+            patch.
+        </option-toggle>
+      </div>
     </div>
   `,
+  components: { OptionToggle },
   data: {
     keys: Object.fromEntries(Object.values(KEYS).map(key => {
       return [key.storagekey, key.url];
@@ -59,6 +68,9 @@ let app = new Vue({
     }
   },
   methods: {
+    openWinterCompatWiki() {
+      window.open('https://gitlab.com/UniQMG/tetrio-plus/-/wikis/custom-skins#winter-compat');
+    },
     async reload() {
       this.isSet = false;
       this.cacheBuster = `?cache-buster=${Date.now()}`;
