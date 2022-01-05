@@ -18,6 +18,8 @@ import * as encodeFromFiles from './sfx/encodeFromFiles.js';
 
 import automaticAny from './automatic.js';
 
+import * as background from './background.js';
+
 // Types:
 // File format: { name: string, type: string, data: arraybuffer }
 // Skin options: { delay: number, combine: boolean }
@@ -45,11 +47,7 @@ const importers = {
     encodeFromFiles: encodeFromFiles.load // file[], storage
   },
   genericTexture: genericTexture,
-  music: null,
-  bg: {
-    regular: null,
-    animated: null
-  }
+  background: background.load // file[], storage
 };
 // Imports anything, guessing at what it is.
 importers.automatic = (...args) => automaticAny(importers, ...args);

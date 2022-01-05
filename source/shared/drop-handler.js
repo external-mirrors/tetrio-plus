@@ -15,6 +15,7 @@ document.body.addEventListener('drop', async evt => {
     return;
 
   let pre = document.createElement('pre');
+  pre.classList.add('drop-handler-log');
   pre.style.position = 'fixed';
   pre.style.top = '0px';
   pre.style.left = '0px';
@@ -25,6 +26,8 @@ document.body.addEventListener('drop', async evt => {
   pre.style.margin = '0px';
   pre.style.padding = '8px';
   pre.style.fontSize = '12pt';
+  pre.style.overflow = 'auto';
+  pre.style.whiteSpace = 'break-spaces';
   document.body.append(pre);
 
   function doclog(msg) {

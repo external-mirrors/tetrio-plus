@@ -1,5 +1,6 @@
 import { test as sfxTest, load as sfxLoad } from './sfx/encodeFromFiles.js';
 import { test as musicTest, load as musicLoad } from './music.js';
+import { test as bgTest, load as bgLoad } from './background.js';
 import genericTextures from './generic-texture.js';
 import { populateImage } from '../shared/filehelper.js';
 import /* non es6 */ '../shared/migrate.js';
@@ -41,15 +42,23 @@ export default async function automatic(importers, files, storage, options) {
         if (file.name.includes(".DS_Store")) return false;
         return true;
       }).map(async file => {
-        (options&&options.log||(()=>{}))(`${file.name}`);
         return populateImage({
           name: file.name,
           type: mimes[file.name.split('.').slice(-1)[0]] || 'application/octet-stream',
           data: 'data:application/octet-stream;base64,' + await file.async('base64')
         })
       }));
-      options.zipdepth = (options.zipdepth || 0) + 1;
-      return await automatic(importers, files, storage, options);
+      if (files.length > 5) {
+        let joined = files.slice(0, 5).map(file => file.name).join(', ');
+        (options&&options.log||(()=>{}))(`${files.length} files: ${joined}...`);
+      } else {
+        let joined = files.map(file => file.name).join(', ');
+        (options&&options.log||(()=>{}))(`${files.length} files: ${joined}`);
+      }
+      return await automatic(importers, files, storage, {
+        ...options,
+        zipdepth: (options.zipdepth || 0) + 1
+      });
     }));
     return { type: 'multi', results };
   }
@@ -66,6 +75,10 @@ export default async function automatic(importers, files, storage, options) {
       (options&&options.log||(()=>{}))("Guessing import type generic/" + id);
       return await load(files, storage, options);
     }
+  }
+  if (await bgTest(files)) {
+    (options&&options.log||(()=>{}))("Guessing import type backgrounds");
+    return await bgLoad(files, storage, options);
   }
   if (files.every(file => /^image/.test(file.type))) {
     (options&&options.log||(()=>{}))("Guessing import type skin");
