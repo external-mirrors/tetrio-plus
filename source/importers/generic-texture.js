@@ -78,6 +78,96 @@ export const KEYS = {
     url: 'https://tetr.io/res/particles/flake.png',
     storagekey: 'particle_flake',
     filekey: '_particle_flake'
+  },
+  RANK_D: {
+  	url: 'https://tetr.io/res/league-ranks/d.png',
+  	storagekey: 'rank_d',
+  	filekey: '_rank_d'
+  },
+  RANK_DPLUS: {
+  	url: 'https://tetr.io/res/league-ranks/d+.png',
+  	storagekey: 'rank_dplus',
+  	filekey: '_rank_dplus'
+  },
+  RANK_CMINUS: {
+  	url: 'https://tetr.io/res/league-ranks/c-.png',
+  	storagekey: 'rank_cminus',
+  	filekey: '_rank_cminus'
+  },
+  RANK_C: {
+  	url: 'https://tetr.io/res/league-ranks/c.png',
+  	storagekey: 'rank_c',
+  	filekey: '_rank_c'
+  },
+  RANK_CPLUS: {
+  	url: 'https://tetr.io/res/league-ranks/c+.png',
+  	storagekey: 'rank_cplus',
+  	filekey: '_rank_cplus'
+  },
+  RANK_BMINUS: {
+  	url: 'https://tetr.io/res/league-ranks/b-.png',
+  	storagekey: 'rank_bminus',
+  	filekey: '_rank_bminus'
+  },
+  RANK_B: {
+  	url: 'https://tetr.io/res/league-ranks/b.png',
+  	storagekey: 'rank_b',
+  	filekey: '_rank_b'
+  },
+  RANK_BPLUS: {
+  	url: 'https://tetr.io/res/league-ranks/b+.png',
+  	storagekey: 'rank_bplus',
+  	filekey: '_rank_bplus'
+  },
+  RANK_AMINUS: {
+  	url: 'https://tetr.io/res/league-ranks/a-.png',
+  	storagekey: 'rank_aminus',
+  	filekey: '_rank_aminus'
+  },
+  RANK_A: {
+  	url: 'https://tetr.io/res/league-ranks/a.png',
+  	storagekey: 'rank_a',
+  	filekey: '_rank_a'
+  },
+  RANK_APLUS: {
+  	url: 'https://tetr.io/res/league-ranks/a+.png',
+  	storagekey: 'rank_aplus',
+  	filekey: '_rank_aplus'
+  },
+  RANK_SMINUS: {
+  	url: 'https://tetr.io/res/league-ranks/s-.png',
+  	storagekey: 'rank_sminus',
+  	filekey: '_rank_sminus'
+  },
+  RANK_S: {
+  	url: 'https://tetr.io/res/league-ranks/s.png',
+  	storagekey: 'rank_s',
+  	filekey: '_rank_s'
+  },
+  RANK_SPLUS: {
+  	url: 'https://tetr.io/res/league-ranks/s+.png',
+  	storagekey: 'rank_splus',
+  	filekey: '_rank_splus'
+  },
+  RANK_SS: {
+  	url: 'https://tetr.io/res/league-ranks/ss.png',
+  	storagekey: 'rank_ss',
+  	filekey: '_rank_ss'
+  },
+  RANK_U: {
+  	url: 'https://tetr.io/res/league-ranks/u.png',
+  	storagekey: 'rank_u',
+  	filekey: '_rank_u'
+  },
+  RANK_X: {
+  	url: 'https://tetr.io/res/league-ranks/x.png',
+  	storagekey: 'rank_x',
+  	filekey: '_rank_x'
+  },
+  RANK_Z: {
+  	url: 'https://tetr.io/res/league-ranks/z.png',
+  	storagekey: 'rank_z',
+  	filekey: '_rank_z'
   }
 };
 

@@ -14,7 +14,25 @@ let keys = {
   particle_particle: 'https://tetr.io/res/particles/particle.png',
   particle_smoke: 'https://tetr.io/res/particles/smoke.png',
   particle_star: 'https://tetr.io/res/particles/star.png',
-  particle_flake: 'https://tetr.io/res/particles/flake.png'
+  particle_flake: 'https://tetr.io/res/particles/flake.png',
+  rank_d: 'https://tetr.io/res/league-ranks/d.png',
+  rank_dplus: 'https://tetr.io/res/league-ranks/d+.png',
+  rank_cminus: 'https://tetr.io/res/league-ranks/c-.png',
+  rank_c: 'https://tetr.io/res/league-ranks/c.png',
+  rank_cplus: 'https://tetr.io/res/league-ranks/c+.png',
+  rank_bminus: 'https://tetr.io/res/league-ranks/b-.png',
+  rank_b: 'https://tetr.io/res/league-ranks/b.png',
+  rank_bplus: 'https://tetr.io/res/league-ranks/b+.png',
+  rank_aminus: 'https://tetr.io/res/league-ranks/a-.png',
+  rank_a: 'https://tetr.io/res/league-ranks/a.png',
+  rank_aplus: 'https://tetr.io/res/league-ranks/a+.png',
+  rank_sminus: 'https://tetr.io/res/league-ranks/s-.png',
+  rank_s: 'https://tetr.io/res/league-ranks/s.png',
+  rank_splus: 'https://tetr.io/res/league-ranks/s+.png',
+  rank_ss: 'https://tetr.io/res/league-ranks/ss.png',
+  rank_u: 'https://tetr.io/res/league-ranks/u.png',
+  rank_x: 'https://tetr.io/res/league-ranks/x.png',
+  rank_z: 'https://tetr.io/res/league-ranks/z.png'
 };
 
 for (let [key, url] of Object.entries(keys)) {
