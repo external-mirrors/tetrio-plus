@@ -16,22 +16,22 @@
 
     throw new Error("Reached end of string while searching for bracket pairs");
   }
-  const tetrioWinterCode = `;
+  const tetrioWinterCode = b => `;
     this.textures.set("board", PIXI.BaseTexture.from("/res/skins/board/generic/board.png")),
-    this.elements.set("background", new go.generic.ns.background(this, {
+    this.elements.set("background", new ${b}.generic.ns.background(this, {
       texture: new PIXI.Texture(this.textures.get("board"), new PIXI.Rectangle(258, 2, 252, 252)),
       texture_tiny: new PIXI.Texture(this.textures.get("board"), new PIXI.Rectangle(22, 2, 26, 16)),
       slices: [124, 0, 124, 0],
       slices_tiny: [10, 0, 10, 10],
       offsets_tiny: [10, 0, 10, 10]
     })),
-    this.elements.set("border", new go.generic.ns.border(this, {
+    this.elements.set("border", new ${b}.generic.ns.border(this, {
       texture: new PIXI.Texture(this.textures.get("board"), new PIXI.Rectangle(258, 258, 252, 252)),
       slices: [9, 0, 9, 9],
       offsets: [9, 0, 9, 9]
     })),
     t.setoptions.slot_bar2 && (
-      this.elements.set("bar2", new go.generic.ns.bar_smooth(this, {
+      this.elements.set("bar2", new ${b}.generic.ns.bar_smooth(this, {
         side: "right",
         bar_texture: new PIXI.Texture(this.textures.get("board"), new PIXI.Rectangle(173, 2, 27, 18)),
         bar_slices: [9, 0, 9, 9],
@@ -58,9 +58,11 @@
         // the constructor left bracket
         let regex = /[$_\w]{1,3}\.generic\.[$_\w]{0,3}\.Board=class\s*extends\s*[$_\w]{0,3}{\s*constructor\([$_\w,]+\)\s*/;
         let match = regex.exec(src);
-        if (!match) throw "Regex didn't match";
+        if (!match) throw "Regex #1 didn't match";
+        let match2 = /(\w+)\.generic\.ns\.bar_smooth/.exec(src);
+        if (!match2) throw "Regex #2 didn't match";
         let end = matchBalanced(src, match.index + match[0].length);
-        src = src.slice(0, end) + tetrioWinterCode + src.slice(end);
+        src = src.slice(0, end) + tetrioWinterCode(match2[1]) + src.slice(end);
       } catch(ex) {
         console.warn('Winter compat hook broke:', ex);
       } finally {
