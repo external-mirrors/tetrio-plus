@@ -7,3 +7,7 @@ build
 buildscripttest
 importer/node_modules
 testcontent
+tpsecore/.idea
+tpsecore/pkg
+tpsecore/target
+tpsecore/blockmux.iml
