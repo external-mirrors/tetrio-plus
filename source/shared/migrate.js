@@ -325,7 +325,7 @@ var migrate = (() => {
   });
 
   /*
-    v0.23.4 - More music graph stuff
+    v0.23.8 - Winter compat patch
     + winterCompatEnabled
   */
   migrations.push({
@@ -333,7 +333,7 @@ var migrate = (() => {
     run: async dataSource => {
       await dataSource.set({ version: '0.23.8' });
       let board = await dataSource.get('board');
-      if (board) await dataSource.set({ winterCompatEnabled: true });
+      if (board) await dataSource.set({ winterCompatEnabled: false });
     }
   });
 
