@@ -17,14 +17,15 @@
     this.addEventListenerBase(type, listener, arg);
   }
 
-  ipcRenderer.on('renderspace-fetch-file', async (_evt, url, mode) => {
+  ipcRenderer.on('renderspace-fetch-file', async (_evt, url) => {
     console.log(`TETR.IO PLUS: Fetching file from renderspace:`, url);
     let result = await fetch(url).then(res => {
-      switch (mode) {
-        case 'text': return res.text();
-        case 'arrayBuffer': return res.arrayBuffer();
-        default: return res.text();
-      }
+      let utf8 = !/^(image|audio)/.test(res.headers.get('content-type'));
+      console.log(
+        `TETR.IO PLUS: Userspace fetch content-type: ` +
+        `${res.headers.get('content-type')} (utf8? ${utf8})`
+      );
+      if (utf8) { return res.text() } else { return res.arrayBuffer() }
     });
     ipcRenderer.send(`renderspace-fetch-file-result-${url}`, result);
   });

@@ -394,22 +394,26 @@ app.whenReady().then(async () => {
 
             response.on('data', chunk => raw.push(chunk))
             response.on('end', async () => {
+              let joined = typeof raw[0] == 'string'
+                ? raw.join('')
+                : Buffer.concat(raw);
               let cloudflare = (
                 contentType.startsWith('text/html') &&
-                originalUrl.includes('tetrio.js') &&
                 joined.includes("Please verify you're not a bot")
               );
               if (cloudflare) {
                 redlog(`Cloudflare: Fetching`, originalUrl, `via ipc...`);
-                let file = `/js/tetrio.js?bypass-tetrio-plus`;
-                (await mainWindow).webContents.send('renderspace-fetch-file', file, utf8 ? 'text' : 'arrayBuffer');
-                ipcMain.once(`renderspace-fetch-file-result-${file}`, (_evt, filecontents) => {
-                  resolve(filecontents);
-                });
+                let file = new URL(originalUrl).pathname + '?bypass-tetrio-plus';
+                (await mainWindow).webContents.send('renderspace-fetch-file', file);
+                ipcMain.once(
+                  `renderspace-fetch-file-result-${file}`,
+                  (_evt, filecontents) => {
+                    if (filecontents instanceof ArrayBuffer)
+                      filecontents = Buffer.from(filecontents);
+                    resolve(filecontents)
+                  }
+                );
               } else {
-                let joined = typeof raw[0] == 'string'
-                  ? raw.join('')
-                  : Buffer.concat(raw);
                 resolve(joined);
               }
             });
