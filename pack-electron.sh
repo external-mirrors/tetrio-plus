@@ -10,7 +10,7 @@ mv 'TETR.IO Setup v8.exe' 'TETR.IO Setup.exe'
 asar extract app.asar out
 node ./build-electron.js
 cd out
-npm i node-fetch@2.6.1 whatwg-url xmldom
+npm i node-fetch@2.6.1 whatwg-url xmldom image-size
 cd ..
 
 mkdir -p out/tetrioplus

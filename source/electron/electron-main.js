@@ -523,6 +523,8 @@ app.whenReady().then(async () => {
     fetch: require('node-fetch'),
     URL: require('whatwg-url').URL,
     DOMParser: require('xmldom').DOMParser,
+    image_size: require('image-size'),
+    Buffer,
     // https://gist.github.com/jmshal/b14199f7402c8f3a4568733d8bed0f25
     atob(a) { return Buffer.from(a, 'base64').toString('binary'); },
     btoa(b) { return Buffer.from(b).toString('base64'); },
