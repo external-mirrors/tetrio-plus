@@ -140,7 +140,7 @@ musicGraph(musicGraph => {
         if (!alerted) {
           alerted = true;
           alert(
-            '[TETR.IO PLUS] Music graph event count above ' + hardLimit + ' per second',
+            '[TETR.IO PLUS] Music graph event count above ' + hardLimit + ' per second' +
             ', graph automatically terminated to avoid freezing the game. Check your ' +
             'graph for performance issues. You can raise this limit in the ' +
             'Music Graph\'s global config section.'
