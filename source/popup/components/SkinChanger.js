@@ -11,9 +11,6 @@ export default {
         <button @click="resetSkin" title="Removes the existing custom skin">
           Remove skin
         </button>
-        <button @click="openMiscChanger" style="float: right" title="Opens an editor for other non-block skins">
-          Edit other skins
-        </button>
       </div>
 
       <div class="preview-group">
@@ -129,9 +126,6 @@ export default {
           height: 550
         });
       }
-    },
-    async openMiscChanger() {
-      await this.open('source/panels/generic-texture-replacer/index.html');
     },
     async openImageChanger() {
       await this.open('source/panels/skinpicker/index.html');

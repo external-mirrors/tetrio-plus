@@ -137,3 +137,31 @@ img.skin, .no-skin {
   display: inline-block;
   max-width: 360px;
 }
+
+.skin-load-indicators {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.skin-load-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+}
+
+.skin-load-indicator::before {
+  display: inline-block;
+  content: ' ';
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  background-color: #FFFF0088;
+  margin-right: 4px;
+  margin-left: 2px;
+}
+.skin-load-indicator.set::before {
+  background-color: #00FF00;
+}
+.skin-load-indicator.unset::before {
+  background-color: #FF000088;
+}

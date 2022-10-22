@@ -1,6 +1,7 @@
 import OptionToggle from './components/OptionToggle.js'
 import ThemeManager from './components/ThemeManager.js';
 import SkinChanger from './components/SkinChanger.js';
+import OtherSkinsChanger from './components/OtherSkinsChanger.js';
 import SfxManager from './components/SfxManager.js';
 import MusicManager from './components/MusicManager.js';
 import BackgroundManager from './components/BackgroundManager.js';
@@ -57,8 +58,12 @@ const app = new Vue({
         </fieldset>
 
         <fieldset class="section">
-          <legend>Skins</legend>
+          <legend>Block skins</legend>
           <skin-changer />
+        </fieldset>
+        <fieldset class="section">
+          <legend>Other skins</legend>
+          <other-skins-changer />
         </fieldset>
         <fieldset class="section">
           <legend>Sound effects</legend>
@@ -260,6 +265,7 @@ const app = new Vue({
     UrlPackLoader,
     ThemeManager,
     SkinChanger,
+    OtherSkinsChanger,
     SfxManager,
     MusicManager,
     BackgroundManager,
