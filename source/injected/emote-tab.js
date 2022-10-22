@@ -2,7 +2,7 @@
 /* Modified by UniQMG */
 (async () => {
   // Injected @ filters/emote-tab-tetriojs-filter.js, content/emote-tab.js
-  while (!window.emoteMap && !localStorage.chTetrioUser)
+  while (!window.emoteMap || !localStorage.chTetrioUser)
     await new Promise(res => setTimeout(res, 100));
 
   const user = JSON.parse(localStorage.chTetrioUser);
