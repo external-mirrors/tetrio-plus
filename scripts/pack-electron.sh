@@ -18,5 +18,8 @@ mkdir -p out/tetrioplus
 git archive HEAD | tar -x -C out/tetrioplus
 cp app.asar out/app.asar.vanilla
 
-rm TETR.IO\ Setup.exe app-64.7z app.asar # cleanup
+# cleanup
+rm TETR.IO\ Setup.exe app-64.7z app.asar
+# fix for https://github.com/nodejs/node-gyp/pull/2721
+rm out/node_modules/register-scheme/build/node_gyp_bins/python3
 asar pack out app.asar
