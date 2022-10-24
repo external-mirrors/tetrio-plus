@@ -6,6 +6,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y
 
 # install rust, wasmpack, and related
 curl https://sh.rustup.rs -sSf | sh -s -- -y
+rustup default 1.64.0
 source "$HOME/.cargo/env"
 curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | bash
 

@@ -1,6 +1,6 @@
 const html = arg => arg.join('');
 import OptionToggle from './OptionToggle.js';
-import { KEYS } from '../../../importers/generic-texture.js';
+import { KEYS } from '../../importers/generic-texture.js';
 
 export default {
   template: html`
@@ -17,6 +17,9 @@ export default {
             {{ skin.key }}
           </span>
         </div>
+        <option-toggle storageKey="winterCompatEnabled">
+          Enable winter event compatibility patch
+        </option-toggle>
       </div>
     </div>
   `,

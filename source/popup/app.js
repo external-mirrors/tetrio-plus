@@ -253,7 +253,7 @@ const app = new Vue({
 
       <!-- Footer -->
       <fieldset class="section legendless">
-        <strong>Hard refresh (<kbd>ctrl-F5</kbd>) Tetrio after making changes.</strong><br>
+        <strong>Hard refresh (<kbd>ctrl-F5</kbd>) TETR.IO after making changes.</strong><br>
         <a href="https://gitlab.com/UniQMG/tetrio-plus" @click="openSource($event)">
           Source code and readme
         </a>
