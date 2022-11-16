@@ -1,0 +1,3 @@
+[submodule "tpsecore"]
+	path = tpsecore
+	url = https://gitlab.com/UniQMG/tpsecore

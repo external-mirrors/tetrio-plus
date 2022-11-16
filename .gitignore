@@ -4,7 +4,6 @@ tetrioplus.zip.xpi
 tetrioplus.xpi
 node_modules
 build
-buildscripttest
 importer/node_modules
-testcontent
-tpsecore
+source/lib/tpsecore.js
+source/lib/tpsecore_bg.wasm

@@ -19,24 +19,42 @@ let app = new Vue({
       <div class="preview" v-if="keys[key]">
         <h2>Vanilla</h2>
         <div class="image-container">
-          <img :src="keys[key] + '?bypass-tetrio-plus'"  :key="keys[key]" />
+          <img
+            ref="vanilla"
+            :src="keys[key] + '?bypass-tetrio-plus'"
+            :key="keys[key]"
+            @load="setVanillaSize"
+          />
         </div>
+        <div>{{ vanillaSize }}</div>
         <a :href="keys[key] + '?bypass-tetrio-plus'" download>Download</a>
       </div>
 
       <div class="preview" v-if="keys[key]">
         <h2>Current <button @click="remove" :disabled="!isSet">Remove</button></h2>
         <div class="image-container">
-          <img :src="currentSrc" :key="currentSrc" />
+          <img
+            ref="modded"
+            :src="currentSrc"
+            :key="currentSrc"
+            @load="setModdedSize"
+          />
+        </div>
+        <div>
+          {{ moddedSize }}
         </div>
         <a :href="currentSrc" download>Download</a>
+        <div v-if="sizeWarning">
+          ⚠️ Incorrect size<br>
+          (May cause crashes)
+        </div>
       </div>
 
       <div v-if="key == 'board'" style="margin-top: 8px">
-        <option-toggle storageKey="winterCompatEnabled">
-            Enable
-            <a href="#" @click="openWinterCompatWiki">winter event compatibility</a>
-            patch.
+        <option-toggle storageKey="winterCompatEnabled" @changed="setWinterCompatEnabled">
+          Enable
+          <a href="#" @click="openWinterCompatWiki">winter event compatibility</a>
+          patch. This requires at least a 1024x1024 texture.
         </option-toggle>
       </div>
     </div>
@@ -47,13 +65,21 @@ let app = new Vue({
       return [key.storagekey, key.url];
     })),
     key: 'board',
+    winterCompatEnabled: false,
     cacheBuster: `?cache-buster=${Date.now()}`,
-    isSet: false
+    isSet: false,
+    vanillaSize: ``,
+    moddedSize: ``
   },
   async mounted() {
     await this.reload();
   },
   computed: {
+    sizeWarning() {
+      return this.key == 'board' && this.winterCompatEnabled
+        ? this.moddedSize != '1024x1024'
+        : this.moddedSize != this.vanillaSize;
+    },
     currentSrc() {
       let prefix = window.browser?.electron
         ? 'tetrio-plus://tetrio-plus/'
@@ -68,6 +94,18 @@ let app = new Vue({
     }
   },
   methods: {
+    setWinterCompatEnabled(enabled) {
+      console.log(`set`, enabled);
+      this.winterCompatEnabled = enabled;
+    },
+    setVanillaSize() {
+      let img = this.$refs.vanilla;
+      this.vanillaSize = `${img.naturalWidth}x${img.naturalHeight}`;
+    },
+    setModdedSize() {
+      let img = this.$refs.modded;
+      this.moddedSize = `${img.naturalWidth}x${img.naturalHeight}`;
+    },
     openWinterCompatWiki() {
       window.open('https://gitlab.com/UniQMG/tetrio-plus/-/wikis/custom-skins#winter-compat');
     },

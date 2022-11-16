@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
   "name": "Tetr.io+",
-  "version": "0.23.9",
+  "version": "0.24.0",
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
-  
+
   "permissions": [
     "webRequest",
     "webRequestBlocking",

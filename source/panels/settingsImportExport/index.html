@@ -38,6 +38,25 @@
       <button id="import-from-url">Import</button>
     </fieldset>
     <fieldset>
+      <legend>Import anything</legend>
+      Attempts to automatically determine import type for any kind of content.
+      <div>
+        See the
+        <a id="open-auto-import-wiki" href="#">
+          automatic imports wiki page<!--
+        --></a>
+        for details.
+      </div>
+      <div>
+        <input type="checkbox" id="use-experimental"> Use tpsecore importer (EXPERIMENTAL)
+      </div>
+      <div>
+        <input type="checkbox" id="advanced-merge-logic"> Advanced merge logic (tpsecore only, very high memory usage)
+      </div>
+      <input type="file" id="import-anything">
+      <div id="import-anything-status"></div>
+    </fieldset>
+    <fieldset>
       <legend>Import settings from a file</legend>
       Warning: Outdated or malformed content packs can have weird results!
       Notably, older <code>.tpse</code> packs are often missing sound effects

@@ -3,7 +3,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 
-const manifest = require('./desktop-manifest.js');
+const manifest = require('../desktop-manifest.js');
 const vanillaHash = manifest.browser_specific_settings.desktop_client.vanilla_hash;
 
 const hash = crypto.createHash('sha1');

@@ -1,5 +1,5 @@
 #!node
-// To be used by build.js
+// To be used by pack-firefox.sh
 const vueutil = require('@vue/component-compiler-utils');
 const compiler = require('vue-template-compiler');
 const { visit } = require('ast-types');

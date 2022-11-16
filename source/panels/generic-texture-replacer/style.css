@@ -16,6 +16,7 @@ h2 button {
 .preview {
   display: inline-block;
   text-align: center;
+  vertical-align: top;
 }
 .preview .image-container {
   border: 2px solid black;

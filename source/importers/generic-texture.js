@@ -168,6 +168,11 @@ export const KEYS = {
   	url: 'https://tetr.io/res/league-ranks/z.png',
   	storagekey: 'rank_z',
   	filekey: '_rank_z'
+  },
+  FONT_HUN_PNG: {
+    url: 'https://tetr.io/res/font/hun.png',
+    storagekey: 'font_hun_png',
+    filekey: '_font_hun_png'
   }
 };
 

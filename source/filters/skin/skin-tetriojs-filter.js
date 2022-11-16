@@ -56,7 +56,7 @@ createRewriteFilter("Advanced skin loader", "https://tetr.io/js/tetrio.js*", {
       );
 
       // Set up animated textures
-      var rgx = /(\w+\((\w+),\s*(\w+),\s*(\w+),\s*(\w+),\s*(\w+),\s*(\w+)\)\s*{[\S\s]{0,200}Object\.keys\(\3\)\.forEach\(\w\s*=>\s*{)([\S\s]+?)}/
+      var rgx = /(\w+\((\w+),\s*(\w+),\s*(\w+),\s*(\w+),\s*(\w+),\s*(\w+)\)\s*{[\S\s]{0,200}Object\.keys\(\3\)\.forEach\(\(\w\s*=>\s*{)([\S\s]+?)}/
       var match = false;
       src = src.replace(rgx, ($, pre, a1, a2, a3, a4, a5, a6, loopBody) => {
         var rgx2 = /(\w+\[\w+\])\s*=\s*new\s*PIXI\.Texture\((\w+),\s*new\s*PIXI.Rectangle\(([^,]+),([^,]+),([^,]+),([^,]+)\)\)/;

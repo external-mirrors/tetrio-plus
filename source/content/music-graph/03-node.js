@@ -106,6 +106,7 @@ musicGraph(musicGraph => {
         el.style.top = `${node.background.y}vh`;
         el.style.width = `${node.background.width}vw`;
         el.style.height = `${node.background.height}vh`;
+        el.style.opacity = node.background.opacity;
         justRemoved.delete(el);
       }
 

@@ -49,8 +49,31 @@
   `;
   createRewriteFilter("Winter compat", "https://tetr.io/js/tetrio.js*", {
     enabledFor: async (storage, request) => {
-      let res = await storage.get('winterCompatEnabled');
-      return res.winterCompatEnabled;
+      let { winterCompatEnabled, board } = await storage.get([
+        'winterCompatEnabled',
+        'board'
+      ]);
+      if (!winterCompatEnabled || !board)
+        return false;
+
+      let width = 0;
+      let height = 0;
+      if (typeof image_size != 'undefined') { // electron main polyfill
+        let size = await image_size(Buffer.from(board.split(',')[1], 'base64'));
+        width = size.width;
+        height = size.height;
+      } else { // firefox
+        let img = new Image();
+        await new Promise(res => {
+          img.onload = res;
+          img.onerror = res;
+          img.src = board;
+        });
+        width = img.width;
+        height = img.height;
+      }
+      console.log("[Winter compat filter] Image size", width, height);
+      return width >= 1024 && height >= 1024;
     },
     onStop: async (storage, url, src, callback) => {
       try {

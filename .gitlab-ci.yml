@@ -1,25 +1,18 @@
-image: node:latest
-
-before_script:
-    - apt-get update
-    - apt-get install zip p7zip-full -y # build script
-    - apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev -y # node canvas deps
+image: ubuntu:focal
 
 stages:
   - build
 
-build-releases:
+build:
   stage: build
-  script:
-    - git checkout $CI_COMMIT_REF_NAME -f && git pull && git reset --hard $CI_COMMIT_SHA
-    - 'echo Building version v`grep -oP "(?<=version\": \")[^\"]+(?=\")" < manifest.json`'
-    - ls -a
-    - yarn
-    - bash ./pack.sh
-    - bash ./pack-electron.sh
-    - zip -r app.asar.zip -9 app.asar
+  cache:
+    key: rust-build
+    paths:
+      - target
   artifacts:
     paths:
       - tetrioplus.xpi
       - app.asar.zip
     expire_in: 1 week
+  script:
+    - ./scripts/build.sh

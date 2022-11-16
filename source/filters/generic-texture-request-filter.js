@@ -32,7 +32,8 @@ let keys = {
   rank_ss: 'https://tetr.io/res/league-ranks/ss.png',
   rank_u: 'https://tetr.io/res/league-ranks/u.png',
   rank_x: 'https://tetr.io/res/league-ranks/x.png',
-  rank_z: 'https://tetr.io/res/league-ranks/z.png'
+  rank_z: 'https://tetr.io/res/league-ranks/z.png',
+  font_hun_png: 'https://tetr.io/res/font/hun.png'
 };
 
 for (let [key, url] of Object.entries(keys)) {
