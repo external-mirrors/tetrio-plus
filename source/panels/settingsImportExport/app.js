@@ -7,6 +7,7 @@ import readfiles from '../../shared/filehelper.js';
 (async () => {
   await init();
 
+
   let match = /install=([^=]+)/.exec(new URL(window.location).search);
   if (match) {
     console.log(match);
@@ -42,20 +43,31 @@ import readfiles from '../../shared/filehelper.js';
     });
   }
 
+
   document.getElementById('import').addEventListener('change', async evt => {
     let status = document.createElement('div');
     status.innerText = 'working on import...';
     document.body.appendChild(status);
 
-    var reader = new FileReader();
-    reader.readAsText(evt.target.files[0], "UTF-8");
-    reader.onerror = () => alert("Failed to load content pack");
-
     try {
-      let result = await new Promise(res => {
-        reader.onload = evt => res(evt.target.result);
-      });
-      const data = JSON.parse(result);
+      let data = null;
+      if (evt.target.files[0].name.endsWith('tpsez')) {
+        status.innerText = 'working on import: load tpsez...';
+        let zip = await JSZip.loadAsync(evt.target.files[0]);
+        data = {};
+        for (let [key, file] of Object.entries(zip.files)) {
+          data[key] = JSON.parse(await file.async('string'))
+        }
+      } else {
+        status.innerText = 'working on import: load tpse...';
+        let reader = new FileReader();
+        reader.readAsText(evt.target.files[0], "UTF-8");
+        reader.onerror = () => alert("Failed to load content pack");
+        await new Promise(res => reader.onload = res);
+        data = JSON.parse(reader.result);
+      }
+
+      status.innerText = 'working on import: apply settings...';
       alert(await sanitizeAndLoadTPSE(data, browser.storage.local));
     } catch(ex) {
       alert("Failed to load content pack! See the console for more details");
@@ -72,60 +84,114 @@ import readfiles from '../../shared/filehelper.js';
     }
   });
 
-  document.getElementById('export').addEventListener('click', async evt => {
-    try {
-      let status = document.createElement('div');
-      status.innerText = 'working on export...';
-      document.body.appendChild(status);
 
-      let exportKeys = [];
-      let elems = document.getElementsByClassName('export-toggle');
-      for (let elem of elems) {
-        if (elem.checked) {
-          exportKeys.push(...elem.getAttribute('data-export').split(','));
+  async function exportKeys(entryCallback) {
+    let presentKeys = new Set();
+    async function exportKey(key) {
+      let value = await browser.storage.local.get(key);
+      if (!value[key]) return false;
+      entryCallback(key, value[key]);
+      presentKeys.add(key);
+      return true;
+    }
+
+    if (!await exportKey('version'))
+      throw new Error("Attempted to export, but missing key 'version'?");
+
+    let elems = document.getElementsByClassName('export-toggle');
+    for (let elem of elems) {
+      if (elem.checked) {
+        for (let key of elem.getAttribute('data-export').split(',')) {
+          await exportKey(key);
         }
       }
+    }
 
-      let config = await browser.storage.local.get(exportKeys);
-      if (!config.version)
-        throw new Error("Attempted to export, but missing key 'version'?");
+    if (presentKeys.has('animatedBackground')) {
+      let { animatedBackground } = await browser.storage.local.get('animatedBackground');
+      let key = 'background-' + animatedBackground.id;
+      await exportKey(key);
+    }
 
-      if (config.animatedBackground) {
-        let key = 'background-' + config.animatedBackground.id;
-        Object.assign(config, await browser.storage.local.get(key));
-      }
+    if (presentKeys.has('backgrounds')) {
+      let { backgrounds } = await browser.storage.local.get('backgrounds');
+      let bgIds = backgrounds.map(({ id }) => 'background-' + id);
+      for (let id of bgIds) await exportKey(id);
+    }
 
-      if (config.backgrounds) {
-        let bgIds = config.backgrounds.map(({ id }) => 'background-' + id);
-        let bgs = await browser.storage.local.get(bgIds);
-        Object.assign(config, bgs);
-      }
+    if (presentKeys.has('music')) {
+      let { music } = await browser.storage.local.get('music');
+      let musicIds = music.map(({ id }) => 'song-' + id);
+      for (let id of musicIds) await exportKey(id);
+    }
+  }
+  function offerDownload(filename, blob) {
+      console.log("Offering download...");
 
-      if (config.music) {
-        let musicIds = config.music.map(({ id }) => 'song-' + id);
-        let songs = await browser.storage.local.get(musicIds);
-        Object.assign(config, songs);
-      }
+      // https://stackoverflow.com/questions/3665115/18197341#18197341
+      let a = document.createElement('a');
+      let url = URL.createObjectURL(blob);
+      a.setAttribute('href', url);
+      a.setAttribute('download', filename);
+      a.style.display = 'none';
+
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+  }
+  document.getElementById('export').addEventListener('click', async evt => {
+    let status = document.createElement('div');
+    status.innerText = 'working on export...';
+    document.body.appendChild(status);
+    try {
+      let config = {};
+      await exportKeys((key, value) => config[key] = value);
 
       console.log("Encoding data...");
       let json = JSON.stringify(config, null, 2);
       let blob = new Blob([json], { type: 'application/json' });
 
-      console.log("Offering download...");
-      // https://stackoverflow.com/questions/3665115/18197341#18197341
-      let a = document.createElement('a');
-      a.setAttribute('href', URL.createObjectURL(blob));
-      a.setAttribute('download', 'tetrio-plus-settings-export.tpse');
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      offerDownload('tetrio-plus-settings-export.tpse', blob);
       status.remove();
     } catch(ex) {
       alert(ex.toString());
       console.error(ex);
+      status.remove();
     }
   });
+  document.getElementById('export-zip').addEventListener('click', async evt => {
+    let status = document.createElement('div');
+    status.innerText = 'working on export...';
+    document.body.appendChild(status);
+    try {
+      let zip = new JSZip();
+      let config = {};
+      await exportKeys((key, value) => {
+        status.innerText = `working on export: key '${key}'...`;
+        zip.file(key, JSON.stringify(value));
+      });
+
+      status.innerText = `working on export: generating zip (may take a while)...`;
+      let zipstart = Date.now();
+      let blob = await zip.generateAsync({
+        type: "blob",
+        // compression: "DEFLATE",
+        // compressionOptions: { level: 1 }
+      });
+      console.log(`Zipping took ${Date.now() - zipstart}ms`);
+
+      status.innerText = `working on export: offering download...`;
+      offerDownload('tetrio-plus-settings-export.tpsez', blob);
+      status.remove();
+    } catch(ex) {
+      alert(ex.toString());
+      console.error(ex);
+      status.remove();
+    }
+  });
+
 
   document.getElementById('clearData').addEventListener('click', async () => {
     if (confirm('Are you sure you want to clear all your TETR.IO PLUS data?')) {
@@ -137,6 +203,7 @@ import readfiles from '../../shared/filehelper.js';
       alert('Data cleared');
     }
   });
+
 
   document.getElementById('import-anything').addEventListener('change', async (evt) => {
     let useExperimental = document.getElementById('use-experimental').checked;
@@ -219,6 +286,7 @@ import readfiles from '../../shared/filehelper.js';
     tpsecore.drop_tpse(tpse);
   }
 
+
   const sampleRate = 44100;
   const channels = 2;
   const quality = 1.0;
@@ -280,6 +348,7 @@ import readfiles from '../../shared/filehelper.js';
     document.body.removeChild(a);
     status.remove();
   });
+
 
   let oaiw = document.getElementById('open-auto-import-wiki');
   oaiw.href = 'https://gitlab.com/UniQMG/tetrio-plus/-/wikis/automatic-imports';

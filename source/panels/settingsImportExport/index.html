@@ -62,7 +62,7 @@
       Notably, older <code>.tpse</code> packs are often missing sound effects
       added to the game after they were created. Only use up-to-date content
       packs from trusted sources. <br>
-      <input type="file" id="import" multiple accept=".tpse">
+      <input type="file" id="import" multiple accept=".tpse, .tpsez">
     </fieldset>
     <fieldset>
       <legend>Export settings to a file</legend>
@@ -124,7 +124,19 @@
         class="export-toggle"
         checked
       >Export other misc. settings<br>
-      <button id="export">Download...</button>
+
+      <div>
+        <button id="export">Download TPSE</button>
+        A <em>TPSE</em> file is a json-based export of TETR.IO PLUS's settings.
+        TPSE files are typically limited to 1-2GB in size depending on if you're using Firefox or TETR.IO Desktop.
+      </div>
+      <div>
+        <button id="export-zip">Download TPSEZ (experimental)</button>
+        A <em>TPSEZ</em> file is an <em>experimental</em> zip-based export of TETR.IO PLUS's settings.
+        TPSEZ files are limited only by how much memory you have. TPSEZ files are not currently supported
+        by the automatic importer and must be imported using the <code>Import settings from a file</code>
+        tool.
+      </div>
     </fieldset>
     <fieldset>
       <legend>Clear TETR.IO PLUS data</legend>
