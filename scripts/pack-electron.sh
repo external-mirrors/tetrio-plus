@@ -3,8 +3,7 @@
 set -e
 npm i -g asar
 
-wget -N http://you.have.fail/ed/TETR.IO%20Setup%20v8.exe
-mv 'TETR.IO Setup v8.exe' 'TETR.IO Setup.exe'
+wget -N https://tetr.io/about/desktop/builds/TETR.IO%20Setup.exe
 7z e ./TETR.IO\ Setup.exe "\$PLUGINSDIR/app-64.7z" -y
 7z e app-64.7z "resources/app.asar" -y
 
