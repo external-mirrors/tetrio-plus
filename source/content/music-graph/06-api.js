@@ -54,6 +54,7 @@ musicGraph(musicGraph => {
     () => nodes.map(node => ({
       id: node.id,
       source: node.source,
+      variables: node.variables,
       time: node.currentTime
     }))
   );
