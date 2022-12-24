@@ -33,8 +33,7 @@ manifest.browser_specific_settings.desktop_client = {
     "source/filters/osd-request-filter.js",
     "source/filters/debug-tetriojs-filter.js",
     "source/filters/generic-texture-request-filter.js",
-    "source/filters/winter-compat-filter.js",
-    "source/filters/adblocker-filter.js"
+    "source/filters/winter-compat-filter.js"
   ],
   "preload_scripts": [
     "source/shared/migrate.js",

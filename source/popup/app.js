@@ -167,22 +167,6 @@ const app = new Vue({
             </option-toggle>
 
             <div v-if="isElectron">
-              <option-toggle inline storageKey="blockAds">
-                <span title="Blocks ad scripts">
-                  Block Ads
-                </span>
-              </option-toggle>
-              <option-toggle inline storageKey="blockAds" mode="show">
-                <a
-                  href='#'
-                  @click.prevent="openMonetizationInfo"
-                  class="warning-icon"
-                  :title="(
-                    'Please consider supporting the game!' +
-                    ' Click this link to learn more.'
-                  )"
-                >please read</a>
-              </option-toggle>
               <option-toggle storageKey="enableUpdateCheck" @changed="updateCheck()">
                 <span title="Notifies you if an update is available">
                   Enable update check

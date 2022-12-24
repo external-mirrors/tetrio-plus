@@ -44,7 +44,6 @@
       "source/filters/bg/bg-request-filter.js",
       "source/filters/generic-texture-request-filter.js",
       "source/filters/winter-compat-filter.js",
-      "source/filters/adblocker-filter.js",
 
       "source/bootstrap/content-script-communicator.js",
       "source/filters/touch-controls-tetriojs-filter.js",
