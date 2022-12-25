@@ -98,6 +98,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     // will be enabled later on with some strict size checking
     // winterCompatEnabled: parseBoolean('winterCompatEnabled'),
     queue: parseFile('queue', /^image\/.+$/),
+    winter2022queue: parseFile('queue', /^image\/.+$/),
     grid: parseFile('grid', /^image\/.+$/),
     particle_beam: parseFile('particle_beam', /^image\/.+$/),
     particle_beams_beam: parseFile('particle_beams_beam', /^image\/.+$/),

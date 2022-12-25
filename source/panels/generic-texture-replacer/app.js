@@ -57,12 +57,9 @@ let app = new Vue({
           compatibility patch. This requires at least a 1024x1024 texture.
         </option-toggle>
       </div>
-      <div v-if="key == 'queue'" style="margin-top: 8px">
-        ⚠️ The queue format has changed for the 2022 winter event. Older formats are not compatible.
-        As this is likely a temporary change, no automatic conversion will be performed at the moment.
-        To use older format skins, please disable the winter event in TETR.IO's config. Using older
-        formats that are too small while the event is enabled will break the game.<br>
-        At the time of writing, the new format is 2024x1024.
+      <div v-if="key == 'queue' || key == 'winter2022queue'" style="margin-top: 8px">
+        Note: a new queue format was added for the winter 2022 event. The new queue will only be visible
+        during the event, and the old queue will only be visible while you have the event disabled.
         Please check <a href="#" @click="openWinterCompatWiki">the wiki</a> for up-to-date skin format information.
       </div>
     </div>
