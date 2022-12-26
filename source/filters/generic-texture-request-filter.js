@@ -35,7 +35,7 @@ let keys = [
   { key: 'rank_z', url: 'league-ranks/z.png' },
   { key: 'font_hun_png', url: 'font/hun.png' },
   // temporary: winter event 2022
-  { key: 'board', url: 'skins/board/frosty2022/board.png' },
+  { key: 'winter2022board', url: 'skins/board/frosty2022/board.png' },
   { key: 'winter2022queue', url: 'skins/board/frosty2022/queue.png' },
   { key: 'grid', url: 'skins/board/frosty2022/grid.png' }
 ];

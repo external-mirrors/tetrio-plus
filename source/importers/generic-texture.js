@@ -9,6 +9,11 @@ export const KEYS = {
     storagekey: 'queue',
     filekey: '_queue'
   },
+  WINTER2022BOARD: {
+    url: 'https://tetr.io/res/skins/board/frosty2022/board.png',
+    storagekey: 'winter2022board',
+    filekey: '_winter2022board'
+  },
   WINTER2022QUEUE: {
     url: 'https://tetr.io/res/skins/board/frosty2022/queue.png',
     storagekey: 'winter2022queue',
