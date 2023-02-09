@@ -24,6 +24,7 @@ musicGraph(musicGraph => {
    */
   const SYNC_DELAY = 30;
   const SHORT_SYNC_DELAY = 15;
+  const initTime = Date.now();
   let nonce = 0;
 
   const gameCanvas = document.getElementById('pixi');
@@ -262,7 +263,13 @@ musicGraph(musicGraph => {
         $age: node.currentTime,
         $time: context.currentTime,
 
-        // WIP
+        set $skin_manual_control(val) {
+          document.dispatchEvent(new CustomEvent('tetrio-plus-set-skin-manual-control', { detail: val != 0 }));
+        },
+        set $skin_frame(val) {
+          document.dispatchEvent(new CustomEvent('tetrio-plus-set-skin-frame', { detail: val }));
+        },
+
         get $bg_x() { return node.background.x },
         get $bg_y() { return node.background.y },
         get $bg_width() { return node.background.width },

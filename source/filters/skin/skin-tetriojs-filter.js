@@ -55,6 +55,17 @@ createRewriteFilter("Advanced skin loader", "https://tetr.io/js/tetrio.js*", {
         "$1?animated"
       );
 
+      src = `
+        // one time init to read control events from the music graph
+        window.__tetrioPlusAdvSkinLoader = { manualControl: false, frame: 0 };
+        document.addEventListener('tetrio-plus-set-skin-manual-control', evt => {
+          window.__tetrioPlusAdvSkinLoader.manualControl = evt.detail;
+        });
+        document.addEventListener('tetrio-plus-set-skin-frame', evt => {
+          window.__tetrioPlusAdvSkinLoader.frame = evt.detail;
+        });
+      ` + src;
+
       // Set up animated textures
       var rgx = /(\w+\((\w+),\s*(\w+),\s*(\w+),\s*(\w+),\s*(\w+),\s*(\w+)\)\s*{[\S\s]{0,200}Object\.keys\(\3\)\.forEach\(\(\w\s*=>\s*{)([\S\s]+?)}/
       var match = false;
@@ -134,13 +145,18 @@ createRewriteFilter("Advanced skin loader", "https://tetr.io/js/tetrio.js*", {
               delay = gdelay;
             }
 
-            let target = () => ~~(((PIXI.Ticker.shared.lastTime/1000) * 60 / delay) % frames);
-            sprite.gotoAndStop(target());
-            let int = setInterval(() => {
-              sprite.gotoAndStop(target());
-              if (!sprite.parent || !sprite.parent.parent)
-                clearInterval(int);
-            }, 16);
+            let first = true;
+            function tickFrame() {
+              let targetFrame = window.__tetrioPlusAdvSkinLoader.manualControl
+                ? Math.floor(window.__tetrioPlusAdvSkinLoader.frame) % frames
+                : ~~(((PIXI.Ticker.shared.lastTime/1000) * 60 / delay) % frames);
+              sprite.gotoAndStop(targetFrame);
+
+              if (first || (sprite.parent && sprite.parent.parent))
+                requestAnimationFrame(tickFrame);
+              first = false;
+            }
+            tickFrame();
             return sprite;
           })()
         `);
