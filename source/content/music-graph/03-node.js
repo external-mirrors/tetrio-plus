@@ -60,6 +60,7 @@ musicGraph(musicGraph => {
       this.children = [];
       this.variables = {};
       this.background = {
+        playing: true,
         x: 0,
         y: 0,
         width: 100,
@@ -103,7 +104,10 @@ musicGraph(musicGraph => {
       background.append(...sortedNodes.map(([node, el]) => el));
 
       for (let [node, el] of sortedNodes) {
-        if (el.play) el.play();
+        if (node.background.playing && el.play) {
+          let start = Date.now()
+          el.play();//.then(() => console.log(`[TETR.IO PLUS] Node took ${Date.now() - start}ms to play`));
+        }
         el.style.left = `${node.background.x}vw`;
         el.style.top = `${node.background.y}vh`;
         el.style.width = `${node.background.width}vw`;
@@ -171,6 +175,7 @@ musicGraph(musicGraph => {
      *                   and stopping the old one.
      */
     restartAudio(startTime, crossfade=false, audioDelay=0, suppressEmptyNodeEnd=false) {
+      this.startedAt = context.currentTime + audioDelay - startTime;
       if (this.destroyed) return;
       if (!this.source.audio) {
         if (!suppressEmptyNodeEnd)
@@ -228,14 +233,13 @@ musicGraph(musicGraph => {
         audioSource.start(0, 0, 0);
         console.warn(ex);
       }
-      this.startedAt = context.currentTime + audioDelay - startTime;
 
       this.timeouts.push(setTimeout(
         () => {
           if (this.audio != audioSource) return;
           this.runTriggersByName('node-end', null, SYNC_DELAY / 1000);
         },
-        duration * 1000 - SYNC_DELAY
+        (duration * 1000) / this.source.effects.speed - SYNC_DELAY
       ));
 
       this.audio = audioSource;
@@ -280,38 +284,38 @@ musicGraph(musicGraph => {
 
         set $bg_x(val) {
           node.background.x = Node._constrain(val, -100, 100);
-          Node.recalculateBackground();
+          node.background.currentElement.style.left = `${node.background.x}vw`;
         },
         set $bg_y(val) {
           node.background.y = Node._constrain(val, -100, 100);
-          Node.recalculateBackground();
+          node.background.currentElement.style.top = `${node.background.y}vh`;
         },
         set $bg_width(val) {
           node.background.width = Node._constrain(val, 0, 100);
-          Node.recalculateBackground();
+          node.background.currentElement.style.width = `${node.background.width}vw`;
         },
         set $bg_height(val) {
           node.background.height = Node._constrain(val, 0, 100);
-          Node.recalculateBackground();
+          node.background.currentElement.style.height = `${node.background.height}vh`;
         },
         set $bg_opacity(val) {
           node.background.opacity = Node._constrain(val, 0, 1);
-          Node.recalculateBackground();
+          node.background.currentElement.style.opacity = node.background.opacity;
         },
         set $bg_paused(val) {
+          node.background.playing = !val;
           let video = node.background.currentElement;
           if (!(video instanceof HTMLVideoElement)) return;
-          if (val) {
-            video.pause();
-          } else {
-            video.play();
-          }
+          if (node.background.playing) video.play(); else video.pause();
         },
         set $bg_time(val) {
           let video = node.background.currentElement;
           if (!(video instanceof HTMLVideoElement)) return;
+          let start = Date.now();
+          video.addEventListener('seeked', () => {
+            node.runTriggersByName('video-background-seeked', Date.now() - start);
+          }, { once: true });
           video.currentTime = Node._constrain(val, 0, video.duration || Infinity);
-          video.pause();
         }
       };
       return new Proxy({}, {

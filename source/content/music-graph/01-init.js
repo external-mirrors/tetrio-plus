@@ -125,10 +125,14 @@ function musicGraph(module) {
       musicGraphData.imageCache[el.id] = { base: img, ready: [img] };
     }
   }
+
+  let preloadContainer = document.createElement('div');
+  preloadContainer.classList.add('tetrio-plus-preload-container');
   for (let { base: node } of Object.values(musicGraphData.imageCache)) {
     node.style.opacity = 0;
-    document.body.appendChild(node); // force preload
+    preloadContainer.appendChild(node); // force preload
   }
+  document.body.appendChild(preloadContainer);
 
   for (let module of modules)
     module(musicGraphData);
