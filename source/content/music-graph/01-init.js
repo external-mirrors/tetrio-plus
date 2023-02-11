@@ -38,6 +38,14 @@ function musicGraph(module) {
 
   const musicRoot = '/res/bgm/akai-tsuchi-wo-funde.mp3?song=';
   const audioContext = new AudioContext();
+
+  // wait to initialize audio context, which won't initialize at this point because it requires a user gesture to start
+  while (audioContext.state == 'suspended') {
+    console.log('[TETR.IO PLUS] Attempting to unsuspend audio context');
+    // don't await, it hangs
+    audioContext.resume().catch(err => console.error('[TETR.IO PLUS] ' + err));
+    await new Promise(res => setTimeout(res, 1000));
+  }
   const audioBuffers = {};
 
   const graph = {};
