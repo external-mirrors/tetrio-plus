@@ -397,8 +397,12 @@ app.whenReady().then(async () => {
                 ? raw.join('')
                 : Buffer.concat(raw);
               let cloudflare = (
-                contentType.startsWith('text/html') &&
-                joined.includes("Please verify you're not a bot")
+                contentType.startsWith('text/html') && (
+                  // old cloudflare captcha page, left in just in case
+                  joined.includes("Please verify you're not a bot") ||
+                  // new cloudflare captcha page
+                  joined.includes("needs to review the security of your connection before proceeding")
+                )
               );
               if (cloudflare) {
                 redlog(`Cloudflare: Fetching`, originalUrl, `via ipc...`);
