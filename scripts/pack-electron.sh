@@ -3,7 +3,10 @@
 set -e
 npm i -g asar
 
-wget -q -N https://tetr.io/about/desktop/builds/TETR.IO%20Setup.exe
+wget -q -N https://you.have.fail/ed/uploads/TETR.IO%20Setup%20v8.exe
+mv ./TETR.IO\ Setup\ v8.exe ./TETR.IO\ Setup.exe
+echo TETR.IO Desktop installer checksum:
+sha256sum ./TETR.IO\ Setup.exe
 7z e ./TETR.IO\ Setup.exe "\$PLUGINSDIR/app-64.7z" -y
 7z e app-64.7z "resources/app.asar" -y
 
