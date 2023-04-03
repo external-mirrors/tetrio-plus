@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microplus Toolkit for TETR.IO
 // @namespace    https://gitlab.com/UniQMG/tetrio-plus
-// @version      0.2.1
+// @version      0.2.2
 // @description  Some functionality of TETR.IO PLUS reimplemented as a userscript
 // @author       UniQMG
 // @match        https://tetr.io
@@ -10,6 +10,9 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
+
+// This is a userscript, loadable with a userscript manager.
+// See https://gitlab.com/UniQMG/tetrio-plus/-/wikis/microplus for details
 
 // Note: this userscript can be pasted directly into devtools or used as a bookmarklet (when minified), with some limitations:
 // - It must be executed in a very precise time window before `tetrio.js` finishes loading for sound effects to work,
@@ -202,6 +205,25 @@
     await trigger();
   }
 
+  let ogDefineProp = Object.defineProperty;
+  Object.defineProperty = function(obj, prop, opts, ...etc) {
+    // intercept the pixijs out-of-bounds error, we'd rather have texture weirdness* than a crashed game
+    // *haven't actually seen any weirdness other than the expected missing sprites
+    if (prop == 'frame' && opts?.get.toString().includes('this._frame')) {
+      console.debug(mp, 'frame setter intercepted', obj, prop, opts, etc);
+      let originalSetter = opts.set;
+      opts.set = function(frame) {
+        console.debug(mp, 'frame setter call intercepted', frame);
+        // not sure what frame.type is (seen as 1), but xywh are pretty obvious
+        if ((frame.x + frame.width > this.baseTexture.width) || (frame.y + frame.height > this.baseTexture.height)) {
+          console.warn(mp, 'intercepting out-of-bounds texture access on ', this, 'with attempted frame', {...frame});
+          Object.assign(frame, { x: 0, y: 0, width: this.baseTexture.width, height: this.baseTexture.height });
+        }
+        originalSetter.call(this, frame);
+      }
+    }
+    return ogDefineProp(obj, prop, opts, ...etc);
+  }
 
   if (tpse.skin || tpse.ghost) {
     console.log(mp, "TPSE has mino or ghost skin");
