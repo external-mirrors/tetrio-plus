@@ -382,7 +382,9 @@ app.whenReady().then(async () => {
       // if data isn't already provided internally.
       async function fetchData() {
         greenlog("Fetching data", originalUrl);
+        redlog(">>> Entering promise");
         data = await new Promise(resolve => {
+          redlog(">>> Making request to ", originalUrl, " with https.get and headers ", req.headers);
           https.get(originalUrl, { headers: req.headers }, response => {
             contentType = response.headers['content-type'];
             greenlog("http response ", contentType);
@@ -391,8 +393,15 @@ app.whenReady().then(async () => {
             let utf8 = !/^(image|audio)/.test(contentType);
             if (utf8) response.setEncoding('utf8');
 
-            response.on('data', chunk => raw.push(chunk))
+
+            redlog(">>> Setting up response listeners");
+            response.on('data', chunk => {
+              redlog(">>> Received chunk of length ", chunk.length, " with slice: ", chunk.slice && chunk.slice(0, 100));
+              raw.push(chunk);
+            })
             response.on('end', async () => {
+
+              redlog(">>> Response ended with typeof response ", typeof raw[0]);
               let joined = typeof raw[0] == 'string'
                 ? raw.join('')
                 : Buffer.concat(raw);
@@ -404,6 +413,8 @@ app.whenReady().then(async () => {
                   joined.includes("needs to review the security of your connection before proceeding")
                 )
               );
+
+              redlog(">>> Is cloudflare being annoying?", cloudflare);
               if (cloudflare) {
                 redlog(`Cloudflare: Fetching`, originalUrl, `via ipc...`);
                 let url = new URL(originalUrl);
@@ -419,6 +430,8 @@ app.whenReady().then(async () => {
                   }
                 );
               } else {
+
+                redlog(">>> Resolving promise with joined body");
                 resolve(joined);
               }
             });
