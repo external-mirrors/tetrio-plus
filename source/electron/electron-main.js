@@ -382,48 +382,73 @@ app.whenReady().then(async () => {
       // if data isn't already provided internally.
       async function fetchData() {
         greenlog("Fetching data", originalUrl);
-        data = await new Promise(resolve => {
-          https.get(originalUrl, { headers: req.headers }, response => {
-            contentType = response.headers['content-type'];
-            greenlog("http response ", contentType);
-            let raw = [];
 
-            let utf8 = !/^(image|audio)/.test(contentType);
-            if (utf8) response.setEncoding('utf8');
+        function fetchDirect() {
+          return new Promise(resolve => {
+            https.get(originalUrl, { headers: req.headers }, response => {
+              contentType = response.headers['content-type'];
+              greenlog("http response ", contentType);
+              let raw = [];
 
-            response.on('data', chunk => raw.push(chunk))
-            response.on('end', async () => {
-              let joined = typeof raw[0] == 'string'
-                ? raw.join('')
-                : Buffer.concat(raw);
-              let cloudflare = (
-                contentType.startsWith('text/html') && (
-                  // old cloudflare captcha page, left in just in case
-                  joined.includes("Please verify you're not a bot") ||
-                  // new cloudflare captcha page
-                  joined.includes("needs to review the security of your connection before proceeding")
-                )
-              );
-              if (cloudflare) {
-                redlog(`Cloudflare: Fetching`, originalUrl, `via ipc...`);
-                let url = new URL(originalUrl);
-                url.searchParams.set('bypass-tetrio-plus', true);
-                let file = url.pathname + url.search;
-                (await mainWindow).webContents.send('renderspace-fetch-file', file);
-                ipcMain.once(
-                  `renderspace-fetch-file-result-${file}`,
-                  (_evt, filecontents) => {
-                    if (filecontents instanceof ArrayBuffer)
-                      filecontents = Buffer.from(filecontents);
-                    resolve(filecontents)
-                  }
+              let utf8 = !/^(image|audio)/.test(contentType);
+              if (utf8) response.setEncoding('utf8');
+
+              response.on('data', chunk => raw.push(chunk))
+              response.on('end', async () => {
+                let joined = typeof raw[0] == 'string'
+                  ? raw.join('')
+                  : Buffer.concat(raw);
+                let cloudflare = (
+                  contentType.startsWith('text/html') && (
+                    // old cloudflare captcha page, left in just in case
+                    joined.includes("Please verify you're not a bot") ||
+                    // new cloudflare captcha page
+                    joined.includes("needs to review the security of your connection before proceeding")
+                  )
                 );
-              } else {
-                resolve(joined);
+
+                if (cloudflare) {
+                  redlog(`Received Cloudflare interstitial`);
+                  fetchIPC().then(data => resolve(data));
+                } else {
+                  if (response.headers['content-length']) {
+                    let byteLength = typeof joined == 'string'
+                      ? (new TextEncoder().encode(joined)).length
+                      : joined.length;
+                    if (byteLength < +response.headers['content-length']) {
+                      redlog(
+                        "Response length is shorter than Content-Length header, possibly truncated: " +
+                        `${byteLength} < ${response.headers['content-length']}`
+                      );
+                    }
+                  }
+
+                  resolve(joined);
+                }
+              });
+            })
+          });
+        }
+
+        async function fetchIPC() {
+          greenlog(`Fetching`, originalUrl, `via ipc...`);
+          let url = new URL(originalUrl);
+          url.searchParams.set('bypass-tetrio-plus', true);
+          let file = url.pathname + url.search;
+          (await mainWindow).webContents.send('renderspace-fetch-file', file);
+          return await new Promise(resolve => {
+            ipcMain.once(
+              `renderspace-fetch-file-result-${file}`,
+              (_evt, filecontents) => {
+                if (filecontents instanceof ArrayBuffer)
+                  filecontents = Buffer.from(filecontents);
+                resolve(filecontents)
               }
-            });
+            );
           })
-        });
+        }
+
+        data = storeGet('forceIPCFetch') ? await fetchIPC() : await fetchDirect();
         greenlog("Fetched", data.slice(0, 100));
       }
 

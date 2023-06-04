@@ -166,6 +166,16 @@ const app = new Vue({
               </span>
             </option-toggle>
 
+            <option-toggle storageKey="forceIPCFetch" v-if="isElectron">
+              <span :title="(
+                'Makes all HTTP requests from the context of the main TETR.IO window instead of the main electron ' +
+                'context.  Can help in some situations where responses are invalid (e.g. otherwise-undetected ' +
+                'cloudflare interstitial) or truncated.'
+              )">
+                Force HTTP fetch over IPC fallback
+              </span>
+            </option-toggle>
+
             <div v-if="isElectron">
               <option-toggle storageKey="enableUpdateCheck" @changed="updateCheck()">
                 <span title="Notifies you if an update is available">

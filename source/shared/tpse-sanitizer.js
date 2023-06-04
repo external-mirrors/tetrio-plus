@@ -74,6 +74,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     transparentBgEnabled: electronOnly(parseBoolean('transparentBgEnabled')),
     opaqueTransparentBackground: parseBoolean('opaqueTransparentBackground'),
     openDevtoolsOnStart: electronOnly(parseBoolean('openDevtoolsOnStart')),
+    forceIPCFetch: electronOnly(parseBoolean('forceIPCFetch')),
 
     // not included in content packs to prevent footgunning
     // tetrioPlusEnabled: parseBoolean('tetrioPlusEnabled'),
