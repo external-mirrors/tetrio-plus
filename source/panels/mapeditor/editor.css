@@ -1,6 +1,11 @@
+h3 {
+  margin: 0px;
+}
+
 .app {
   display: flex;
   user-select: none;
+  font-family: sans-serif;
 }
 
 .app > * {
@@ -28,13 +33,14 @@
   width: 10px;
   height: 10px;
 }
-.row:last-child .mino {
+.row:last-child .mino:not(.tool) {
   border-bottom: 1px solid black;
 }
-.mino:last-child {
+.mino:not(.tool):last-child {
   border-right: 1px solid black;
 }
 
+.row.upper .mino-empty { background-color: #CCC; }
 .mino-i { background-color: cyan; }
 .mino-o { background-color: yellow; }
 .mino-l { background-color: orange; }
@@ -45,6 +51,13 @@
 .mino-garbage { background-color: gray; }
 .mino-darkgarbage { background-color: #444; }
 
+.tool-container {
+  font-family: monospace;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
 .tool.mino-empty {
   background-color: #FF000077;
 }
@@ -54,10 +67,18 @@
 }
 
 .tool {
-  width: 16px;
-  height: 16px;
-  border: 2px solid white !important;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 2px solid white;
+  margin-right: 4px;
+}
+.tool.disabled {
+  border-color: #CCC;
+}
+.tool.not(:disabled):hover {
+  border-color: gray;
 }
 .tool.active-tool {
-  border: 2px solid black !important;
+  border-color: black;
 }

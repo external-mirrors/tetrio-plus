@@ -1,10 +1,13 @@
 const html = arg => arg.join(''); // NOOP, for editor integration.
 
+const VALID_BAG_CHARS = ['i', 'o', 'l', 'j', 'z', 's', 't', 'oo'];
+
 const app = new Vue({
   template: html`
     <div class="app">
       <div class="tools">
-        <template v-for="itool of tools">
+        <h3>Tools</h3>
+        <div class="tool-container" v-for="itool of tools">
           <div
             @mousemove="clicking && (tool = itool)"
             @click="tool = itool"
@@ -15,11 +18,20 @@ const app = new Vue({
               ['active-tool']: tool == itool
             }"
           ></div>
-          {{ itool }}<br>
-        </template>
+          {{ itool }}
+        </div>
+
+        <h3>Extra pieces</h3>
+        <div class="tool-container" v-for="[piece, color] of extra_pieces">
+          <div class="mino tool disabled" :style="{ backgroundColor: color }"></div>
+
+          {{ piece }}
+          <button @click="bag.push(piece)" style="margin-left: 4px">+bag</button>
+          <button @click="hold = piece" style="margin-left: 4px">+hold</button>
+        </div>
       </div>
       <div class="editor">
-        <div v-for="row of map" class="row">
+        <div v-for="(row, i) of map" class="row" :class="{ upper: i < 20 }">
           <div
             v-for="el of row"
             class="mino"
@@ -39,23 +51,34 @@ const app = new Vue({
           @input="loadMapString($event.target.value)"
         />
         <br />
-        Bag:
-        <input type="text" v-model="bag" @input="deferRecalcMapString()"/>
-        <button @click="addToolToBag()" :disabled="tool.length != 1">
-          Add selected
-        </button>
-        <br />
-        Hold:
-        <input type="text" v-model="hold" @input="deferRecalcMapString()" />
-        <button @click="setHoldToTool()" :disabled="tool.length != 1">
-          Set selected
-        </button>
-        <br />
-        Width:
-        <input type="number" v-model.number="width" min="1" />
-        <br />
-        Height:
-        <input type="number" v-model.number="height" min="1" />
+
+        <div>
+          Bag:
+          <input type="text" v-model="bagString" @input="deferRecalcMapString()"/>
+          <button @click="addToolToBag()" :disabled="tool.length != 1">
+            Add selected
+          </button>
+          <div style="color: orange" v-if="bagError">{{ bagError }}</div>
+        </div>
+
+        <div>
+          Hold:
+          <input type="text" v-model="hold" @input="deferRecalcMapString()" />
+          <button @click="setHoldToTool()" :disabled="tool.length != 1">
+            Set selected
+          </button>
+          <div style="color: orange" v-if="holdError">{{ holdError }}</div>
+        </div>
+
+        <div>
+          Width:
+          <input type="number" v-model.number="width" min="1" />
+        </div>
+
+        <div>
+          Height:
+          <input type="number" v-model.number="height" min="1" />
+        </div>
       </div>
     </div>
   `,
@@ -64,7 +87,8 @@ const app = new Vue({
     height: 40,
     map: [],
     tools: ['i', 'o', 'l', 'j', 'z', 's', 't', 'empty', 'garbage', 'darkgarbage'],
-    bag: "",
+    extra_pieces: [['oo', 'yellow']],
+    bag: [],
     hold: null,
     tool: 'empty',
     removing: false,
@@ -83,24 +107,39 @@ const app = new Vue({
       this.recalculateMapString();
     }
   },
+  computed: {
+    bagString: {
+      get() {
+        return this.bag.join(',');
+      },
+      set(val) {
+        this.bag = val.split(',').filter(el => el.length > 0);
+      }
+    },
+    bagError() {
+      if (this.bag.includes('?')) {
+        return `Bag contains disallowed seperator character '?'`
+      }
+
+      let charErrors = this.bag.filter(entry => VALID_BAG_CHARS.indexOf(entry) == -1);
+      if (charErrors.length > 0) {
+        return `Bag contains possibly invalid values: "${charErrors[0]}"`;
+      }
+    },
+    holdError() {
+      let error = this.hold && this.hold.length > 0 && VALID_BAG_CHARS.indexOf(this.hold) == -1;
+      if (error) return `Hold contains possibly invalid values`;
+    }
+  },
   watch: {
     mapString(val) {
       this.$refs.mapstring.value = val;
     },
-    bag(val) {
-      let filtered = [...val].filter(char =>
-        ['i', 'o', 'l', 'j', 'z', 's', 't'].indexOf(char) != -1
-      ).join('');
-      if (this.bag != filtered)
-        this.bag = filtered;
+    bag() {
+      this.deferRecalcMapString();
     },
-    hold(val) {
-      if (!val) val = "";
-      if (val.length > 1) val = val.slice(-1);
-      if (['i', 'o', 'l', 'j', 'z', 's', 't'].indexOf(val) == -1)
-        val = "";
-      if (this.hold != val)
-        this.hold = val;
+    hold() {
+      this.deferRecalcMapString();
     },
     width() {
       this.regenerateMap()
@@ -138,7 +177,7 @@ const app = new Vue({
       this.modified = true;
     },
     addToolToBag() {
-      this.bag += this.tool;
+      this.bag.push(this.tool);
       this.deferRecalcMapString();
     },
     setHoldToTool() {
@@ -157,7 +196,8 @@ const app = new Vue({
           return el.mino;
         });
       }).join('');
-      this.mapString += `?${this.bag}?${this.hold || ""}`;
+      let bagged = this.bag.join(',').replace(/\?/g, '');
+      this.mapString += `?${bagged}?${this.hold || ""}`;
     },
     loadMapString(mapString) {
       let x = 0, y = 0;
@@ -185,8 +225,8 @@ const app = new Vue({
           break;
       }
 
-      this.bag = bag || "";
-      this.hold = (hold || "")[0];
+      this.bag = (bag || "").split(',').filter(el => el.length > 0);
+      this.hold = (hold || "");
     }
   }
 });
