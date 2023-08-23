@@ -113,18 +113,19 @@ const app = new Vue({
         return this.bag.join(',');
       },
       set(val) {
-        this.bag = val.split(',').filter(el => el.length > 0);
+        this.bag = val.split(',');
       }
     },
     bagError() {
-      if (this.bag.includes('?')) {
+      if (this.bag.includes('?'))
         return `Bag contains disallowed seperator character '?'`
-      }
+
+      if (this.bag[this.bag.length-1] == '')
+        return `Bag contains a trailing comma`;
 
       let charErrors = this.bag.filter(entry => VALID_BAG_CHARS.indexOf(entry) == -1);
-      if (charErrors.length > 0) {
+      if (charErrors.length > 0)
         return `Bag contains possibly invalid values: "${charErrors[0]}"`;
-      }
     },
     holdError() {
       let error = this.hold && this.hold.length > 0 && VALID_BAG_CHARS.indexOf(this.hold) == -1;
