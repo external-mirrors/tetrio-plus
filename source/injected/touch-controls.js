@@ -12,7 +12,8 @@
     hold: new Set(),
     exit: new Set(),
     retry: new Set(),
-    fullscreen: new Set()
+    fullscreen: new Set(),
+    enter: new Set()
   }
   let buttons = [];
 
@@ -204,12 +205,31 @@
             document.body.requestFullscreen();
             break;
 
-          default:
-            let evt = new KeyboardEvent('keydown', {
+          case 'enter':
+            document.activeElement.dispatchEvent(new KeyboardEvent('keydown', {
               bubbles: true,
-              code: keyMap[key][0] // global exposed from hook
-            });
-            document.body.dispatchEvent(evt);
+              code: 'Enter',
+              key: 'Enter',
+              keyCode: 13
+            }));
+            break;
+
+          default:
+            if (key.startsWith('literal-')) {
+              // todo: check how safe this is before doing rest of implementation
+              // document.body.dispatchEvent(new KeyboardEvent('keydown', {
+              //   bubbles: true,
+              //   code: key.slice('literal-'.length);
+              // }));
+            } else if (keyMap[key]) {
+              let evt = new KeyboardEvent('keydown', {
+                bubbles: true,
+                code: keyMap[key][0] // global exposed from hook
+              });
+              document.body.dispatchEvent(evt);
+            } else {
+              console.warn('[TETR.IO PLUS] Touch controls: unknown key: ' + key);
+            }
             break;
         }
       }
@@ -219,6 +239,15 @@
       if (keypresses[key].size == 0) {
         switch (key) {
           case 'fullscreen':
+            break;
+
+          case 'enter':
+            document.activeElement.dispatchEvent(new KeyboardEvent('keyup', {
+              bubbles: true,
+              code: 'Enter',
+              key: 'Enter',
+              keyCode: 13
+            }));
             break;
 
           default:

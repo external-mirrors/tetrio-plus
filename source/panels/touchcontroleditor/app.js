@@ -107,6 +107,7 @@ const app = new Vue({
           <option value="retry">Retry</option>
           <option value="exit">Exit</option>
           <option value="fullscreen">Fullscreen</option>
+          <option value="enter">Enter/Return</option>
         </select>
       `,
       props: ['side', 'value'],
