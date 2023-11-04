@@ -31,15 +31,23 @@ musicGraph(musicGraph => {
   gameCanvas.style.backgroundPosition = 'center';
   gameCanvas.style.backgroundSize = 'cover';
 
-  const background = document.createElement('div');
-  background.id = "tetrio-plus-background-layers";
-  background.style.position = 'fixed';
-  background.style.zIndex = -1;
-  background.style.width = '100vw';
-  background.style.height = '100vh';
-  background.style.top = '0px';
-  background.style.left = '0px';
-  document.body.appendChild(background);
+  const backgroundContainer = document.createElement('div');
+  backgroundContainer.id = "tetrio-plus-background-layers";
+  backgroundContainer.style.position = 'fixed';
+  backgroundContainer.style.zIndex = -1;
+
+  const foregroundContainer = document.createElement('div');
+  foregroundContainer.id = "tetrio-plus-foreground-layers";
+  foregroundContainer.style.position = 'fixed';
+  foregroundContainer.style.zIndex = 1;
+
+  for (let container of [backgroundContainer, foregroundContainer]) {
+    container.style.width = '100vw';
+    container.style.height = '100vh';
+    container.style.top = '0px';
+    container.style.left = '0px';
+    document.body.appendChild(container);
+  }
 
   /**
    * If the nodes in the music graphs are like classes, then the Node is
@@ -74,10 +82,12 @@ musicGraph(musicGraph => {
     static recalculateBackground() {
       if (!backgroundsEnabled) return;
 
-      let justRemoved = new Set(background.children);
-      while (background.lastChild) {
-        background.lastChild.__tetrioplus_image_cache.push(background.lastChild);
-        background.lastChild.remove();
+      let justRemoved = new Set([...backgroundContainer.children, ...foregroundContainer.children]);
+      for (let container of [backgroundContainer, foregroundContainer]) {
+        while (container.lastChild) {
+          container.lastChild.__tetrioplus_image_cache.push(container.lastChild);
+          container.lastChild.remove();
+        }
       }
 
       for (let node of nodes)
@@ -102,7 +112,8 @@ musicGraph(musicGraph => {
           return [node, el];
         });
 
-      background.append(...sortedNodes.map(([node, el]) => el));
+      backgroundContainer.append(...sortedNodes.filter(([node, _el]) => node.source.backgroundArea == 'background').map(([_node, el]) => el));
+      foregroundContainer.append(...sortedNodes.filter(([node, _el]) => node.source.backgroundArea == 'foreground').map(([_node, el]) => el));
 
       for (let [node, el] of sortedNodes) {
         if (node.background.playing && el.play) {

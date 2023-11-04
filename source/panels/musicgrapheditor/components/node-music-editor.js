@@ -101,6 +101,12 @@ export default {
           v-model.number="node.backgroundLayer"
           @change="$emit('change')"
         />
+        <br>
+        <label for="backgroundArea">Background area:</label>
+        <select name="backgroundArea" v-model="node.backgroundArea" @change="$emit('change')">
+          <option :value="'background'">Background</option>
+          <option :value="'foreground'">Foreground</option>
+        </select>
       </div>
 
       <div>

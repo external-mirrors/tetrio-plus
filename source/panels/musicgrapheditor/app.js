@@ -128,6 +128,7 @@ const app = new Vue({
         audio: null,
         background: null,
         backgroundLayer: 0,
+        backgroundArea: 'background',
         audioStart: 0,
         audioEnd: 0,
         triggers: [],

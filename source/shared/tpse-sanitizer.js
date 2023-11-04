@@ -351,6 +351,8 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
             return `ERROR: Expected string or null at [].background`;
           if (typeof node.backgroundLayer != 'number')
             return `ERROR: Expected number at [].backgroundLayer`;
+          if (typeof node.backgroundArea != 'string')
+            return `ERROR: Expected string at [].backgroundArea`;
 
           let bg = importData['background-' + node.background];
           if (!options.skipFileDependencies) {

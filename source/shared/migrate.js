@@ -337,6 +337,24 @@ var migrate = (() => {
     }
   });
 
+  /*
+    v0.25.3 - Music graph foregrounds
+    + musicGraph[].foreground
+  */
+  migrations.push({
+    version: '0.25.3',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.25.3' });
+      let { musicGraph: json } = await dataSource.get('musicGraph');
+      if (json) {
+        let musicGraph = JSON.parse(json);
+        for (let node of musicGraph)
+          node.backgroundArea = 'background';
+        await dataSource.set({ musicGraph: JSON.stringify(musicGraph) });
+      }
+    }
+  })
+
   return async function migrate(dataSource) {
     let { version: initialVersion} = await dataSource.get('version');
     if (!initialVersion) initialVersion = '0.0.0';
