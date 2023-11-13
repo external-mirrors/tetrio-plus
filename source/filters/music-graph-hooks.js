@@ -45,10 +45,13 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       src = src.replace(/Play\(\w+,\s*\w*\s*=\s*\d,\s*\w*\s*=\s*\d\)\s*{/, ($) => {
         match = true;
         return $ + (`
+          if (!this.self.__tetrio_plus_board_id) {
+            this.self.__tetrio_plus_board_id = ++musicGraphIDIncrement;
+          }
           document.dispatchEvent(new CustomEvent('tetrio-plus-actionsound', {
             detail: {
               name: ${soundNameVar},
-              board_id: (this.self.__tetrio_plus_board_id ||= ++musicGraphIDIncrement),
+              board_id: this.self.__tetrio_plus_board_id,
               context: 'bigPlay',
               boardSize: (this.self.${boardSizeObjectPath}.IsTinyMode() || this.self.${boardSizeObjectPath}.IsSmallMode()) ? 'tiny' : 'full',
               spatialization: this.self.${coxPath}
@@ -73,7 +76,10 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
           // very convenient
           let boardSize = (this.IsTinyMode() || this.IsSmallMode()) ? 'tiny' : 'full';
           let spatialization = this.ctx.${coxPath};
-          let board_id = (this.ctx.__tetrio_plus_board_id ||= ++musicGraphIDIncrement);
+          if (!this.ctx.__tetrio_plus_board_id) {
+            this.ctx.__tetrio_plus_board_id = ++musicGraphIDIncrement;
+          }
+          let board_id = this.ctx.__tetrio_plus_board_id;
 
           let patched = Object.create(effect.__proto__);
           Object.assign(patched, {
@@ -82,7 +88,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
               document.dispatchEvent(new CustomEvent('tetrio-plus-fx', {
                 detail: {
                   name: ${fxNameArgumentVar},
-                  board_id,
+                  board_id: board_id,
                   args: args,
                   boardSize: boardSize,
                   spatialization: spatialization
@@ -123,11 +129,14 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
         return `
         let height = ${highestLineCall};
         let bso = ${contextVar}.${boardSizeObjectPath};
-        let board_id = (${contextVar}.__tetrio_plus_board_id ||= ++musicGraphIDIncrement);
+
+        if (!${contextVar}.__tetrio_plus_board_id) {
+          ${contextVar}.__tetrio_plus_board_id = ++musicGraphIDIncrement;
+        }
         document.dispatchEvent(new CustomEvent('tetrio-plus-actionheight', {
           detail: {
             height,
-            board_id,
+            board_id: ${contextVar}.__tetrio_plus_board_id,
             boardSize: (bso.IsTinyMode() || bso.IsSmallMode()) ? 'tiny' : 'full',
             spatialization: ${contextVar}.${coxPath}
           }
