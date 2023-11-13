@@ -229,7 +229,7 @@ export default {
             instance: msg.data.instanceId,
             trigger: msg.data.trigger,
             success: msg.data.success,
-            value: msg.data.value,
+            values: msg.data.values,
             date: Date.now(),
             age: 0,
             maxAge: 500

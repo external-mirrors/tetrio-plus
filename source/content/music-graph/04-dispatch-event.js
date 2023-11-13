@@ -8,6 +8,7 @@ musicGraph(graph => {
     ExpVal
   } = graph;
   let recentEvents = [];
+  let eventLastFired = {};
 
   let f8menu = document.getElementById('devbuildid');
   let f8menuActive = false;
@@ -16,19 +17,54 @@ musicGraph(graph => {
   } else {
     let div = document.createElement('div');
     cleanup.push(() => div.remove());
-    f8menu.parentNode.insertBefore(div, f8menu.nextSibling.nextSibling);
     div.style.fontFamily = 'monospace';
     div.classList.add('tetrio-plus-music-graph-debug');
+    div.innerHTML = `
+      TETR.IO PLUS music graph debug<br>
+      -- Recent events --
+      <div id="tetrio_plus_music_graph_events">
+      </div>
+      -- Global variables --
+      <div id="tetrio_plus_music_graph_variables">
+      </div>
+
+      <style>
+        #tetrio_plus_music_graph_events span {
+          min-width: 300px;
+          border: 1px solid #AAA;
+          margin-right: 2px;
+          display: inline-block;
+        }
+      </style>
+    `;
+    f8menu.parentNode.insertBefore(div, f8menu.nextSibling.nextSibling);
+
+    let events = document.getElementById('tetrio_plus_music_graph_events');
+    let variables = document.getElementById('tetrio_plus_music_graph_variables');
     setInterval(() => {
       f8menuActive = !f8menu.parentNode.classList.contains('off');
       if (!f8menuActive) return;
 
-      div.innerText = [
-        'TETR.IO PLUS music graph debug',
-        'Recent events: ' + [...recentEvents].reverse().join(', '),
-        'Global variables: ' + Object.entries(globalVariables).map(([key, value]) => `${key}: ${value}`).join(', '),
-        ...nodes.map(node => node.toString())
-      ].join('\n');
+      events.innerHTML = ``;
+      for (let event of [...recentEvents].reverse()) {
+        let span = document.createElement('span');
+        span.innerText = event;
+        let delay = Date.now() - eventLastFired[event];
+        if (delay < 1000) {
+          let opacity = 1 - Math.sqrt(delay / 1000);
+          let color = '#FFA500' + Math.floor(opacity * 120).toString(16).padStart(2, '0');
+          span.style.backgroundColor = color;
+        }
+        events.appendChild(span);
+      }
+
+      variables.innerHTML = ``;
+      for (let [key, value] of Object.entries(globalVariables)) {
+        let span = document.createElement('span');
+        span.innerText = `${key}: ${value}`;
+        span.style.marginRight = '4px';
+        variables.appendChild(span);
+      }
     }, 100);
   }
 
@@ -36,12 +72,22 @@ musicGraph(graph => {
    * Dispatches a global event to the music graph,
    * running the relevent triggers on all nodes.
    * @param eventName the name of the event to dispatch.
-   * @param value the event's associated value. usage varies by event.
+   * @param value an object map of variables that are overlaid while the event is active. If a single number is passed, it's used as the `$` key ({ $: value })
    */
   graph.dispatchEvent = function dispatchEvent(eventName, value) {
+    value = value ?? {};
+    if (typeof value == 'number')
+      value = { $: value };
+
     if (f8menuActive) {
-      let str = typeof value == 'number'
-        ? `${eventName} (${value})`
+      let valueKeys = Object.keys(value);
+      let dataString = valueKeys.length == 0
+        ? null
+        : valueKeys.length == 1 && valueKeys[0] == '$'
+          ? value.$
+          : Object.entries(value).map(([k,v]) => `${k}=${v}`).join(', ');
+      let str = dataString != null
+        ? `${eventName} (${dataString})`
         : eventName;
 
       let index = recentEvents.indexOf(str);
@@ -49,10 +95,12 @@ musicGraph(graph => {
         recentEvents.splice(index, 1);
 
       recentEvents.push(str);
+      eventLastFired[str] = Date.now();
 
       if (recentEvents.length > 20)
         recentEvents = recentEvents.slice(-20);
     }
+
 
     for (let nodeSrc of Object.values(graph.graph)) {
       for (let trigger of nodeSrc.triggers) {

@@ -352,8 +352,9 @@ musicGraph(musicGraph => {
           if (prop.startsWith('#')) {
             globalVariables[prop] = value;
           } else if (prop in extra) {
-            // extra is currently only used for `$`, which is effectively write-only
-            // drop it for now
+            // extra is used for values that only exist during the event, meaning they're effectively write-only.
+            // drop the write for now.
+            // extra variables used by tetrio plus always start with $, but api users can set them to anything.
           } else if (prop in computed) {
             computed[prop] = value;
           } else {
@@ -388,17 +389,17 @@ musicGraph(musicGraph => {
       Node.recalculateBackground();
     }
 
-    runTriggersByName(name, value, audioDelay=0) {
+    runTriggersByName(name, values, audioDelay=0) {
       if (!this.source) return;
       for (let trigger of this.source.triggers)
         if (trigger.event == name)
-          this.runTrigger(trigger, value, audioDelay);
+          this.runTrigger(trigger, values, audioDelay);
     }
 
-    testTrigger(trigger, value) {
+    testTrigger(trigger, values) {
       if (trigger.predicateExpression.trim().length > 0) {
         try {
-          let context = this.computedVariables({ $: value || 0 });
+          let context = this.computedVariables(values);
           let expValue = ExpVal.get(trigger.predicateExpression).evaluate(context);
           if (!expValue) return false;
         } catch(ex) {
@@ -409,16 +410,16 @@ musicGraph(musicGraph => {
       return true;
     }
 
-    runTrigger(trigger, value, audioDelay=0) {
+    runTrigger(trigger, values, audioDelay=0) {
       if (this.destroyed || !this.source) return;
       try {
-        let result = this.testTrigger(trigger, value);
+        let result = this.testTrigger(trigger, values);
         sendDebugEvent('node-run-trigger', {
           instanceId: this.id,
           sourceId: this.source.id,
           success: result,
           trigger: this.source.triggers.indexOf(trigger),
-          value: value
+          values: values
         }, true);
         if (!result) return false;
 
@@ -476,15 +477,15 @@ musicGraph(musicGraph => {
           }
           case 'dispatch': {
             let val = trigger.dispatchExpression.trim().length > 0
-              ? ExpVal.get(trigger.dispatchExpression).evaluate(this.computedVariables({ $: value || 0 }))
+              ? ExpVal.get(trigger.dispatchExpression).evaluate(this.computedVariables(values))
               : null;
             musicGraph.dispatchEvent(trigger.dispatchEvent, val);
             break;
           }
           case 'set': {
-            let computed = this.computedVariables({ $: value || 0 });
+            let computed = this.computedVariables(values);
             let val = ExpVal.get(trigger.setExpression).evaluate(computed);
-            computed[trigger.setVariable] = val;
+            computed[ExpVal.substitute(trigger.setVariable, computed)] = val;
             sendDebugEvent('node-set-variable', {
               instanceId: this.id,
               sourceId: this.source.id,

@@ -22,6 +22,8 @@ export default {
           current event.<br>
 
           Operators: <code>+ - * / > < >= <= == != && ||</code>
+
+          See the wiki for more details.
         </div>
       </span>
       <div v-if="expressionError">

@@ -99,12 +99,15 @@ export default {
 
       <template v-if="trigger.mode == 'set'">
         <div>
-          <b>Variable</b>
+          <b :style="variableNameError ? { color: 'red' } : {}">Variable</b>
           <input
             type="text"
             @change="$emit('change')"
             v-model="trigger.setVariable"
           />
+        </div>
+        <div v-if="variableNameError" style="color: red">
+          {{variableNameError}}
         </div>
         <expression-editor
           v-model="trigger.setExpression"
@@ -189,11 +192,19 @@ export default {
     custom() {
       return !this.eventSet.has(this.trigger.event);
     },
+    variableNameError() {
+      try {
+        ExpVal.substitute(this.trigger.setVariable, {});
+        return null;
+      } catch(ex) {
+        return ex.toString();
+      }
+    },
     ...clipboard.computed
   },
   watch: {
     'trigger.setVariable'(newVal) {
-      let sanitized = newVal.replace(/^[^$#A-Za-z_]|[^$#A-Za-z0-9_]/g, '_');
+      let sanitized = newVal.replace(/^[^$#A-Za-z_]|[^$#A-Za-z0-9_{}]/g, '_');
       if (sanitized != newVal)
         this.trigger.setVariable = sanitized;
     }

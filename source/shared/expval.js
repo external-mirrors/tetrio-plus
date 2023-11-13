@@ -12,7 +12,7 @@ class ExpVal {
       leftparan: /^\(/,
       rightparan: /^\)/,
       function: /^[A-Za-z]+\(/,
-      variable: /^[A-Za-z$#]\w*/,
+      variable: /^[A-Za-z$#]([\w$]|{{|}})*/,
       comma: /^,/
     };
     const precedence = {
@@ -114,6 +114,15 @@ class ExpVal {
     return expValCache[expression];
   }
 
+  static substitute(variableName, variables) {
+    let substituted = variableName.replace(/{{(.+?)}}/, ($, ident) => {
+      return variables[ident] || 0;
+    });
+    if (substituted.includes('{') || substituted.includes('}'))
+      throw new Error('invalid variable substitution pattern');
+    return substituted;
+  }
+
   evaluate(variables={}, functions={}) {
     Object.assign(functions, {
       if(a, b, c) {
@@ -137,7 +146,7 @@ class ExpVal {
     }
     for (let token of this.rpn) {
       if (token.type == 'literal') stack.push(token.value);
-      if (token.type == 'variable') stack.push(variables[token.value] || 0);
+      if (token.type == 'variable') stack.push(variables[ExpVal.substitute(token.value, variables)] || 0);
       if (token.type == 'comma') {
         req(1);
         args.push(stack.pop());
