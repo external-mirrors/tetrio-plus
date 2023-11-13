@@ -167,7 +167,10 @@ async function checkTextures(status) {
       canvas.height = vanillaImage.naturalHeight;
       let ctx = canvas.getContext('2d');
 
-      let blob = await fetch(vanillaImage.src).then(res => res.blob());
+      let src = browser.electron
+        ? vanillaImage.src.replace('https://tetr.io/', 'tetrio-plus://tetrio-plus/')
+        : vanillaImage;
+      let blob = await fetch(src).then(res => res.blob());
       let url = URL.createObjectURL(blob);
       let noCorsVanillaImage = new Image();
       await new Promise(res => {
