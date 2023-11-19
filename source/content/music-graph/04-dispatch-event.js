@@ -7,6 +7,7 @@ musicGraph(graph => {
     globalVariables,
     ExpVal
   } = graph;
+  let eventLimit = 20;
   let recentEvents = [];
   let eventLastFired = {};
 
@@ -46,17 +47,38 @@ musicGraph(graph => {
       if (!f8menuActive) return;
 
       events.innerHTML = ``;
-      for (let event of [...recentEvents].reverse()) {
+      for (let i = recentEvents.length-1; i >= recentEvents.length-eventLimit; i--) {
+        let event = recentEvents[i];
+        if (!event) continue;
+
         let span = document.createElement('span');
         span.innerText = event;
         let delay = Date.now() - eventLastFired[event];
+
         if (delay < 1000) {
           let opacity = 1 - Math.sqrt(delay / 1000);
           let color = '#FFA500' + Math.floor(opacity * 120).toString(16).padStart(2, '0');
           span.style.backgroundColor = color;
         }
+
+        let div = document.createElement('div');
+        let pct = delay < 1000 ? (1 - delay/1000) * 100 : 0;
+        Object.assign(div.style, {
+          width: '300px',
+          height: '2px',
+          background: `linear-gradient(to right, #FF0000 ${pct}%, #770000 ${pct}%)`
+        });
+        span.appendChild(div);
+
         events.appendChild(span);
       }
+
+      let recent = 0;
+      for (let event of recentEvents)
+        if (Date.now() - eventLastFired[event] < 1000)
+          recent += 1;
+      if (recent > eventLimit)
+        eventLimit = Math.min(recent, 100);
 
       variables.innerHTML = ``;
       for (let [key, value] of Object.entries(globalVariables)) {
@@ -65,7 +87,7 @@ musicGraph(graph => {
         span.style.marginRight = '4px';
         variables.appendChild(span);
       }
-    }, 100);
+    }, 30);
   }
 
   /**
@@ -97,8 +119,8 @@ musicGraph(graph => {
       recentEvents.push(str);
       eventLastFired[str] = Date.now();
 
-      if (recentEvents.length > 20)
-        recentEvents = recentEvents.slice(-20);
+      if (recentEvents.length > eventLimit*2)
+        recentEvents = recentEvents.slice(-eventLimit);
     }
 
 

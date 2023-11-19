@@ -17,7 +17,7 @@ export const events = [
   'fx-30-seconds-left'
 ];
 
-[
+export const fxHasPlayerEnemyVariants = [
   'board-height',
   'fx-line-clear',
   'fx-combo',
@@ -31,10 +31,9 @@ export const events = [
   'fx-l-spin',
   'fx-s-spin',
   'fx-z-spin',
-].forEach(sfx => {
-  events.push(sfx + '-player');
-  events.push(sfx + '-enemy');
-});
+];
+for (let sfx of fxHasPlayerEnemyVariants)
+  events.push(sfx); // -player/-enemy have extra UI
 
 [
   "home",
@@ -72,10 +71,12 @@ export const events = [
 
 // run this snippet in the sound effects editor to generate/update this:
 // console.log(app.sprites.map(sprite => `"${sprite.name}"`).join(', '))
-let soundEffects = ["allclear", "applause", "boardappear", "btb_1", "btb_2", "btb_3", "btb_break", "clearbtb", "clearline", "clearquad", "clearspin", "clutch", "combo_1_power", "combo_1", "combo_10_power", "combo_10", "combo_11_power", "combo_11", "combo_12_power", "combo_12", "combo_13_power", "combo_13", "combo_14_power", "combo_14", "combo_15_power", "combo_15", "combo_16_power", "combo_16", "combo_2_power", "combo_2", "combo_3_power", "combo_3", "combo_4_power", "combo_4", "combo_5_power", "combo_5", "combo_6_power", "combo_6", "combo_7_power", "combo_7", "combo_8_power", "combo_8", "combo_9_power", "combo_9", "combobreak", "countdown1", "countdown2", "countdown3", "countdown4", "countdown5", "counter", "cutin_superlobby", "damage_alert", "damage_large", "damage_medium", "damage_small", "death", "detonate1", "detonate2", "detonated", "elim", "exchange", "failure", "finessefault", "finish", "fire", "floor", "gameover", "garbage_in_large", "garbage_in_medium", "garbage_in_small", "garbage_out_large", "garbage_out_medium", "garbage_out_small", "garbagerise", "garbagesmash", "go", "harddrop", "hit", "hold", "hyperalert", "i", "impact", "j", "l", "level1", "level10", "level100", "level500", "levelup", "losestock", "maintenance", "matchintro", "menuback", "menuclick", "menuconfirm", "menuhit1", "menuhit2", "menuhit3", "menuhover", "menutap", "mission_free", "mission_league", "mission_versus", "mission", "mmstart", "move", "no", "notify", "o", "offset", "pause_continue", "pause_exit", "pause_retry", "pause_start", "personalbest", "purchase_start", "ranklower", "rankraise", "ratinglower", "ratingraise", "redo", "ribbon_off", "ribbon_on", "ribbon_tap", "ribbon", "rotate", "rsg_go", "rsg", "s", "scoreslide_in", "scoreslide_out", "shatter", "showscore", "sidehit", "social_close_minor", "social_close", "social_dm", "social_invite", "social_notify_major", "social_notify_minor", "social_offline", "social_online", "social_open_minor", "social_open", "softdrop", "spin", "spinend", "staffsilence", "staffspam", "staffwarning", "supporter", "t", "target", "thunder1", "thunder2", "thunder3", "thunder4", "thunder5", "thunder6", "timer1", "timer2", "topout", "undo", "userjoin", "userleave", "victory", "warning", "warp", "worldrecord", "z"];
+let soundEffects = ["allclear", "applause", "boardappear", "btb_1", "btb_2", "btb_3", "btb_break", "clearbtb", "clearline", "clearquad", "clearspin", "clutch", "combo_1", "combo_10", "combo_10_power", "combo_11", "combo_11_power", "combo_12", "combo_12_power", "combo_13", "combo_13_power", "combo_14", "combo_14_power", "combo_15", "combo_15_power", "combo_16", "combo_16_power", "combo_1_power", "combo_2", "combo_2_power", "combo_3", "combo_3_power", "combo_4", "combo_4_power", "combo_5", "combo_5_power", "combo_6", "combo_6_power", "combo_7", "combo_7_power", "combo_8", "combo_8_power", "combo_9", "combo_9_power", "combobreak", "countdown1", "countdown2", "countdown3", "countdown4", "countdown5", "counter", "cutin_superlobby", "damage_alert", "damage_large", "damage_medium", "damage_small", "death", "detonate1", "detonate2", "detonated", "elim", "exchange", "failure", "finessefault", "finish", "fire", "floor", "gameover", "garbage_in_large", "garbage_in_medium", "garbage_in_small", "garbage_out_large", "garbage_out_medium", "garbage_out_small", "garbagerise", "garbagesmash", "go", "harddrop", "hit", "hold", "hyperalert", "i", "impact", "j", "l", "level1", "level10", "level100", "level500", "levelup", "losestock", "maintenance", "map_change", "matchintro", "menuback", "menuclick", "menuconfirm", "menuhit1", "menuhit2", "menuhit3", "menuhover", "menutap", "mission", "mission_free", "mission_league", "mission_versus", "mmstart", "move", "no", "notify", "o", "offset", "pause_continue", "pause_exit", "pause_retry", "pause_start", "personalbest", "piece_change", "protected_large", "protected_medium", "protected_small", "purchase_start", "queue_change", "ranklower", "rankraise", "ratinglower", "ratingraise", "redo", "ribbon", "ribbon_off", "ribbon_on", "ribbon_tap", "rotate", "rsg", "rsg_go", "s", "scoreslide_in", "scoreslide_out", "shatter", "showscore", "sidehit", "social_close", "social_close_minor", "social_dm", "social_invite", "social_notify_major", "social_notify_minor", "social_offline", "social_online", "social_open", "social_open_minor", "softdrop", "spin", "spinend", "staffsilence", "staffspam", "staffwarning", "supporter", "t", "target", "thunder1", "thunder2", "thunder3", "thunder4", "thunder5", "thunder6", "timer1", "timer2", "topout", "undo", "userjoin", "userleave", "victory", "warning", "warp", "worldrecord", "z"];
 soundEffects.forEach(sfx => {
-  events.push('sfx-' + sfx + '-player');
-  events.push('sfx-' + sfx + '-enemy');
+  events.push('sfx-' + sfx);
+  // events.push('sfx-' + sfx + '-any');
+  // events.push('sfx-' + sfx + '-player');
+  // events.push('sfx-' + sfx + '-enemy');
 });
 
 // Events that use the 'predicateExpression' field and their labels

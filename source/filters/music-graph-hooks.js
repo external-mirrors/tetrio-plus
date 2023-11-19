@@ -52,7 +52,6 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
             detail: {
               name: ${soundNameVar},
               board_id: this.self.__tetrio_plus_board_id,
-              context: 'bigPlay',
               boardSize: (this.self.${boardSizeObjectPath}.IsTinyMode() || this.self.${boardSizeObjectPath}.IsSmallMode()) ? 'tiny' : 'full',
               spatialization: this.self.${coxPath}
             }
@@ -145,6 +144,27 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       });
       if (!match) {
         console.error('Music graph hooks broken (height 2/2)');
+      }
+
+      var match = false;
+      var rgx = /play:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0,\s*(\w+)\s*=\s*!1\)\s*{/;
+      src = src.replace(rgx, ($, a1, a2, a3, a4) => {
+        // a1 = sfx name
+        // a2 = volume (0 to 1)
+        // a3 = pan left/right (-1 to 1)
+        // a4 = doesn't appear to be used in the function body at all (???)
+        return $ + `
+          document.dispatchEvent(new CustomEvent('tetrio-plus-globalsound', {
+            detail: {
+              name: ${a1},
+              volume: ${a2},
+              spatialization: ${a3}
+            }
+          }));
+        `;
+      })
+      if (!match) {
+        console.error('Music graph hooks broken (globalSfx)');
       }
     } finally {
       callback({

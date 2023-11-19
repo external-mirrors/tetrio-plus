@@ -1,7 +1,8 @@
 import {
   events,
   eventValueExtendedModes,
-  eventHasTarget
+  eventHasTarget,
+  fxHasPlayerEnemyVariants
 } from '../events.js';
 import ExpressionEditor from './expression-editor.js';
 import * as clipboard from '../clipboard.js';
@@ -13,14 +14,16 @@ export default {
     <div>
       <div>
         <b>Event</b>
-        <select v-model="trigger.event" style="font-size: 0.825rem" @change="$emit('change')">
-          <option :value="custom ? trigger.event : 'CUSTOM'">CUSTOM</option>
+
+        <select v-model="eventListValue" style="font-size: 0.825rem" @change="$emit('change')">
+          <option value="CUSTOM">CUSTOM</option>
           <option
             v-for="evt of events"
             :value="evt"
             :disabled="trigger.mode == 'random' && evt == 'random-target'"
           >{{evt}}</option>
         </select>
+
         <button @click="removeTrigger(node, trigger)" class="icon-button">
           ❌
         </button>
@@ -33,9 +36,36 @@ export default {
         </button>
       </div>
 
-      <div v-if="custom">
+      <div v-if="dropdownMode.mode == 'custom'">
         <b>Name</b>
         <input type="text" @change="$emit('change')" v-model="trigger.event" />
+      </div>
+
+      <div v-if="dropdownMode.mode == 'fx'">
+        <b>Effect scope</b><br>
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event" id="fxAny" name="fxScope">
+        <label for="fxAny">Player or Enemy (<code>{{dropdownMode.event}}</code>)</label><br>
+
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event + '-player'" id="fxPlayer" name="fxScope">
+        <label for="fxPlayer">Player (<code>{{dropdownMode.event}}-player</code>)</label><br>
+
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event + '-enemy'" id="fxEnemy" name="fxScope">
+        <label for="fxEnemy">Enemy (<code>{{dropdownMode.event}}-enemy</code>)</label><br>
+      </div>
+
+      <div v-if="dropdownMode.mode == 'sfx'">
+        <b>Sound effect scope</b><br>
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event + '-global'" id="sfxGlobal" name="sfxScope">
+        <label for="sfxGlobal">Global (<code>{{dropdownMode.event}}-global</code>)</label><br>
+
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event" id="sfxAny" name="sfxScope">
+        <label for="sfxAny">Player or Enemy (<code>{{dropdownMode.event}}</code>)</label><br>
+
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event + '-player'" id="sfxPlayer" name="sfxScope">
+        <label for="sfxPlayer">Player (<code>{{dropdownMode.event}}-player</code>)</label><br>
+
+        <input type="radio" v-model="trigger.event" :value="dropdownMode.event + '-enemy'" id="sfxEnemy" name="sfxScope">
+        <label for="sfxEnemy">Enemy (<code>{{dropdownMode.event}}-enemy</code>)</label><br>
       </div>
 
       <div v-if="['repeating-time-passed', 'time-passed'].includes(trigger.event)">
@@ -179,6 +209,32 @@ export default {
     }
   },
   computed: {
+    dropdownMode() {
+      if (this.trigger.event.startsWith('sfx-')) {
+        let match = /^sfx-(\w+)(?:-(\w+))?/.exec(this.trigger.event);
+        if (match) {
+          let [_, event, scope] = match;
+          if (this.eventSet.has(event))
+            return { mode: 'sfx', event: 'sfx-' + event, scope: scope || '' };
+        }
+      }
+
+      let fx = /^(fx-.+?|board-height)(?:-(player|enemy))?$/.exec(this.trigger.event);
+      if (fx && fxHasPlayerEnemyVariants.includes(fx[1])) {
+        let scope = fx[2] || '';
+        if (this.eventSet.has(fx[1]))
+          return { mode: 'fx', event: fx[1], scope }
+      }
+
+      if (!this.eventSet.has(this.trigger.event))
+        return { mode: 'custom', event: 'CUSTOM' };
+
+      return { mode: 'normal', event: this.trigger.event }
+    },
+    eventListValue: {
+      get() { return this.dropdownMode.event; },
+      set(value) { this.trigger.event = value; }
+    },
     eventSet() {
       return new Set(this.events);
     },
@@ -188,9 +244,6 @@ export default {
         this.trigger.predicateExpression ||
         this.predicateFocused
       );
-    },
-    custom() {
-      return !this.eventSet.has(this.trigger.event);
     },
     variableNameError() {
       try {
