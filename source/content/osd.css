@@ -7,6 +7,12 @@
   grid-template:
     "-1   softdrop -2    spin-cw   spin-ccw spin-180"
     "left harddrop right hold      -3       resizer";
+
+  opacity: 1;
+  transition: 1s opacity;
+}
+.tetrio-plus-osd.disabled {
+  opacity: 0.2;
 }
 
 .tetrio-plus-osd-handle-container {
