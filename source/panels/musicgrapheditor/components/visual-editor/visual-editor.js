@@ -16,27 +16,31 @@ export default {
           ⚠️ Above reporting threshold, some events may not display.
         </div>
       </div>
-      <ve-node
-        v-for="node of nodes"
-        :key="node.id"
-        :camera="camera"
-        :nodes="nodes"
-        :node="node"
-        :connected="!!port"
-        @spawn="spawn(node)"
-      />
-      <div style="display: contents">
-        <ve-live-node
-          v-for="instance of liveInstances"
-          v-if="isFinite(instance.sourceId)"
-          :key="instance.instanceId"
-          :camera="camera"
+      <div :style="{
+        'will-change': 'transform',
+        transform: \`translateX(\${camera.x}px) translateY(\${camera.y}px)\`
+      }">
+        <ve-node
+          v-for="node of nodes"
+          :key="node.id"
           :nodes="nodes"
-          :node="getNodeById(instance.sourceId)"
-          :instance="instance"
-          :index="liveInstancesByNode[instance.sourceId].indexOf(instance)"
-          @kill="kill(instance.instanceId)"
+          :node="node"
+          :connected="!!port"
+          @spawn="spawn(node)"
         />
+        <div style="display: contents">
+          <ve-live-node
+            v-for="instance of liveInstances"
+            v-if="isFinite(instance.sourceId)"
+            :key="instance.instanceId"
+            :camera="camera"
+            :nodes="nodes"
+            :node="getNodeById(instance.sourceId)"
+            :instance="instance"
+            :index="liveInstancesByNode[instance.sourceId].indexOf(instance)"
+            @kill="kill(instance.instanceId)"
+          />
+        </div>
       </div>
       <ve-svg-container :camera="camera" :select-rect="selectRect">
         <ve-svg-node-links

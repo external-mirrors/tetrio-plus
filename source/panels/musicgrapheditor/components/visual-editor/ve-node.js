@@ -8,10 +8,7 @@ export default {
         class="node"
         :class="{ selected }"
         :node-id="node.id"
-        :style="{
-          '--x': (node.x + camera.x) + 'px',
-          '--y': (node.y + camera.y) + 'px'
-        }"
+        :style="{ '--x': node.x + 'px', '--y': node.y + 'px' }"
       >
         {{node.name}}
         <button class="spawn-button" v-if="connected" @click="$emit('spawn')">
@@ -25,25 +22,19 @@ export default {
           class="node-anchor origin"
           :node-id="node.id"
           :trigger-index="link.i"
-          :style="{
-            '--x': (link.x1 + camera.x) + 'px',
-            '--y': (link.y1 + camera.y) + 'px'
-          }"
+          :style="{ '--x': link.x1 + 'px', '--y': link.y1 + 'px' }"
         ></div>
         <div
           v-if="link.targetType == 'target'"
           class="node-anchor target"
           :node-id="node.id"
           :trigger-index="link.i"
-          :style="{
-            '--x': (link.x2 + camera.x) + 'px',
-            '--y': (link.y2 + camera.y) + 'px'
-          }"
+          :style="{ '--x': link.x2 + 'px', '--y': link.y2 + 'px' }"
         ></div>
       </template>
     </div>
   `,
-  props: ['nodes', 'node', 'camera', 'connected'],
+  props: ['nodes', 'node', 'connected'],
   mixins: [utils],
   computed: {
     selected() {
