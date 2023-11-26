@@ -1,4 +1,4 @@
-import { events, eventValueExtendedModes, eventHasTarget } from '../../events.js';
+import { events, eventValueExtendedModes, eventHasTarget, eventType } from '../../events.js';
 import { clipboard } from '../../clipboard.js';
 
 export default {
@@ -26,7 +26,7 @@ export default {
         if (!target) target = { id: -1, x: node.x, y: node.y };
 
         let label = trigger.event;
-        if (events.indexOf(trigger.event) == -1)
+        if (eventType(trigger.event).mode == 'custom')
           label = '🌐' + label;
         if (eventValueExtendedModes[trigger.event])
           label += ` ${trigger.predicateExpression}`;

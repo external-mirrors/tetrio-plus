@@ -1,4 +1,3 @@
-
 export const events = [
   'node-end',
   'time-passed',
@@ -102,4 +101,28 @@ export const eventHasTarget = {
   'dispatch': false,
   'create': false,
   'set': false
-}
+};
+
+let eventSet = new Set(events);
+export function eventType(event) {
+  if (event.startsWith('sfx-')) {
+    let match = /^sfx-(\w+)(?:-(\w+))?/.exec(event);
+    if (match) {
+      let [_, event, scope] = match;
+      if (eventSet.has('sfx-' + event))
+        return { mode: 'sfx', event: 'sfx-' + event, scope: scope || '' };
+    }
+  }
+
+  let fx = /^(fx-.+?|board-height)(?:-(player|enemy))?$/.exec(event);
+  if (fx && fxHasPlayerEnemyVariants.includes(fx[1])) {
+    let scope = fx[2] || '';
+    if (eventSet.has(fx[1]))
+      return { mode: 'fx', event: fx[1], scope }
+  }
+
+  if (!eventSet.has(event))
+    return { mode: 'custom', event: 'CUSTOM' };
+
+  return { mode: 'normal', event }
+};

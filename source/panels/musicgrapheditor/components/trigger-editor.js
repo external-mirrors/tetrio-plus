@@ -2,7 +2,8 @@ import {
   events,
   eventValueExtendedModes,
   eventHasTarget,
-  fxHasPlayerEnemyVariants
+  fxHasPlayerEnemyVariants,
+  eventType
 } from '../events.js';
 import ExpressionEditor from './expression-editor.js';
 import * as clipboard from '../clipboard.js';
@@ -210,26 +211,7 @@ export default {
   },
   computed: {
     dropdownMode() {
-      if (this.trigger.event.startsWith('sfx-')) {
-        let match = /^sfx-(\w+)(?:-(\w+))?/.exec(this.trigger.event);
-        if (match) {
-          let [_, event, scope] = match;
-          if (this.eventSet.has(event))
-            return { mode: 'sfx', event: 'sfx-' + event, scope: scope || '' };
-        }
-      }
-
-      let fx = /^(fx-.+?|board-height)(?:-(player|enemy))?$/.exec(this.trigger.event);
-      if (fx && fxHasPlayerEnemyVariants.includes(fx[1])) {
-        let scope = fx[2] || '';
-        if (this.eventSet.has(fx[1]))
-          return { mode: 'fx', event: fx[1], scope }
-      }
-
-      if (!this.eventSet.has(this.trigger.event))
-        return { mode: 'custom', event: 'CUSTOM' };
-
-      return { mode: 'normal', event: this.trigger.event }
+      return eventType(this.trigger.event);
     },
     eventListValue: {
       get() { return this.dropdownMode.event; },
