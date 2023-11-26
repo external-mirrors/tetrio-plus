@@ -75,7 +75,7 @@ export default {
   },
   computed: {
     svgTransform() {
-      return `translate(${this.camera.x}, ${this.camera.y})`
+      return `translate(${this.camera.x / this.camera.scale}, ${this.camera.y / this.camera.scale})`
     }
   }
 }

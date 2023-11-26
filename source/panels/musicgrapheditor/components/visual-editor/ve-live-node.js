@@ -54,8 +54,8 @@ export default {
       let padding = 2;
       if (!this.freeze) {
         let width = (size + padding * 2);
-        this.lastX = (this.node?.x || 0) + this.camera.x + this.index * width;
-        this.lastY = (this.node?.y || 0) + this.camera.y;
+        this.lastX = (this.node?.x || 0) + this.index * width;
+        this.lastY = (this.node?.y || 0);
       }
       return {
         '--size': size + 'px',

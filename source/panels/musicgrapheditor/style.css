@@ -129,19 +129,24 @@ input:invalid {
 .visual-editor {
   --bg-x: 0px;
   --bg-y: 0px;
+  --bg-scale: 1;
+  --bg-color: gray;
   user-select: none;
   touch-action: none;
-  background-size: 20px 20px;
-  background-position: var(--bg-x) var(--bg-y);
+  background-size: calc(20px*var(--bg-scale)) calc(20px*var(--bg-scale));
+  background-position: calc(var(--bg-x)) calc(var(--bg-y));
   background-image:
-    linear-gradient(to right, grey 1px, transparent 1px),
-    linear-gradient(to bottom, grey 1px, transparent 1px);
+    linear-gradient(to right, var(--bg-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--bg-color) 1px, transparent 1px);
   position: relative;
+  overflow: hidden;
 }
 .visual-editor > .events-per-second {
   position: absolute;
   right: 0px;
   top: 0px;
+
+  z-index: 1000;
 
   width: 240px;
   max-width: 100%;
@@ -171,6 +176,8 @@ input:invalid {
   background: white;
   /* border-radius: 15px; */
 
+  white-space: nowrap;
+
   user-select: none;
   touch-action: none;
 
@@ -178,6 +185,14 @@ input:invalid {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+.visual-editor.tiny .node {
+  border: 10px solid black;
+  font-size: 50px;
+}
+.visual-editor.tiny.very-tiny .node {
+  border: 0px solid black;
+  font-size: 100px;
 }
 .visual-editor .node.selected {
   background-color: orange;

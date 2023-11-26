@@ -9,55 +9,59 @@ import utils from './ve-utils-mixin.js';
 
 export default {
   template: html`
-    <div ref="editor" class="visual-editor" :style="editorStyle" tabindex="0">
+    <div ref="editor" class="visual-editor" :class="editorClass" :style="editorStyle" tabindex="0" @wheel="wheel">
       <div class="events-per-second" v-if="port">
         Events per second: {{ eventsPerSecond }}
         <div v-if="eventsPerSecondWarning">
           ⚠️ Above reporting threshold, some events may not display.
         </div>
       </div>
-      <div :style="{
-        'will-change': 'transform',
-        transform: \`translateX(\${camera.x}px) translateY(\${camera.y}px)\`
-      }">
-        <ve-node
-          v-for="node of nodes"
-          :key="node.id"
-          :nodes="nodes"
-          :node="node"
-          :connected="!!port"
-          @spawn="spawn(node)"
-        />
-        <div style="display: contents">
-          <ve-live-node
-            v-for="instance of liveInstances"
-            v-if="isFinite(instance.sourceId)"
-            :key="instance.instanceId"
-            :camera="camera"
+      <button class="reset-zoom" v-if="camera.scale != 1" @click="camera.scale = 1">Reset zoom</button>
+      <div :style="scaleContainerStyle">
+        <div :style="translateContainerStyle">
+          <ve-node
+            v-for="node of nodes"
+            :key="node.id"
             :nodes="nodes"
-            :node="getNodeById(instance.sourceId)"
-            :instance="instance"
-            :index="liveInstancesByNode[instance.sourceId].indexOf(instance)"
-            @kill="kill(instance.instanceId)"
+            :node="node"
+            :connected="!!port"
+            :show-anchors="camera.scale > 0.5"
+            @spawn="spawn(node)"
           />
+          <div style="display: contents">
+            <ve-live-node
+              v-for="instance of liveInstances"
+              v-if="isFinite(instance.sourceId)"
+              :key="instance.instanceId"
+              :camera="camera"
+              :nodes="nodes"
+              :node="getNodeById(instance.sourceId)"
+              :instance="instance"
+              :index="liveInstancesByNode[instance.sourceId].indexOf(instance)"
+              v-show="camera.scale > 0.5"
+              @kill="kill(instance.instanceId)"
+            />
+          </div>
         </div>
+        <ve-svg-container :camera="camera" :select-rect="selectRect" v-show="camera.scale > 0.25">
+          <ve-svg-node-links
+            v-for="node of nodes"
+            :key="node.id"
+            :nodes="nodes"
+            :node="node"
+            :events="recentTriggerFires[node.id] || []"
+            :draw-thick="camera.scale <= 0.5"
+            :show-labels="camera.scale > 0.5"
+          />
+        </ve-svg-container>
       </div>
-      <ve-svg-container :camera="camera" :select-rect="selectRect">
-        <ve-svg-node-links
-          v-for="node of nodes"
-          :key="node.id"
-          :nodes="nodes"
-          :node="node"
-          :events="recentTriggerFires[node.id] || []"
-        />
-      </ve-svg-container>
     </div>
   `,
   props: ['nodes'],
   components: { veSvgContainer, veSvgNodeLinks, veLiveNode, veNode },
   mixins: [utils],
   data: () => ({
-    camera: { x: 0, y: 0 },
+    camera: { x: 0, y: 0, scale: 1 },
     selectRect: null,
 
     // Debugger stuff
@@ -82,10 +86,32 @@ export default {
       }
       return map;
     },
+    editorClass() {
+      return {
+        'tiny': this.camera.scale <= 0.5,
+        'very-tiny': this.camera.scale <= 0.1
+      };
+    },
     editorStyle() {
       return {
         '--bg-x': this.camera.x + 'px',
-        '--bg-y': this.camera.y + 'px'
+        '--bg-y': this.camera.y + 'px',
+        '--bg-scale': this.camera.scale,
+        '--bg-color': this.camera.scale >= 0.5 ? 'gray' : 'transparent'
+      }
+    },
+    scaleContainerStyle() {
+      return {
+        transform: `scale(${this.camera.scale})`,
+        width: (100 / this.camera.scale) + '%',
+        height: (100 / this.camera.scale) + '%',
+        'transform-origin': '0 0'
+      }
+    },
+    translateContainerStyle() {
+      return {
+        'will-change': 'transform',
+        transform: `translateX(${this.camera.x/this.camera.scale}px) translateY(${this.camera.y/this.camera.scale}px)`
       }
     },
     svgTransform() {
@@ -93,6 +119,19 @@ export default {
     }
   },
   methods: {
+    wheel(evt) {
+      let {top, left} = this.$refs.editor.getBoundingClientRect()
+      this.camera.x -= evt.clientX - left;
+      this.camera.y -= evt.clientY - top;
+      this.camera.x /= this.camera.scale;
+      this.camera.y /= this.camera.scale;
+      this.camera.scale -= evt.deltaY / 1000;
+      if (this.camera.scale < 0.1) this.camera.scale = 0.1;
+      this.camera.x *= this.camera.scale;
+      this.camera.y *= this.camera.scale;
+      this.camera.x += evt.clientX - left;
+      this.camera.y += evt.clientY - top;
+    },
     editorRect() {
       return this.$refs.editor.getBoundingClientRect();
     },
@@ -113,7 +152,7 @@ export default {
 
       let musicGraph = null;
       let result = await sanitizeAndLoadTPSE({
-        version: '0.21.3',
+        version: '0.25.3',
         musicGraph: event.clipboardData.getData('text')
       }, {
         async set(pairs) {
@@ -344,7 +383,7 @@ export default {
         modifiers: [
           interact.modifiers.snap({
             targets: [
-              interact.createSnapGrid({ x: 20, y: 20 })
+              interact.createSnapGrid({ x: 20 / this.camera.scale, y: 20 / this.camera.scale })
             ],
             relativePoints: [{ x: 0, y: 0 }],
             offset: 'self'
@@ -355,8 +394,8 @@ export default {
         let node = this.getNodeFromElem(event.target);
         let set = clipboard.selected.indexOf(node) !== -1 ? clipboard.selected : [node];
         for (let node of set) {
-          node.x += event.dx;
-          node.y += event.dy;
+          node.x += event.dx / this.camera.scale;
+          node.y += event.dy / this.camera.scale;
         }
       })
       .on('dragend', event => {
@@ -383,74 +422,31 @@ export default {
         this.$emit('focus', node);
       });
 
+    const dx = Symbol("dx");
+    const dy = Symbol("dy");
     interact('.visual-editor .node-anchor')
-      .draggable({
-        modifiers: [
-          interact.modifiers.snap({
-            targets: [
-              (x, y, interaction, offset, index) => {
-                let handle = interaction.element;
-                let nodeElem = this.getTargetedNodeElemFromTriggerElem(handle);
-                let trigger = this.getTriggerFromElem(handle);
-                let node = this.getNodeFromElem(nodeElem);
-
-                if (!node) return { x: x, y: y, range: 0 };
-
-                // The element is centered by translating it by half its size
-                // interact.js doesn't like this so we have to adjust the snap
-                // offsets manually
-                let snapOffset = 0.5 * parseInt(
-                  getComputedStyle(handle).getPropertyValue('--size')
-                );
-                let rect = this.editorRect();
-                let border = [2, 2, 2, 0];
-                let ax1 = node.x + this.camera.x - snapOffset + (rect.x + border[3]);
-                let ay1 = node.y + this.camera.y - snapOffset + (rect.y + border[0]);
-                let ax2 = ax1 + 200
-                let ay2 = ay1 + 60
-
-                let ax1o = Math.abs(ax1 - x);
-                let ax2o = Math.abs(ax2 - x);
-                let ay1o = Math.abs(ay1 - y);
-                let ay2o = Math.abs(ay2 - y);
-
-                switch (Math.min(ax1o, ax2o, ay1o, ay2o)) {
-                  case ax1o:
-                    if (y < ay1) y = ay1;
-                    if (y > ay2) y = ay2;
-                    return { x: ax1, y: y, range: Infinity };
-
-                  case ax2o:
-                    if (y < ay1) y = ay1;
-                    if (y > ay2) y = ay2;
-                    return { x: ax2, y: y, range: Infinity };
-
-                  case ay1o:
-                    if (x < ax1) x = ax1;
-                    if (x > ax2) x = ax2;
-                    return { y: ay1, x: x, range: Infinity };
-
-                  case ay2o:
-                    if (x < ax1) x = ax1;
-                    if (x > ax2) x = ax2;
-                    return { y: ay2, x: x, range: Infinity };
-                }
-              }
-            ],
-            relativePoints: [{ x: 0, y: 0 }],
-            offset: 'parent'
-          })
-        ]
+      .draggable({})
+      .on('dragstart', event => {
+        let trigger = this.getTriggerFromElem(event.target);
+        let coord = trigger.anchor[this.getHandleTypeFromElem(event.target)];
+        coord[dx] = coord.x;
+        coord[dy] = coord.y;
       })
       .on('dragmove', event => {
         let trigger = this.getTriggerFromElem(event.target);
         let coord = trigger.anchor[this.getHandleTypeFromElem(event.target)];
-        coord.x += event.dx;
-        coord.y += event.dy;
+        coord[dx] += event.dx / this.camera.scale;
+        coord[dy] += event.dy / this.camera.scale;
+        let rx = Math.abs(0.5 - coord.x/200);
+        let ry = Math.abs(0.5 - coord.y/60);
+        coord.x = rx > ry ? (coord[dx] < 100 ? 0 : 200) : Math.min(Math.max(coord[dx], 0), 200);
+        coord.y = ry > rx ? (coord[dy] < 30 ? 0 : 60) : Math.min(Math.max(coord[dy], 0), 60);
       })
       .on('dragend', event => {
-        // let trigger = this.getTriggerFromElem(event.target);
-        // let coord = trigger.anchor[this.getHandleTypeFromElem(event.target)];
+        let trigger = this.getTriggerFromElem(event.target);
+        let coord = trigger.anchor[this.getHandleTypeFromElem(event.target)];
+        delete coord[dx];
+        delete coord[dy];
         this.$emit('change');
       })
   }

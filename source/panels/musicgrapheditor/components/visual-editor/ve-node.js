@@ -11,7 +11,7 @@ export default {
         :style="{ '--x': node.x + 'px', '--y': node.y + 'px' }"
       >
         {{node.name}}
-        <button class="spawn-button" v-if="connected" @click="$emit('spawn')">
+        <button class="spawn-button" v-if="connected && showAnchors" @click="$emit('spawn')">
           spawn
         </button>
       </div>
@@ -23,6 +23,7 @@ export default {
           :node-id="node.id"
           :trigger-index="link.i"
           :style="{ '--x': link.x1 + 'px', '--y': link.y1 + 'px' }"
+          v-show="showAnchors"
         ></div>
         <div
           v-if="link.targetType == 'target'"
@@ -30,11 +31,12 @@ export default {
           :node-id="node.id"
           :trigger-index="link.i"
           :style="{ '--x': link.x2 + 'px', '--y': link.y2 + 'px' }"
+          v-show="showAnchors"
         ></div>
       </template>
     </div>
   `,
-  props: ['nodes', 'node', 'connected'],
+  props: ['nodes', 'node', 'connected', 'show-anchors'],
   mixins: [utils],
   computed: {
     selected() {

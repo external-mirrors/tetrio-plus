@@ -8,15 +8,16 @@ export default {
         <line
           :x1="link.x1" :y1="link.y1" :x2="link.x2" :y2="link.y2"
           stroke="black"
-          :marker-start="link.startCap ? \`url(#\${link.startCap})\` : null"
-          :marker-end="link.endCap ? \`url(#\${link.endCap})\` : null"
-          :stroke-dasharray="link.trigger.mode == 'fork' ? '8 4' : null"
+          :marker-start="!drawThick && link.startCap ? \`url(#\${link.startCap})\` : null"
+          :marker-end="!drawThick && link.endCap ? \`url(#\${link.endCap})\` : null"
+          :stroke-dasharray="link.trigger.mode == 'fork' ? (drawThick ? '32 16' : '8 4') : null"
+          :stroke-width="drawThick ? 10 : 1"
         />
         <line
           :x1="link.x1" :y1="link.y1" :x2="link.x2" :y2="link.y2"
           :opacity="age(link.i).age"
           :stroke="age(link.i).success ? '#FFA500' : '#FF0000'"
-          stroke-width="3"
+          :stroke-width="drawThick ? 10 : 3"
         />
         <text
           :x="link.textX"
@@ -28,11 +29,12 @@ export default {
           :trigger-index="link.i"
           :text-anchor="link.textAnchor"
           :dominant-baseline="link.textBaseline"
+          v-show="showLabels"
         >​{{ link.label }}</text>
       </template>
     </g>
   `,
-  props: ['nodes', 'node', 'events'],
+  props: ['nodes', 'node', 'events', 'draw-thick', 'show-labels'],
   mixins: [utils],
   methods: {
     age(index) {
