@@ -141,4 +141,21 @@ musicGraph(({ dispatchEvent, cleanup }) => {
       dispatchEvent(`board-height`, { $: height, $board: evt.detail.board_id });
       dispatchEvent(`board-height-${type}`, { $: height, $board: evt.detail.board_id });
     }, { signal: controller.signal });
+
+    // generic event receiver, currently only used from board height-related
+    // board identification hooks.
+    document.addEventListener('tetrio-plus-event', evt => {
+      let data = {};
+      if (typeof evt.detail.$ == 'number')
+        data.$ = evt.detail.$;
+      if (typeof evt.detail.board_id == 'number')
+        data.$board = evt.detail.board_id;
+
+      dispatchEvent(evt.detail.event, data);
+
+      if (evt.detail.boardSize && evt.detail.spatialization) {
+        let type = locationHeuristic(evt.detail.boardSize, evt.detail.spatialization);
+        dispatchEvent(evt.detail.event + '-' + type, data);
+      }
+    }, { signal: controller.signal });
   });

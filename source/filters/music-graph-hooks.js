@@ -20,10 +20,15 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
         let musicGraphBoardHeightCache = {};
 
         setInterval(() => {
-          for (let [key, value] of Object.entries(musicGraphBoardHeightCache))
-            if (Date.now() > value.time + 10*1000)
-              delete musicGraphBoardHeightCache[key]
-        }, 10*1000);
+          for (let [key, value] of Object.entries(musicGraphBoardHeightCache)) {
+            if (Date.now() > value.time + 250) {
+              delete musicGraphBoardHeightCache[key];
+              document.dispatchEvent(new CustomEvent('tetrio-plus-event', {
+                detail: { event: 'board-gone', board_id: +key }
+              }));
+            }
+          }
+        }, 250);
       ` + src;
 
       // This regex matches the big Play function.
@@ -52,14 +57,25 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       src = src.replace(/Play\(\w+,\s*\w*\s*=\s*\d,\s*\w*\s*=\s*\d\)\s*{/, ($) => {
         match = true;
         return $ + (`
+          let boardSize = (this.self.${boardSizeObjectPath}.IsTinyMode() || this.self.${boardSizeObjectPath}.IsSmallMode()) ? 'tiny' : 'full';
           if (!this.self.__tetrio_plus_board_id) {
             this.self.__tetrio_plus_board_id = ++musicGraphIDIncrement;
+            document.dispatchEvent(new CustomEvent('tetrio-plus-event', {
+              detail: {
+                event: 'board-new',
+                board_id: this.self.__tetrio_plus_board_id,
+                boardSize: boardSize,
+                spatialization: this.self.${coxPath}
+              }
+            }));
           }
+          if (musicGraphBoardHeightCache[this.self.__tetrio_plus_board_id])
+            musicGraphBoardHeightCache[this.self.__tetrio_plus_board_id].time = Date.now();
           document.dispatchEvent(new CustomEvent('tetrio-plus-actionsound', {
             detail: {
               name: ${soundNameVar},
               board_id: this.self.__tetrio_plus_board_id,
-              boardSize: (this.self.${boardSizeObjectPath}.IsTinyMode() || this.self.${boardSizeObjectPath}.IsSmallMode()) ? 'tiny' : 'full',
+              boardSize: boardSize,
               spatialization: this.self.${coxPath}
             }
           }));
@@ -84,8 +100,18 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
           let spatialization = this.ctx.${coxPath};
           if (!this.ctx.__tetrio_plus_board_id) {
             this.ctx.__tetrio_plus_board_id = ++musicGraphIDIncrement;
+            document.dispatchEvent(new CustomEvent('tetrio-plus-event', {
+              detail: {
+                event: 'board-new',
+                board_id: this.ctx.__tetrio_plus_board_id,
+                boardSize: boardSize,
+                spatialization: spatialization
+              }
+            }));
           }
           let board_id = this.ctx.__tetrio_plus_board_id;
+          if (musicGraphBoardHeightCache[board_id])
+            musicGraphBoardHeightCache[board_id].time = Date.now();
 
 
           // The effect map seems to be empty sometimes, leading to effect being null
@@ -138,15 +164,24 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       src = src.replace(rgx, ($, contextVar) => {
         match = true;
         return `
-        if (!${contextVar}.__tetrio_plus_board_id) {
-          ${contextVar}.__tetrio_plus_board_id = ++musicGraphIDIncrement;
-        }
-
         let height = ${highestLineCall};
         let bso = ${contextVar}.${boardSizeObjectPath};
+
+        if (!${contextVar}.__tetrio_plus_board_id) {
+          ${contextVar}.__tetrio_plus_board_id = ++musicGraphIDIncrement;
+          document.dispatchEvent(new CustomEvent('tetrio-plus-event', {
+            detail: {
+              event: 'board-new',
+              board_id: ${contextVar}.__tetrio_plus_board_id,
+              boardSize: (bso.IsTinyMode() || bso.IsSmallMode()) ? 'tiny' : 'full',
+              spatialization: ${contextVar}.${coxPath}
+            }
+          }));
+        }
         let board_id = ${contextVar}.__tetrio_plus_board_id;
 
         let last = musicGraphBoardHeightCache[board_id];
+        if (last) last.time = Date.now();
         if (!last || (height != last.height)) {
           musicGraphBoardHeightCache[board_id] = { height, time: Date.now() };
 

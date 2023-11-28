@@ -13,11 +13,10 @@ export const events = [
   'fx-30-players-left',
   'fx-10-players-left',
   'fx-60-seconds-left',
-  'fx-30-seconds-left'
+  'fx-30-seconds-left',
 ];
 
 export const fxHasPlayerEnemyVariants = [
-  'board-height',
   'fx-line-clear',
   'fx-combo',
   'fx-offense',
@@ -30,9 +29,13 @@ export const fxHasPlayerEnemyVariants = [
   'fx-l-spin',
   'fx-s-spin',
   'fx-z-spin',
+  'board-height',
+  'board-new',
 ];
 for (let sfx of fxHasPlayerEnemyVariants)
   events.push(sfx); // -player/-enemy have extra UI
+
+events.push('board-gone'); // down here for better list ordering
 
 [
   "home",
