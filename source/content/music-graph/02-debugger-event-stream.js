@@ -110,7 +110,8 @@ musicGraph(musicGraph => {
   }
   reconnect();
 
-  let events = 0;
+  let hardEvents = 0;
+  let softEvents = 0;
   const softLimit = musicGraph.musicGraphReportedEventRateLimit;
   const hardLimit = musicGraph.musicGraphHardEventRateLimit;
 
@@ -119,11 +120,12 @@ musicGraph(musicGraph => {
       port.postMessage({
         type: 'event',
         name: 'eventsPerSecond',
-        eventsPerSecond: events,
-        warning: events >= softLimit
+        eventsPerSecond: hardEvents,
+        warning: softEvents >= softLimit
       });
     }
-    events = 0;
+    hardEvents = 0;
+    softEvents = 0;
   }, 1000);
   musicGraph.cleanup.push(() => clearInterval(resetThrottle));
 
@@ -135,26 +137,26 @@ musicGraph(musicGraph => {
    * @param {Boolean} ratelimitEvent if events count towards the ratelimit
    */
   function sendDebugEvent(name, data=null, ratelimitEvent=false) {
+    // Hard limit = kill graph immediately
+    hardEvents++;
+    if (hardEvents > hardLimit && musicGraph.nodes.length > 0) {
+      for (let node of musicGraph.nodes.slice())
+        node.destroy();
+      if (!alerted) {
+        alerted = true;
+        alert(
+          '[TETR.IO PLUS] Music graph event count above ' + hardLimit + ' per second' +
+          ', graph automatically terminated to avoid freezing the game. Check your ' +
+          'graph for performance issues. You can raise this limit in the ' +
+          'Music Graph\'s global config section.'
+        );
+      };
+    }
+
     if (ratelimitEvent) {
-      events++;
-
-      // Hard limit = kill graph immediately
-      if (events > hardLimit && musicGraph.nodes.length > 0) {
-        for (let node of musicGraph.nodes.slice())
-          node.destroy();
-        if (!alerted) {
-          alerted = true;
-          alert(
-            '[TETR.IO PLUS] Music graph event count above ' + hardLimit + ' per second' +
-            ', graph automatically terminated to avoid freezing the game. Check your ' +
-            'graph for performance issues. You can raise this limit in the ' +
-            'Music Graph\'s global config section.'
-          );
-        };
-      }
-
       // Soft limit = drop events
-      if (events > softLimit)
+      softEvents += 1;
+      if (softEvents > softLimit)
         return;
     }
 
