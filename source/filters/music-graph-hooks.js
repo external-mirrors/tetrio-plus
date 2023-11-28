@@ -17,6 +17,13 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
 
       src = `
         let musicGraphIDIncrement = 0;
+        let musicGraphBoardHeightCache = {};
+
+        setInterval(() => {
+          for (let [key, value] of Object.entries(musicGraphBoardHeightCache))
+            if (Date.now() > value.time + 10*1000)
+              delete musicGraphBoardHeightCache[key]
+        }, 10*1000);
       ` + src;
 
       // This regex matches the big Play function.
@@ -122,8 +129,6 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       }
       const highestLineCall = highestLinePath[1];
 
-
-
       /**
        * This regex hooks a convenient location for us to send off data from
        * variables gathered in other hooks
@@ -133,20 +138,27 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       src = src.replace(rgx, ($, contextVar) => {
         match = true;
         return `
-        let height = ${highestLineCall};
-        let bso = ${contextVar}.${boardSizeObjectPath};
-
         if (!${contextVar}.__tetrio_plus_board_id) {
           ${contextVar}.__tetrio_plus_board_id = ++musicGraphIDIncrement;
         }
-        document.dispatchEvent(new CustomEvent('tetrio-plus-actionheight', {
-          detail: {
-            height,
-            board_id: ${contextVar}.__tetrio_plus_board_id,
-            boardSize: (bso.IsTinyMode() || bso.IsSmallMode()) ? 'tiny' : 'full',
-            spatialization: ${contextVar}.${coxPath}
-          }
-        }));
+
+        let height = ${highestLineCall};
+        let bso = ${contextVar}.${boardSizeObjectPath};
+        let board_id = ${contextVar}.__tetrio_plus_board_id;
+
+        let last = musicGraphBoardHeightCache[board_id];
+        if (!last || (height != last.height)) {
+          musicGraphBoardHeightCache[board_id] = { height, time: Date.now() };
+
+          document.dispatchEvent(new CustomEvent('tetrio-plus-actionheight', {
+            detail: {
+              height,
+              board_id,
+              boardSize: (bso.IsTinyMode() || bso.IsSmallMode()) ? 'tiny' : 'full',
+              spatialization: ${contextVar}.${coxPath}
+            }
+          }));
+        }
         ` + $;
       });
       if (!match) {
