@@ -115,6 +115,9 @@ class ExpVal {
   }
 
   static substitute(variableName, variables) {
+    if (!variableName.includes('{'))
+      return variableName;
+
     let substituted = variableName.replace(/{{(.+?)}}/, ($, ident) => {
       return variables[ident] || 0;
     });
