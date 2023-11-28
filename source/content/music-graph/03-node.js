@@ -342,7 +342,7 @@ musicGraph(musicGraph => {
         get(_, prop) {
           if (prop.startsWith('#'))
             return globalVariables[prop];
-          if (prop in extra)
+          if (extra && prop in extra)
             return extra[prop];
           if (prop in computed)
             return computed[prop];
@@ -351,7 +351,7 @@ musicGraph(musicGraph => {
         set(_, prop, value) {
           if (prop.startsWith('#')) {
             globalVariables[prop] = value;
-          } else if (prop in extra) {
+          } else if (extra && prop in extra) {
             // extra is used for values that only exist during the event, meaning they're effectively write-only.
             // drop the write for now.
             // extra variables used by tetrio plus always start with $, but api users can set them to anything.

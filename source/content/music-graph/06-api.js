@@ -58,4 +58,10 @@ musicGraph(musicGraph => {
       time: node.currentTime
     }))
   );
+
+  createAPICall(
+    'setF8DebuggerEnabled',
+    ['boolean'],
+    (enabled) => musicGraph.f8menuEnabled = enabled
+  );
 });

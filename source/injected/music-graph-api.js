@@ -20,7 +20,8 @@
   window.tetrioPlus = {
     musicGraph: {
       getActiveNodes: makeAPICall.bind(null, 'getActiveNodes'),
-      dispatchEvent: makeAPICall.bind(null, 'dispatchEvent')
+      dispatchEvent: makeAPICall.bind(null, 'dispatchEvent'),
+      setF8DebuggerEnabled: makeAPICall.bind(null, 'setF8DebuggerEnabled')
     }
   };
 })();

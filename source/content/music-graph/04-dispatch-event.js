@@ -13,23 +13,35 @@ musicGraph(graph => {
 
   let f8menu = document.getElementById('devbuildid');
   let f8menuActive = false;
+  graph.f8menuEnabled = true;
   if (!f8menu) {
     console.log("[TETR.IO PLUS] Can't find '#devbuildid'?")
   } else {
     let div = document.createElement('div');
     cleanup.push(() => div.remove());
     div.style.fontFamily = 'monospace';
-    div.classList.add('tetrio-plus-music-graph-debug');
+    div.id = 'tetrio-plus-music-graph-debug';
     div.innerHTML = `
       TETR.IO PLUS music graph debug<br>
-      -- Recent events --
-      <div id="tetrio_plus_music_graph_events">
+      <div id="tetrio_plus_music_graph_disabled">
+        Music graph debugger disabled via API
       </div>
-      -- Global variables --
-      <div id="tetrio_plus_music_graph_variables">
+      <div class="tetrio-plus-music-graph-debug-output">
+        -- Recent events --
+        <div id="tetrio_plus_music_graph_events">
+        </div>
+        -- Global variables --
+        <div id="tetrio_plus_music_graph_variables">
+        </div>
       </div>
 
       <style>
+        #tetrio-plus-music-graph-debug:not(.disabled) > #tetrio_plus_music_graph_disabled {
+          display: none;
+        }
+        #tetrio-plus-music-graph-debug.disabled > .tetrio-plus-music-graph-debug-output {
+          display: none;
+        }
         #tetrio_plus_music_graph_events span {
           min-width: 300px;
           border: 1px solid #AAA;
@@ -40,10 +52,12 @@ musicGraph(graph => {
     `;
     f8menu.parentNode.insertBefore(div, f8menu.nextSibling.nextSibling);
 
+    let container = document.getElementById('tetrio-plus-music-graph-debug');
     let events = document.getElementById('tetrio_plus_music_graph_events');
     let variables = document.getElementById('tetrio_plus_music_graph_variables');
     setInterval(() => {
-      f8menuActive = !f8menu.parentNode.classList.contains('off');
+      container.classList.toggle('disabled', !graph.f8menuEnabled);
+      f8menuActive = graph.f8menuEnabled && !f8menu.parentNode.classList.contains('off');
       if (!f8menuActive) return;
 
       events.innerHTML = ``;
