@@ -220,20 +220,17 @@
     let osd = createOSD();
 
     let game = evt.detail;
-    console.log('bound new socket', evt.detail);
 
     game.bind(onEvent);
 
     let original_destroy = game.destroy.bind(game);
     game.destroy = function(...args) {
-      console.log('destroy', args);
       dropGame();
       original_destroy(...args);
     }
 
 
     function dropGame() {
-      console.log("Dropped game");
       game.unbind(onEvent);
       osd.destroy();
     }
