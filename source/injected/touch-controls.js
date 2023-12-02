@@ -196,6 +196,60 @@
     }
   }
 
+  function getKeymap() {
+    switch (window.keyMap.controls.style) {
+      case 'guideline': return {
+        moveLeft: ["ARROWLEFT", "LEFT", "NUMPAD4"],
+        moveRight: ["ARROWRIGHT", "RIGHT", "NUMPAD6"],
+        softDrop: ["ARROWDOWN", "DOWN", "NUMPAD2"],
+        hardDrop: ["SPACE", "NUMPAD8"],
+        rotateCCW: ["CONTROL", "CONTROLLEFT", "Z", "KEYZ", "NUMPAD3", "NUMPAD7"],
+        rotateCW: ["ARROWUP", "UP", "X", "KEYX", "NUMPAD1", "NUMPAD5", "NUMPAD9"],
+        rotate180: ["A", "KEYA"],
+        hold: ["SHIFT", "SHIFTLEFT", "C", "KEYC", "NUMPAD0"],
+        exit: ["ESCAPE"],
+        retry: ["R", "KEYR"],
+        chat: ["T", "KEYT"],
+        target1: ["1", "DIGIT1"],
+        target2: ["2", "DIGIT2"],
+        target3: ["3", "DIGIT3"],
+        target4: ["4", "DIGIT4"],
+        menuUp: ["W", "KEYW", "ARROWUP", "UP"],
+        menuDown: ["S", "KEYS", "ARROWDOWN", "DOWN"],
+        menuLeft: ["A", "KEYA", "ARROWLEFT", "LEFT"],
+        menuRight: ["D", "KEYD", "ARROWRIGHT", "RIGHT"],
+        menuBack: ["ESCAPE", "BACKSPACE"],
+        menuConfirm: ["ENTER", "NUMPADENTER", "SPACE"],
+        openSocial: ["TAB"],
+      };
+      case 'wasd': return {
+        moveLeft: ["A", "KEYA", "NUMPAD4"],
+        moveRight: ["D", "KEYD", "NUMPAD6"],
+        softDrop: ["W", "KEYW", "NUMPAD8"],
+        hardDrop: ["S", "KEYS", "NUMPAD5"],
+        rotateCCW: ["ARROWLEFT", "LEFT", "NUMPAD7"],
+        rotateCW: ["ARROWRIGHT", "RIGHT", "NUMPAD9"],
+        rotate180: ["ARROWUP", "UP", "NUMPAD2"],
+        hold: ["SHIFT", "SHIFTLEFT", "NUMPADENTER"],
+        exit: ["ESCAPE"],
+        retry: ["R", "KEYR"],
+        chat: ["T", "KEYT"],
+        target1: ["1", "DIGIT1"],
+        target2: ["2", "DIGIT2"],
+        target3: ["3", "DIGIT3"],
+        target4: ["4", "DIGIT4"],
+        menuUp: ["W", "KEYW", "ARROWUP", "UP"],
+        menuDown: ["S", "KEYS", "ARROWDOWN", "DOWN"],
+        menuLeft: ["A", "KEYA", "ARROWLEFT", "LEFT"],
+        menuRight: ["D", "KEYD", "ARROWRIGHT", "RIGHT"],
+        menuBack: ["ESCAPE", "BACKSPACE"],
+        menuConfirm: ["ENTER", "NUMPADENTER", "SPACE"],
+        openSocial: ["TAB"],
+      };
+      case 'custom': return window.keyMap.controls.custom;
+    }
+  }
+
   function setKey(key, presserId, pressed) {
     if (!keypresses[key]) return;
     if (pressed && !keypresses[key].has(presserId)) {
@@ -221,10 +275,10 @@
               //   bubbles: true,
               //   code: key.slice('literal-'.length);
               // }));
-            } else if (keyMap[key]) {
+            } else if (getKeymap()[key]) {
               let evt = new KeyboardEvent('keydown', {
                 bubbles: true,
-                code: keyMap[key][0] // global exposed from hook
+                code: getKeymap()[key][0] // global exposed from hook
               });
               document.body.dispatchEvent(evt);
             } else {
@@ -253,7 +307,7 @@
           default:
             let evt = new KeyboardEvent('keyup', {
               bubbles: true,
-              code: keyMap[key][0] // global exposed from hook
+              code: getKeymap()[key][0] // global exposed from hook
             });
             document.body.dispatchEvent(evt);
             break;
