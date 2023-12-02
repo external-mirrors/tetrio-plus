@@ -14,9 +14,12 @@ export const events = [
   'fx-10-players-left',
   'fx-60-seconds-left',
   'fx-30-seconds-left',
+  'board-gone',
 ];
 
 export const fxHasPlayerEnemyVariants = [
+  'board-new',
+  'board-height',
   'fx-line-clear',
   'fx-combo',
   'fx-offense',
@@ -29,13 +32,10 @@ export const fxHasPlayerEnemyVariants = [
   'fx-l-spin',
   'fx-s-spin',
   'fx-z-spin',
-  'board-height',
-  'board-new',
 ];
 for (let sfx of fxHasPlayerEnemyVariants)
   events.push(sfx); // -player/-enemy have extra UI
 
-events.push('board-gone'); // down here for better list ordering
 
 [
   "home",
@@ -117,7 +117,7 @@ export function eventType(event) {
     }
   }
 
-  let fx = /^(fx-.+?|board-height)(?:-(player|enemy))?$/.exec(event);
+  let fx = /^(fx-.+?|board-(?:height|new|gone))(?:-(player|enemy))?$/.exec(event);
   if (fx && fxHasPlayerEnemyVariants.includes(fx[1])) {
     let scope = fx[2] || '';
     if (eventSet.has(fx[1]))
