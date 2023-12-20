@@ -10,16 +10,6 @@ import StyleEditor from './components/StyleEditor.js';
 import '../shared/drop-handler.js';
 
 const html = arg => arg.join(''); // NOOP, for editor integration.
-const release_commit = await fetch('../../../release-commit')
-  .then(res => res.text())
-  .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
-  .catch(ex => null);
-const commit = await fetch('../../../ci-commit')
-  .then(res => res.text())
-  .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
-  .then(text => text == release_commit ? null : text)
-  .catch(ex => null);
-console.log(release_commit, commit);
 
 const app = new Vue({
   template: html`
@@ -301,7 +291,7 @@ const app = new Vue({
     allowURLPackLoader: null,
     whitelistedLoaderDomains: null,
     isMobileExtensionPopup: false,
-    commit
+    commit: null
   },
   computed: {
     isElectron() {
@@ -325,6 +315,17 @@ const app = new Vue({
     if (await this.isMobileBrowser() && await this.isExtensionPopup()) {
       this.isMobileExtensionPopup = true;
     }
+
+    let prefix = this.isElectron ? 'tetrio-plus-internal://resources/' : '../../../resources/';
+    const release_commit = await fetch(prefix + 'release-commit')
+      .then(res => res.text())
+      .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
+      .catch(ex => null);
+    this.commit = await fetch(prefix + 'ci-commit')
+      .then(res => res.text())
+      .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
+      .then(text => text == release_commit ? null : text)
+      .catch(ex => null);
 
     let str = '';
     window.addEventListener('keydown', evt => {

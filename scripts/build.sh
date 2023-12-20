@@ -1,5 +1,5 @@
 # The big build script that does everything
-git rev-parse --short HEAD > ci-commit # commit for display purposes
+git rev-parse --short HEAD > resources/ci-commit # commit for display purposes
 git pull --recurse-submodules # ensure tpsecore is pulled in
 
 apt-get update
