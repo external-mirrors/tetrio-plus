@@ -1,4 +1,6 @@
 # The big build script that does everything
+set -x
+
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y
 

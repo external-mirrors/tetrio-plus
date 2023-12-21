@@ -1,6 +1,7 @@
 # Before running: apt install p7zip-full
 # Call this script from the tetrio plus (..) directory
 set -e
+set -x
 npm i -g asar
 
 wget -q -N https://tetr.io/about/desktop/builds/TETR.IO%20Setup.exe

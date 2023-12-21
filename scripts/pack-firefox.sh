@@ -3,6 +3,8 @@
 # release. YOU DO NOT NEED TO BUILD THE EXTENSION WHILE DEVELOPING!
 # Call this script from the tetrio plus (..) directory
 
+set -x
+
 rm -r ./build
 mkdir ./build
 
