@@ -18,7 +18,7 @@ mkdir -p out/tetrioplus
 git archive HEAD | tar -x -C out/tetrioplus
 cp app.asar out/app.asar.vanilla
 rm out/tetrioplus/resources/ci-commit
-cp resources/ci-commit out/tetrioplus/source/resources
+cp resources/ci-commit out/tetrioplus/resources
 # note: bit of a hack, assumes we're being called from build.sh after doing the tpsecore build
 cp source/lib/tpsecore_bg.wasm source/lib/tpsecore.js out/tetrioplus/source/lib
 
