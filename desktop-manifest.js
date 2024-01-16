@@ -45,6 +45,7 @@ manifest.browser_specific_settings.desktop_client = {
     "source/content/touch-controls.js",
     "source/content/animated-bg.js",
     "source/content/osd.js",
+    "source/content/replay-saver.js",
     "source/content/emote-tab.js",
 
     "source/content/connected-skins.js",

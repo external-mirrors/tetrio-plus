@@ -222,6 +222,21 @@
             await browser.storage.local.remove(keystore.get('keys'));
           }
         }
+      },
+      permissions: {
+        async request() {
+          return true;
+        }
+      }
+      downloads: {
+        download({ filename, url }) {
+          let data = await fetch(url).then(res => res.arrayBuffer());
+          let segments = ['Downloads', ...filename.split('/')];
+          for (let i = 1; i < segments.length-1; i++)
+            if (!fs.existsSync(path.join(os.homedir(), ...segments.slice(0, i))))
+              fs.mkdirSync(path.join(os.homedir(), ...segments.slice(0, i));
+          fs.writeFileSync(path.join(os.homedir(), ...segments), data);
+        }
       }
     };
 

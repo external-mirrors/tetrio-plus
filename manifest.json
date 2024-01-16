@@ -5,13 +5,15 @@
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
 
-
   "permissions": [
     "webRequest",
     "webRequestBlocking",
     "unlimitedStorage",
     "storage",
     "*://*.tetr.io/*"
+  ],
+  "optional_permissions": [
+    "downloads"
   ],
 
   "page_action": {
@@ -71,6 +73,7 @@
       "source/content/touch-controls.js",
       "source/content/animated-bg.js",
       "source/content/osd.js",
+      "source/content/replay-saver.js",
 
       "source/content/connected-skins.js",
 

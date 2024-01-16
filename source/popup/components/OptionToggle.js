@@ -80,6 +80,7 @@ export default {
       if (this.disabled) return;
       if (this.mode != 'toggle') return;
       this.optionValue = !this.optionValue;
+      this.$emit('toggled');
     }
   },
   computed: {

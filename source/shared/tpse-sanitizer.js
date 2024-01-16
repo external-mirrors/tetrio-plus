@@ -66,6 +66,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     musicGraphEnabled: parseBoolean('musicGraphEnabled'),
     disableVanillaMusic: parseBoolean('disableVanillaMusic'),
     enableMissingMusicPatch: parseBoolean('enableMissingMusicPatch'),
+    enableReplaySaver: parseBoolean('enableReplaySaver'),
     enableOSD: parseBoolean('enableOSD'),
     bgEnabled: parseBoolean('bgEnabled'),
     animatedBgEnabled: parseBoolean('animatedBgEnabled'),

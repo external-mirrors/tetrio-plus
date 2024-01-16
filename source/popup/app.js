@@ -128,6 +128,11 @@ const app = new Vue({
                 </span>
               </option-toggle>
             </div>
+            <option-toggle storageKey="enableReplaySaver" @toggled="requestDownloadPermission()">
+              <span title="Automatically downloads replays and saves them in \`~/Downloads/tetrio-plus-replays\`">
+                Enable replay saver
+              </span>
+            </option-toggle>
             <option-toggle storageKey="enableOSD">
               <span :title="(
                 'Shows what keys are pressed, for streaming or recording. ' +
@@ -380,6 +385,12 @@ const app = new Vue({
     },
     async isExtensionPopup() {
       return await browser.tabs.getCurrent() == null;
+    },
+    async requestDownloadPermission() {
+      if (!await browser.permissions.request({ permissions: ['downloads'] })) {
+        await browser.storage.local.set({ enableReplaySaver: false });
+        alert('Downloads permission not granted, replay saver disabled.');
+      }
     },
     openInNewTab() {
       browser.tabs.create({ url: window.location.href, active: true });
