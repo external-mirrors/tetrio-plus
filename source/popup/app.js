@@ -322,15 +322,16 @@ const app = new Vue({
     }
 
     let prefix = this.isElectron ? 'tetrio-plus-internal://resources/' : '../../../resources/';
-    const release_commit = await fetch(prefix + 'release-commit')
-      .then(res => res.text())
-      .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
-      .catch(ex => null);
-    this.commit = await fetch(prefix + 'ci-commit')
-      .then(res => res.text())
-      .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
-      .then(text => text == release_commit ? null : text)
-      .catch(ex => null);
+
+    function fetchCommitFile(file) {
+      return fetch(prefix + file)
+        .then(res => res.text())
+        .then(text => text.split('\n').filter(line => !line.startsWith('#')).join('').trim())
+        .catch(ex => null)
+    }
+    const release_commit = await fetchCommitFile('release-commit');
+    const previous_commit = await fetchCommitFile('ci-commit-previous');
+    this.commit = (release_commit != previous_commit) ? await fetch(prefix + 'ci-commit') : null;
 
     let str = '';
     window.addEventListener('keydown', evt => {
