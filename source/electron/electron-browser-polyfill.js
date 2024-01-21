@@ -9,6 +9,7 @@
     const path = require('path');
     const fs = require('fs');
     const https = require('https');
+    const os = require('os');
 
     // Only necessary in render process
     if (typeof window != 'undefined') {
@@ -230,11 +231,16 @@
       },
       downloads: {
         async download({ filename, url }) {
-          let data = await fetch(url).then(res => res.arrayBuffer());
+          let data = new Uint8Array(await fetch(url).then(res => res.arrayBuffer()));
           let segments = ['Downloads', ...filename.split('/')];
-          for (let i = 1; i < segments.length-1; i++)
-            if (!fs.existsSync(path.join(os.homedir(), ...segments.slice(0, i))))
-              fs.mkdirSync(path.join(os.homedir(), ...segments.slice(0, i)));
+          for (let i = 1; i < segments.length; i++) {
+            let dir = path.join(os.homedir(), ...segments.slice(0, i));
+            if (!fs.existsSync(dir)) {
+              console.log('mkdir', dir);
+              fs.mkdirSync(dir);
+            }
+          }
+          console.log('saving file to ', path.join(os.homedir(), ...segments));
           fs.writeFileSync(path.join(os.homedir(), ...segments), data);
         }
       }
