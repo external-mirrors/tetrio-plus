@@ -12,6 +12,7 @@ const app = new Vue({
         <button @click="save">
           Save changes
         </button>
+        <span style="color: red" v-if="builtinError">Failed to fetch override targets: {{builtinError}}</span>
         <span :style="{ opacity: saveOpacity }">
           Saved!
         </span>
@@ -54,26 +55,26 @@ const app = new Vue({
       let tetriojs = await (await fetch(url)).text();
 
       // most of this is stolen from `music-tetriojs-filter.js`
-      let regex = /(const \w+=)({"kuchu.+?(?:(?:{.+?},?)+(?:["A-Za-z\-:]+)?)+?})(,\w+=)({.+?})/;
+      let regex = /{"kuchu-toshi":{[^}]+}(?:,"?[^"]+"?:{[^}]+})+}/;
       let match = regex.exec(tetriojs);
       if (!match) throw new Error(`no match`);
-
-      let [$, musicVar, musicJson, musicpoolVar, musicpoolJson] = match;
-      this.builtin = JSON.parse(this.sanitizeJson(musicJson));
+      let sanitized = match[0]
+        // replace minified constants
+        .replace(/!0/g, 'true')
+        .replace(/!1/g, 'false')
+        // quote unquoted keys
+        .replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":')
+        // Fill in constants with whatever, we only really care about song names here
+        .replace(/("[^"]+":)([A-Za-z]+)/g, (_, key, constant) => key + 'null')
+        // Add leading 0 to numbers, since json doesn't allow numbers to start with a dot
+        .replace(/("[^"]+":)(\.\d+)/, (_, key, number) => key + '0' + number);
+      this.builtin = JSON.parse(sanitized);
+      console.log('fetched builtins', this.builtin);
     } catch(ex) {
       this.builtinError = ex;
     }
   },
   methods: {
-    sanitizeJson(json) {
-      return json
-        .replace(/!0/g, 'true')
-        .replace(/!1/g, 'false')
-        .replace(
-          /(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g,
-          '$1"$3":'
-        );
-    },
     save() {
       return browser.storage.local.set({
         music: JSON.parse(JSON.stringify(this.music)) // de-Vue the object
