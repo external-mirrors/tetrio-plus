@@ -7,7 +7,9 @@ DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y
 echo "Writing commit to resources/ci-commit and resources/ci-commit-previous..."
 git rev-parse --short HEAD~1 > resources/ci-commit-previous # commit for display purposes
 git rev-parse --short HEAD > resources/ci-commit # commit for display purposes
+cat resources/ci-commit-previous
 cat resources/ci-commit
+cat resources/release-commit
 git pull --recurse-submodules # ensure tpsecore is pulled in
 
 # install rust, wasmpack, and related
