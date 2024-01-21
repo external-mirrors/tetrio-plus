@@ -98,13 +98,11 @@ createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
           music = {};
         } else {
           try {
-            console.log("parsing", { musicJson, sanitizedMusicJson });
             music = JSON.parse(sanitizedMusicJson);
             for (let song of Object.values(music)) {
               song.genre = constants[song.genre] || song.genre;
               song.source = constants[song.source] || song.source;
             }
-            console.log("parsed", music);
           } catch(ex) {
             console.error(
               'Failed to parse sanitized music pool json',
@@ -157,7 +155,7 @@ createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
                 source: 'TETR.IO PLUS',
                 loop: false,
                 loopStart: 0,
-                loopLength: 0
+                loopEnd: 0
               })
             }
           })` +
@@ -173,7 +171,6 @@ createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
       }
     );
 
-    // console.log("Rewrite successful: " + replaced);
     if (!replaced) console.error(
       "Custom music rewrite failed. " +
       "Please update your plugin. "
@@ -184,7 +181,5 @@ createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
       data: src,
       encoding: 'text'
     });
-
-    // filter.write(new TextEncoder().encode(src));
   }
 });
