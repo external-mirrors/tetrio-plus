@@ -13,7 +13,10 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       // Music graph had changes. `playIngame` is gone. There's now two interesting functions:
       // big Play and little play. Big Play appears to be a per-board instance, wheras little
       // play is more global. Game sound effects are played through big Play which calls
-      // little Play. 'global' sound effects like menu/ui ones are played only through little play.
+      // little play. 'global' sound effects like menu/ui ones are played only through little play.
+      // Update 2024-01-20:
+      // little play was replaced with a new PlaySE function that seems to do the same thing,
+      // though with the web audio api instead of howler.js
 
       src = `
         let musicGraphIDIncrement = 0;
@@ -210,13 +213,12 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       }
 
       var match = false;
-      var rgx = /play:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0,\s*(\w+)\s*=\s*!1\)\s*{/;
+      var rgx = /PlaySe:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0\)\s*{/;
       src = src.replace(rgx, ($, a1, a2, a3, a4) => {
         match = true;
         // a1 = sfx name
         // a2 = volume (0 to 1)
         // a3 = pan left/right (-1 to 1)
-        // a4 = doesn't appear to be used in the function body at all (???)
         return $ + `
           document.dispatchEvent(new CustomEvent('tetrio-plus-globalsound', {
             detail: {
