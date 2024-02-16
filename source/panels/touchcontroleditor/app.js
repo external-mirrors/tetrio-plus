@@ -39,55 +39,86 @@ const app = new Vue({
         </div>
       </template>
 
-      <div class="key-configurator-container" v-if="config.mode != 'touchpad'">
-        <button @click="addKey()">Add key</button>
-        Binding:
-        <template v-if="!selectedKey">
-          <select><option default disabled>Select a key</option></select>
-          <button disabled>Delete</button>
-          Behavior:
-          <select><option default disabled>Select a key</option></select>
-          <button disabled>Move to top</button>
-          <button disabled>Move to bottom</button>
-        </template>
-        <template v-else>
-          <selector side="none" v-model="selectedKey.bind"></selector>
-          <button @click="deleteKey(selectedKey)">Delete</button>
-          <select v-model="selectedKey.behavior">
-            <option value="hover">Touch can start elsewhere (hover)</option>
-            <option value="tap">Touch must start on key (tap)</option>
-          </select>
-          <button @click="moveTop(selectedKey)">Move to top</button>
-          <button @click="moveBottom(selectedKey)">Move to bottom</button>
-        </template>
+      <div v-if="config.mode == 'hybrid'">
+        <input type="checkbox" v-model="showDeadzoneOnKeys" />
+        <span @click="showDeadzoneOnKeys = !showDeadzoneOnKeys">
+          Preview touchpads on key editor
+        </span>
+      </div>
+
+      <div v-if="config.mode != 'touchpad'">
+        Touchkey templates:
+        <button @click="loadDefault()">Load default</button>
+        <button @click="loadExample()">Load example</button>
+      </div>
+
+      <div class="key-configurator-container" ref="keyConfigContainer" v-if="config.mode != 'touchpad'">
+        <div class="key-configurator-controls">
+          <button @click="addKey()">Add key</button>
+          <template v-if="!selectedKey">
+            <span style="white-space: nowrap;">
+              Binding:
+              <select><option default disabled>Select a key</option></select>
+            </span>
+            <button disabled>Delete</button>
+            <span style="white-space: nowrap;">
+              Behavior:
+              <select><option default disabled>Select a key</option></select>
+            </span>
+            <button disabled>Move to top</button>
+            <button disabled>Move to bottom</button>
+          </template>
+          <template v-else>
+            <span style="white-space: nowrap;">
+              Binding:
+              <selector side="none" v-model="selectedKey.bind"></selector>
+            </span>
+            <button @click="deleteKey(selectedKey)">Delete</button>
+            <span style="white-space: nowrap;">
+              Behavior:
+              <select v-model="selectedKey.behavior">
+                <option value="hover">Touch can start elsewhere (hover)</option>
+                <option value="tap">Touch must start on key (tap)</option>
+              </select>
+            </span>
+            <span style="white-space: nowrap;">
+              <button @click="moveTop(selectedKey)">Move to top</button>
+              <button @click="moveBottom(selectedKey)">Move to bottom</button>
+            </span>
+          </template>
+
+          <span style="white-space: nowrap;">
+            Show editor
+            <button @click="$refs.keyContainer.requestFullscreen()">fullscreen</button>
+            <button @click="$refs.keyConfigContainer.requestFullscreen()">fullscreen with controls</button>
+          </span>
+        </div>
 
         <div class="key-configurator" ref="keyContainer">
           <template v-if="config.mode == 'hybrid' && showDeadzoneOnKeys">
             <div class="touch-zone" :style="{ '--deadzone': config.deadzone + 'px' }"></div>
             <div class="touch-zone right" :style="{ '--deadzone': config.deadzone + 'px' }"></div>
           </template>
-          <div
-            class="key"
-            :key="i"
-            :index="i"
-            v-for="(key, i) of config.keys"
-            :class="{ selected: selectedKey == key }"
-            :style="keyStyle(key)"
-          >
-            {{ key.bind }}<br>
-            x {{ (key.x).toFixed(1) }} %<br>
-            y {{ (key.y).toFixed(1) }} %<br>
-            w {{ (key.w).toFixed(1) }} %<br>
-            h {{ (key.h).toFixed(1) }} %<br>
-            mode: {{ key.behavior }}
-          </div>
+
+          <template v-for="[layer, text] of [['key', true], ['key-ghost-text', true], ['key-border', false], ['key-border-2', false]]">
+            <div
+              :key="layer + '_' + i"
+              :index="i"
+              v-for="(key, i) of config.keys"
+              :class="{ [layer]: true, selected: selectedKey == key, 'key-layer': true }"
+              :style="keyStyle(key)"
+            >
+              <template v-if="text">
+                {{ key.bind }}<br>
+                x {{ (key.x).toFixed(1) }} %<br>
+                y {{ (key.y).toFixed(1) }} %<br>
+                w {{ (key.w).toFixed(1) }} %<br>
+                h {{ (key.h).toFixed(1) }} %<br>
+                mode: {{ key.behavior }}
+              </template>
+            </div>
+          </template>
         </div>
-        <template v-if="config.mode == 'hybrid'">
-          <input type="checkbox" v-model="showDeadzoneOnKeys" />
-          <span @click="showDeadzoneOnKeys = !showDeadzoneOnKeys">
-            Preview touchpads on key editor
-          </span>
-        </template>
       </div>
     </div>
   `,
@@ -136,16 +167,7 @@ const app = new Vue({
         R_up: 'rotate180',
         R_down: 'hold'
       },
-      keys: [
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'moveLeft'  },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'moveRight' },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'hardDrop'  },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'softDrop'  },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'rotateCCW' },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'rotateCW'  },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'rotate180' },
-        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'hold'      }
-      ]
+      keys: []
     },
     boundingRect: { width: 1, height: 1 }
   },
@@ -155,6 +177,41 @@ const app = new Vue({
     }
   },
   methods: {
+    loadDefault() {
+      if (this.config.keys.length > 0 && !confirm('Clear layout?'))
+        return;
+      this.config.keys = [
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'moveLeft'   },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'moveRight'  },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'hardDrop'   },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'softDrop'   },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'rotateCCW'  },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'rotateCW'   },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'rotate180'  },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'hold'       },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'retry'      },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'exit'       },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'fullscreen' },
+        { x: 50, y: 50, w: 20, h: 20, behavior: 'hover', bind: 'enter'      },
+      ];
+    },
+    loadExample() {
+      if (!confirm('Clear layout?'))
+        return;
+      this.config.keys = [
+        { x: 10, y: 75, w: 20, h: 22.5, behavior: "hover", bind: "moveLeft" },
+        { x: 30, y: 75, w: 20, h: 22.5, behavior: "hover", bind: "moveRight" },
+        { x: 20, y: 50, w: 40, h: 20, behavior: "hover", bind: "hardDrop" },
+        { x: 20, y: 90, w: 40, h: 20, behavior: "hover", bind: "softDrop" },
+        { x: 60, y: 90, w: 20, h: 20, behavior: "hover", bind: "rotateCCW" },
+        { x: 90, y: 90, w: 20, h: 20, behavior: "hover", bind: "rotateCW" },
+        { x: 75, y: 70, w: 20, h: 20, behavior: "hover", bind: "rotate180" },
+        { x: 90, y: 45, w: 20, h: 20, behavior: "hover", bind: "hold" },
+        { x: 50, y: 10, w: 20, h: 20, behavior: "hover", bind: "exit" },
+        { x: 70, y: 10, w: 20, h: 20, behavior: "hover", bind: "retry" },
+        { x: 90, y: 10, w: 20, h: 20, behavior: "hover", bind: "fullscreen" },
+      ];
+    },
     toPercent({ x, y, w, h }) {
       let { width, height } = this.boundingRect;
       return {
