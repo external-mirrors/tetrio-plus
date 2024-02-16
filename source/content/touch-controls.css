@@ -58,3 +58,7 @@
 .touch-button.active {
   background: rgba(255, 255, 255, 0.15);
 }
+
+.tetrio-plus-hide-touch-controls .touch-button:not(.touch-bind-hide) {
+  display: none;
+}

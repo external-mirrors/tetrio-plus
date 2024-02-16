@@ -13,7 +13,8 @@
     exit: new Set(),
     retry: new Set(),
     fullscreen: new Set(),
-    enter: new Set()
+    enter: new Set(),
+    hide: new Set()
   }
   let buttons = [];
 
@@ -32,6 +33,7 @@
       let { x, y, w, h, behavior, bind } = config;
       let button = document.createElement('div');
       button.classList.add('touch-button');
+      button.classList.add('touch-bind-' + bind);
       button.innerText = bind;
       button.style.setProperty('--x', x + 'vw');
       button.style.setProperty('--y', y + 'vh');
@@ -250,11 +252,17 @@
     }
   }
 
+  let hidden = false;
   function setKey(key, presserId, pressed) {
     if (!keypresses[key]) return;
     if (pressed && !keypresses[key].has(presserId)) {
       if (keypresses[key].size == 0) {
         switch (key) {
+          case 'hide':
+            hidden = !hidden;
+            document.body.classList.toggle('tetrio-plus-hide-touch-controls', hidden);
+            break;
+
           case 'fullscreen':
             document.body.requestFullscreen();
             break;
@@ -293,6 +301,7 @@
       if (keypresses[key].size == 0) {
         switch (key) {
           case 'fullscreen':
+          case 'hide':
             break;
 
           case 'enter':

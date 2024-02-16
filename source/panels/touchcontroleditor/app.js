@@ -139,6 +139,7 @@ const app = new Vue({
           <option value="exit">Exit</option>
           <option value="fullscreen">Fullscreen</option>
           <option value="enter">Enter/Return</option>
+          <option value="hide">Hide controls</option>
         </select>
       `,
       props: ['side', 'value'],
