@@ -37,7 +37,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install build-essential libcairo2-dev lib
 
 # install node
 curl -sL https://deb.nodesource.com/setup_16.x | sh
-apt install nodejs
+apt install nodejs -y
 node -v
 npm i -g yarn
 
