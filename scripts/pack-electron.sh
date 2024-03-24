@@ -19,7 +19,7 @@ tar --strip-components=2 -zxvf 'TETR.IO Setup.tar.gz' tetrio-desktop-9.0.0/resou
 ./programs/node_modules/@electron/asar/bin/asar.js extract app.asar out
 node ./scripts/build-electron.js
 cd out
-yarn add --verbose node-fetch@2.6.1 whatwg-url xmldom image-size
+yarn add --ignore-engines --verbose node-fetch@2.6.1 whatwg-url xmldom image-size
 cd ..
 
 mkdir -p out/tetrioplus
