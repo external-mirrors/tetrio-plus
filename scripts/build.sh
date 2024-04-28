@@ -3,7 +3,7 @@
 set -x
 
 # load config
-source ../resources/desktop-ci/config
+source ./resources/desktop-ci/config
 VERSION=$(node -e "console.log(require('./manifest.json').version)")
 
 apt-get update

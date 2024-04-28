@@ -3,7 +3,7 @@ set -e
 set -x
 
 # (re)load config
-source ../resources/desktop-ci/config
+source ./resources/desktop-ci/config
 
 # ensure asar is available
 mkdir programs
