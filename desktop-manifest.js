@@ -8,8 +8,8 @@ const manifest = JSON.parse(fs.readFileSync(
 // "firefox settings that firefox will complain about if you add your own entry"
 manifest.browser_specific_settings.desktop_client = {
   // Hash of the uninstall app.asar
-  "vanilla_hash": "1F159868625EEE200AE683BCB78BF3AF3691C438",
-  "show_uninstaller_button": true,
+  "vanilla_hash": /VANILLA_APP_ASAR_HASH="([ABCDEF0-9]{40})"/.exec(fs.readFileSync('./resources/desktop-ci/config'))[1],
+  "show_uninstaller_button": /UNINSTALL_SUPPORT="(true|false)"/.exec(fs.readFileSync('./resources/desktop-ci/config'))[1] == "true",
   "scripts": [
     "source/shared/migrate.js",
     "source/shared/tpse-sanitizer.js",

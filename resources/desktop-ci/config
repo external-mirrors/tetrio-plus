@@ -1,0 +1,10 @@
+# The 'short' version of TETR.IO Desktop, currently only used to name the CI app.asar
+export DESKTOP_VERSION_SHORT="v9"
+# The URL to download the latest version of TETR.IO Desktop
+export DESKTOP_DOWNLOAD_URL="https://tetr.io/about/desktop/builds/9/TETR.IO%20Setup.tar.gz"
+# Whether to show the uninstaller button for this build. Must be exactly "true" or "false"
+UNINSTALL_SUPPORT="true"
+# The hash of the vanilla app.asar. Update with `sha1sum app.asar`
+export VANILLA_APP_ASAR_HASH="1F159868625EEE200AE683BCB78BF3AF3691C438"
+
+# Don't forget to update the version in both `manifest.json` and `package.json`

@@ -2,6 +2,10 @@
 # For use from CI
 set -x
 
+# load config
+source ../resources/desktop-ci/config
+VERSION=$(node -e "console.log(require('./manifest.json').version)")
+
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y
 
@@ -48,3 +52,4 @@ yarn
 bash ./scripts/pack-firefox.sh
 bash ./scripts/pack-electron.sh
 zip -r app.asar.zip -9 app.asar
+cp app.asar.zip tetrio-plus_v${VERSION}_for_desktop_${DESKTOP_VERSION_SHORT}.asar.zip

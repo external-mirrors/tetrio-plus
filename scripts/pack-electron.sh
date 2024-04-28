@@ -2,6 +2,9 @@
 set -e
 set -x
 
+# (re)load config
+source ../resources/desktop-ci/config
+
 # ensure asar is available
 mkdir programs
 cd programs
@@ -10,11 +13,11 @@ yarn add @electron/asar@3.2.9
 cd ..
 
 if [ ! -f 'TETR.IO Setup.tar.gz' ]; then
-  wget -q -N https://tetr.io/about/desktop/builds/9/TETR.IO%20Setup.tar.gz
+  wget -q -N $DESKTOP_DOWNLOAD_URL
 else
   echo "Using existing 'TETR.IO Setup.tar.gz'"
 fi
-tar --strip-components=2 -zxvf 'TETR.IO Setup.tar.gz' tetrio-desktop-9.0.0/resources/app.asar
+tar --strip-components=2 -zxvf 'TETR.IO Setup.tar.gz' --wildcards 'tetrio-desktop-*/resources/app.asar'
 
 ./programs/node_modules/@electron/asar/bin/asar.js extract app.asar out
 node ./scripts/build-electron.js

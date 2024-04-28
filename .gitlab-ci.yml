@@ -15,6 +15,7 @@ build:
     paths:
       - tetrioplus.xpi
       - app.asar.zip
+      - tetrio-plus_v*_for_desktop*.asar.zip
     expire_in: 1 week
   script:
     - ./scripts/build.sh
