@@ -4,7 +4,6 @@ set -x
 
 # load config
 source ./resources/desktop-ci/config
-VERSION=$(node -e "console.log(require('./manifest.json').version)")
 
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y
@@ -52,4 +51,5 @@ yarn
 bash ./scripts/pack-firefox.sh
 bash ./scripts/pack-electron.sh
 zip -r app.asar.zip -9 app.asar
-cp app.asar.zip tetrio-plus_v${VERSION}_for_desktop_${DESKTOP_VERSION_SHORT}.asar.zip
+TETRIO_PLUS_VERSION=$(cat ./manifest.json | node -e "console.log(JSON.parse(require('fs').readFileSync(0, 'utf-8')).version)")
+cp app.asar.zip tetrio-plus_v${TETRIO_PLUS_VERSION}_for_desktop_${DESKTOP_VERSION_SHORT}.asar.zip
