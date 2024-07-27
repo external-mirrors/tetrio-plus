@@ -104,12 +104,20 @@ button {
   justify-content: center;
   text-align: center;
   font-size: 16pt;
+  transition: 0.2s background-color;
 }
 .fileuploader:hover {
-  background-color: #444;
+  background-color: #222;
+}
+.fileuploader:active {
+  filter: invert();
 }
 .fileuploader.draghover {
   background-color: white;
+}
+/* prevents spurious dragleave events when hovering over children */
+.fileuploader * {
+  pointer-events: none;
 }
 
 /* Audio Editor */

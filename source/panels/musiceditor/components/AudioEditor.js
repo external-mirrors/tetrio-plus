@@ -84,6 +84,10 @@ export default {
             </option>
           </select>
         </div>
+        <div class="option-pair" title="whether the song is shown in the music room">
+          <label>Hidden</label>
+          <input type="checkbox" v-model.boolean="song.metadata.hidden"></input>
+        </div>
       </div>
     </div>
   `,

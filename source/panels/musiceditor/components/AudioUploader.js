@@ -8,11 +8,11 @@ export default {
       :class="{ draghover: hovering }"
       multiple
       @dragenter="dragEnter"
-      @dragleave="hovering = false"
+      @dragleave="dragLeave"
       @drop.prevent="drop"
       @click="$refs.fileupload.click()">
         {{ this.status || 'Upload music' }}
-        <div class="tiny">Autosaves changes</div>
+        <div class="tiny">click or drop files here - autosaves changes</div>
         <input
           type="file"
           style="display: none"
@@ -33,7 +33,11 @@ export default {
       if (evt.dataTransfer.items.length)
         this.hovering = true;
     },
+    dragLeave(evt) {
+      this.hovering = false;
+    },
     drop(evt) {
+      console.log("drop");
       console.log(evt, evt.dataTransfer);
       this.hovering = false;
       this.upload(files);
@@ -100,7 +104,8 @@ export default {
             source: 'Custom song',
             loop: true,
             loopStart: 0,
-            loopLength: loopLength
+            loopLength: loopLength,
+            hidden: false
           }
         });
         console.log("check!");

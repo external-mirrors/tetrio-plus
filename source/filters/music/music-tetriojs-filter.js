@@ -156,7 +156,8 @@ createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
                 source: 'TETR.IO PLUS',
                 loop: false,
                 loopStart: 0,
-                loopEnd: 0
+                loopEnd: 0,
+                hidden: true
               })
             }
           })` +

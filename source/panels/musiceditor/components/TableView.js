@@ -14,6 +14,7 @@ export default {
         <th class="song-loop">loop</th>
         <th class="song-loop-start">loopStart</th>
         <th class="song-loop-length">loopLength</th>
+        <th class="song-hidden">hidden</th>
       </tr>
 
       <tr class="song" v-for="song of music">
@@ -59,6 +60,9 @@ export default {
           <input type="number" v-model.number="song.metadata.loopLength" />
         </td>
       </tr>
+      <td class="song-hidden">
+        <input type="checkbox" v-model.boolean="song.metadata.hidden"></input>
+      </td>
     </table>
 
     <!-- <div v-if="!builtin" class="built-in-music loading">

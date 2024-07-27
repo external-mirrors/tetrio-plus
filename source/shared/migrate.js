@@ -354,6 +354,21 @@ var migrate = (() => {
       }
     }
   })
+  
+  /*
+   v0.27.3 - TETR.IO beta v1.0.0 adds 'hidden' field to music
+   + music[].metadata.hidden
+  */
+  migrations.push({
+    version: '0.27.3',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.25.4' });
+      let { music } = await browser.storage.local.get('music');
+      for (let song of music)
+        song.metadata.hidden = false;
+      await browser.storage.local.set({ music });
+    }
+  });
 
   return async function migrate(dataSource) {
     let { version: initialVersion} = await dataSource.get('version');
