@@ -47,7 +47,7 @@ npm i -g yarn
 git checkout $CI_COMMIT_REF_NAME -f && git pull && git reset --hard $CI_COMMIT_SHA
 echo Building version v`grep -oP "(?<=version\": \")[^\"]+(?=\")" < manifest.json`
 ls -a
-yarn
+yarn --ignore-engines
 bash ./scripts/pack-firefox.sh
 bash ./scripts/pack-electron.sh
 zip -r app.asar.zip -9 app.asar
