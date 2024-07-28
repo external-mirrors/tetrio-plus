@@ -27,8 +27,8 @@ createRewriteFilter("Scale mode forcer", "https://tetr.io/js/tetrio.js*", {
   },
   onStop: async (storage, url, src, callback) => {
     let newSrc = src.replace(
-      /(\w{1,5}=new\s*PIXI\.Application)/g,
-      `(PIXI.settings.SCALE_MODE=PIXI.SCALE_MODES.NEAREST),$1`
+      /(\w{1,5}=new\s*PIXI\.Application\({)/g,
+      `$1__:void (() => { PIXI.settings.SCALE_MODE=PIXI.SCALE_MODES.NEAREST; })(),`
     );
     if (newSrc == src) console.warn('Scale mode forcer hook broke (1/1)');
     callback({ type: 'text/javascript', data: newSrc, encoding: 'text' });
