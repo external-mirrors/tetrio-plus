@@ -43,12 +43,12 @@ export async function decodeAudio(buffer, status=(()=>{})) {
   return await decoderCtx.decodeAudioData(buffer);
 }
 
-export async function fetchAtlas() {
+export async function fetchAtlas(abort_controller_signal=undefined) {
   // CORS issue when fetching from second URL
   let srcUrl = (typeof window !== 'undefined' && window.browser && window.browser.electron)
     ? 'tetrio-plus://tetrio-plus/js/tetrio.js?bypass-tetrio-plus'
     : 'https://tetr.io/js/tetrio.js?bypass-tetrio-plus';
-  let srcRequest = await window.fetch(srcUrl);
+  let srcRequest = await window.fetch(srcUrl, { signal: abort_controller_signal });
   let src = await srcRequest.text();
 
   let match = /({[^{}]*boardappear\:\[[\d.e+]+,[\d.e+]+\][^{}]*})/.exec(src);

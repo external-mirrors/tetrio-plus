@@ -1,3 +1,5 @@
+import { fetchAtlas } from '../../importers/sfx/decode.js';
+
 export const events = [
   'node-end',
   'time-passed',
@@ -72,14 +74,37 @@ for (let sfx of fxHasPlayerEnemyVariants)
 });
 
 // run this snippet in the sound effects editor to generate/update this:
-// console.log(app.sprites.map(sprite => `"${sprite.name}"`).join(', '))
-let soundEffects = ["allclear", "applause", "boardappear", "btb_1", "btb_2", "btb_3", "btb_break", "clearbtb", "clearline", "clearquad", "clearspin", "clutch", "combo_1", "combo_10", "combo_10_power", "combo_11", "combo_11_power", "combo_12", "combo_12_power", "combo_13", "combo_13_power", "combo_14", "combo_14_power", "combo_15", "combo_15_power", "combo_16", "combo_16_power", "combo_1_power", "combo_2", "combo_2_power", "combo_3", "combo_3_power", "combo_4", "combo_4_power", "combo_5", "combo_5_power", "combo_6", "combo_6_power", "combo_7", "combo_7_power", "combo_8", "combo_8_power", "combo_9", "combo_9_power", "combobreak", "countdown1", "countdown2", "countdown3", "countdown4", "countdown5", "counter", "cutin_superlobby", "damage_alert", "damage_large", "damage_medium", "damage_small", "death", "detonate1", "detonate2", "detonated", "elim", "exchange", "failure", "finessefault", "finish", "fire", "floor", "gameover", "garbage_in_large", "garbage_in_medium", "garbage_in_small", "garbage_out_large", "garbage_out_medium", "garbage_out_small", "garbagerise", "garbagesmash", "go", "harddrop", "hit", "hold", "hyperalert", "i", "impact", "j", "l", "level1", "level10", "level100", "level500", "levelup", "losestock", "maintenance", "map_change", "matchintro", "menuback", "menuclick", "menuconfirm", "menuhit1", "menuhit2", "menuhit3", "menuhover", "menutap", "mission", "mission_free", "mission_league", "mission_versus", "mmstart", "move", "no", "notify", "o", "offset", "pause_continue", "pause_exit", "pause_retry", "pause_start", "personalbest", "piece_change", "protected_large", "protected_medium", "protected_small", "purchase_start", "queue_change", "ranklower", "rankraise", "ratinglower", "ratingraise", "redo", "ribbon", "ribbon_off", "ribbon_on", "ribbon_tap", "rotate", "rsg", "rsg_go", "s", "scoreslide_in", "scoreslide_out", "shatter", "showscore", "sidehit", "social_close", "social_close_minor", "social_dm", "social_invite", "social_notify_major", "social_notify_minor", "social_offline", "social_online", "social_open", "social_open_minor", "softdrop", "spin", "spinend", "staffsilence", "staffspam", "staffwarning", "supporter", "t", "target", "thunder1", "thunder2", "thunder3", "thunder4", "thunder5", "thunder6", "timer1", "timer2", "topout", "undo", "userjoin", "userleave", "victory", "warning", "warp", "worldrecord", "z"];
-soundEffects.forEach(sfx => {
+// copy(app.sprites.map(sprite => `"${sprite.name}"`).join(', '))
+let soundEffects = ["boardappear", "zenith_levelup_b", "combo_2_power", "mission", "mmstart", "combo_4_power", "s", "clearquad", "combo_7", "speed_tick_whirl", "speed_up_2", "allclear", "failure", "hold", "social_close_minor", "social_online", "b2bcharge_distance_1", "combo_16", "t", "clutch", "level10", "detonate2", "thunder6", "staffspam", "rsg", "protected_medium", "mission_free", "speed_tick_3", "combo_9", "card_tone_volatile", "damage_alert", "zenith_start", "combo_12_power", "damage_large", "i", "pause_start", "ratingraise", "boardlock_clear", "impact", "boardlock", "combo_3", "pause_continue", "garbagewindup_4", "card_tone_expert", "protected_large", "combo_6_power", "garbagewindup_1", "ranklower", "b2bcharge_blast_3", "ribbon_on", "combo_14", "b2bcharge_1", "spinend", "rsg_go", "offset", "card_tone_doublehole", "social_notify_major", "maintenance", "harddrop", "zenith_levelup_ahalfsharp", "level100", "spin", "combo_13_power", "gameover", "userleave", "combo_15_power", "menuback", "protected_small", "menuclick", "counter", "garbagewindup_2", "zenith_split_cleared", "se_vol_blip", "achievement_1", "zenith_levelup_a", "combo_9_power", "speed_tick_2", "social_notify_minor", "undo", "notify", "losestock", "victory", "clearline", "warning", "menuconfirm", "combo_13", "zenith_speedrun_start", "combo_10_power", "combo_1_power", "piece_change", "combo_2", "card_tone_invisible", "shatter", "card_tone_duo", "detonate1", "userjoin", "speed_tick_1", "achievement_2", "zenith_levelup_c", "supporter", "b2bcharge_distance_2", "combo_10", "l", "hyperalert", "garbagerise", "card_tone_gravity", "cutin_superlobby", "countdown4", "combo_5_power", "combo_11_power", "combo_8_power", "finessefault", "btb_break", "rotate", "social_invite", "queue_change", "garbage_out_large", "boardlock_clink", "combobreak", "boardlock_revive", "card_slide_1", "j", "garbage_in_large", "combo_6", "social_close", "combo_14_power", "mission_versus", "b2bcharge_blast_1", "zenith_speedrun_end", "finish", "garbagewindup_3", "speed_down", "social_offline", "menuhit2", "no", "zenith_levelup_fsharp", "combo_5", "btb_3", "purchase_start", "zenith_levelup_e", "detonated", "target", "pause_retry", "worldrecord", "countdown1", "elim", "menuhover", "timer2", "move", "b2bcharge_blast_2", "card_slide_2", "ribbon_tap", "countdown5", "b2bcharge_4", "damage_medium", "thunder1", "social_open_minor", "matchintro", "btb_1", "level1", "pause_exit", "combo_3_power", "o", "levelup", "ribbon_off", "redo", "b2bcharge_3", "clearbtb", "map_change", "wound_repel", "timer1", "thunder3", "card_slide_4", "speed_tick_4", "card_tone_messy", "combo_7_power", "countdown3", "social_open", "bombdetonate", "combo_1", "softdrop", "menutap", "personalbest", "level500", "hit", "speed_up_4", "combo_12", "rankraise", "wound", "garbagesmash", "card_slide_3", "b2bcharge_distance_3", "showscore", "party_ready", "achievement_3", "b2bcharge_danger", "clearspin", "card_select", "b2bcharge_start", "boardlock_fail", "garbage_in_medium", "exchange", "scoreslide_in", "mission_league", "garbage_in_small", "garbage_out_small", "applause", "social_dm", "thunder5", "combo_4", "topout", "speed_up_1", "sidehit", "menuhit3", "damage_small", "speed_up_3", "staffsilence", "ratinglower", "btb_2", "staffwarning", "scoreslide_out", "b2bcharge_blast_4", "ribbon", "card_tone_allspin", "combo_8", "card_tone_nohold", "fire", "floor", "garbage_out_medium", "combo_11", "thunder2", "thunder4", "countdown2", "z", "combo_16_power", "zenith_split_missed", "menuhit1", "death", "warp", "combo_15", "go", "b2bcharge_2"];
+
+let div = document.createElement('div');
+try {
+  div.innerHTML = `fetching sfx atlas... <button>skip and use hardcoded sound effects</button>`;
+  document.body.appendChild(div);
+  
+  let controller = new AbortController();
+  div.querySelector('button').addEventListener('click', () => controller.abort());
+  
+  let fetch = await fetchAtlas(controller.signal);
+  
+  soundEffects = Object.keys(fetch).sort((a,b) => {
+    [a,b] = [a,b].map(x => x.replace(/\d+/g, m => m.padStart(4, '0')));
+    let a_c = /^combo_\d+$/.test(a);
+    let a_p = /^combo_\d+_power$/.test(a);
+    let b_c = /^combo_\d+$/.test(b);
+    let b_p = /^combo_\d+_power$/.test(b);
+    console.log({ a, b, a_c, a_p, b_c, b_p });
+    if (a_c && b_p) return -1;
+    if (a_p && b_c) return 1;
+    return a > b ? 1 : -1;
+  });
+} catch(ex) {
+  console.warn("failed to fetch sound effects atlas, falling back to hardcoded values", ex);
+} finally {
+  div.remove();
+}
+for (let sfx of soundEffects)
   events.push('sfx-' + sfx);
-  // events.push('sfx-' + sfx + '-any');
-  // events.push('sfx-' + sfx + '-player');
-  // events.push('sfx-' + sfx + '-enemy');
-});
 
 // Events that use the 'predicateExpression' field and their labels
 export const eventValueExtendedModes = {
