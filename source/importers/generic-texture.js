@@ -204,6 +204,71 @@ export const KEYS = {
     storagekey: 'winter2022queue',
     filekey: '_winter2022queue'
   },
+  ZENITH: {
+    url: "https://tetr.io/res/skins/board/zenith/base.png",
+    storagekey: "zenith",
+    filekey: "_zenith"
+  },
+  ZENITH_2X: {
+    url: "https://tetr.io/res/skins/board/zenith/base.2x.png",
+    storagekey: "zenith_2x",
+    filekey: "_zenith_2x"
+  },
+  ZENITH_RANK: {
+    url: "https://tetr.io/res/skins/board/zenith/zenithrank.png",
+    storagekey: "zenith_rank",
+    filekey: "_zenith_rank"
+  },
+  ZENITH_EXPERT: {
+    url: "https://tetr.io/res/skins/board/zenith/expert.png",
+    storagekey: "zenith_expert",
+    filekey: "_zenith_expert"
+  },
+  ZENITH_EXPERT_2X: {
+    url: "https://tetr.io/res/skins/board/zenith/expert.2x.png",
+    storagekey: "zenith_expert_2x",
+    filekey: "_zenith_expert_2x"
+  },
+  ZENITH_DUOLEFT: {
+    url: "https://tetr.io/res/skins/board/zenith/duoleft.png",
+    storagekey: "zenith_duoleft",
+    filekey: "_zenith_duoleft"
+  },
+  ZENITH_DUOLEFT_2X: {
+    url: "https://tetr.io/res/skins/board/zenith/duoleft.2x.png",
+    storagekey: "zenith_duoleft_2x",
+    filekey: "_zenith_duoleft_2x"
+  },
+  ZENITH_DUORIGHT: {
+    url: "https://tetr.io/res/skins/board/zenith/duoright.png",
+    storagekey: "zenith_duoright",
+    filekey: "_zenith_duoright"
+  },
+  ZENITH_DUORIGHT_2X: {
+    url: "https://tetr.io/res/skins/board/zenith/duoright.2x.png",
+    storagekey: "zenith_duoright_2x",
+    filekey: "_zenith_duoright_2x"
+  },
+  ZENITH_EXPERT_DUOLEFT: {
+    url: "https://tetr.io/res/skins/board/zenith/expert-duoleft.png",
+    storagekey: "zenith_expert_duoleft",
+    filekey: "_zenith_expert_duoleft"
+  },
+  ZENITH_EXPERT_DUOLEFT_2X: {
+    url: "https://tetr.io/res/skins/board/zenith/expert-duoleft.2x.png",
+    storagekey: "zenith_expert_duoleft_2x",
+    filekey: "_zenith_expert_duoleft_2x"
+  },
+  ZENITH_EXPERT_DUORIGHT: {
+    url: "https://tetr.io/res/skins/board/zenith/expert-duoright.png",
+    storagekey: "zenith_expert_duoright",
+    filekey: "_zenith_expert_duoright"
+  },
+  ZENITH_EXPERT_DUORIGHT_2X: {
+    url: "https://tetr.io/res/skins/board/zenith/expert-duoright.2x.png",
+    storagekey: "zenith_expert_duoright_2x",
+    filekey: "_zenith_expert_duoright_2x"
+  }
 };
 
 const importers = {};

@@ -35,13 +35,27 @@ let keys = [
   { key: 'rank_z', url: 'league-ranks/z.png' },
   { key: 'font_hun_png', url: 'font/hun.png' },
   { key: 'font_hun_fnt', url: 'font/hun.fnt' },
+  { key: 'zenith', url: 'skins/board/zenith/base.png' },
+  { key: 'zenith_2x', url: 'skins/board/zenith/base.2x.png' },
+  { key: 'zenith_rank', url: 'skins/board/zenith/zenithrank.png' },
+  { key: 'zenith_expert', url: 'skins/board/zenith/expert.png' },
+  { key: 'zenith_expert_2x', url: 'skins/board/zenith/expert.2x.png' },
+  { key: 'zenith_duoleft', url: 'skins/board/zenith/duoleft.png' },
+  { key: 'zenith_duoleft_2x', url: 'skins/board/zenith/duoleft.2x.png' },
+  { key: 'zenith_duoright', url: 'skins/board/zenith/duoright.png' },
+  { key: 'zenith_duoright_2x', url: 'skins/board/zenith/duoright.2x.png' },
+  { key: 'zenith_expert_duoleft', url: 'skins/board/zenith/expert-duoleft.png' },
+  { key: 'zenith_expert_duoleft_2x', url: 'skins/board/zenith/expert-duoleft.2x.png' },
+  { key: 'zenith_expert_duoright', url: 'skins/board/zenith/expert-duoright.png' },
+  { key: 'zenith_expert_duoright_2x', url: 'skins/board/zenith/expert-duoright.2x.png' },
+
   { key: 'winter2022board', url: 'skins/board/frosty2022/board.png' },
   { key: 'winter2022queue', url: 'skins/board/frosty2022/queue.png' },
-
+  
   { key: 'frosty2023board', url: 'skins/board/frosty2023/board.png' },
   { key: 'frosty2023queue', url: 'skins/board/frosty2023/queue.png' },
   { key: 'frosty2023snowcaps', url: 'frosty2023-snowcaps.png' },
-
+  
   { key: 'grid', url: 'skins/board/frosty2022/grid.png' }
 ];
 
