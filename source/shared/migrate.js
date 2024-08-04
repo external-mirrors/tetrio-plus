@@ -364,9 +364,11 @@ var migrate = (() => {
     run: async dataSource => {
       await dataSource.set({ version: '0.25.4' });
       let { music } = await browser.storage.local.get('music');
-      for (let song of music)
-        song.metadata.hidden = false;
-      await browser.storage.local.set({ music });
+      if (music) {
+        for (let song of music)
+          song.metadata.hidden = false;
+        await browser.storage.local.set({ music });
+      }
     }
   });
 
