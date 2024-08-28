@@ -13,7 +13,8 @@ let app = new Vue({
           <option :value="key" v-for="key of Object.keys(keys)">{{ key }}</option>
         </select>
         with
-        <input name="file" ref="file" type="file" accept="image/*" @change="set" :disabled="!key"/>
+        <input v-if="key == 'font_hun_fnt'" name="file" ref="file" type="file" accept=".fnt" @change="set" :disabled="!key"/>
+        <input v-else name="file" ref="file" type="file" accept="image/*" @change="set" :disabled="!key"/>
       </div>
 
       <div class="preview" v-if="keys[key]">
