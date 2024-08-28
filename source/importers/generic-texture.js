@@ -179,6 +179,11 @@ export const KEYS = {
   	storagekey: 'rank_x',
   	filekey: '_rank_x'
   },
+  RANK_XPLUS: {
+    url: 'https://tetr.io/res/league-ranks/x+.png',
+  	storagekey: 'rank_xplus',
+  	filekey: '_rank_xplus'
+  },
   RANK_Z: {
   	url: 'https://tetr.io/res/league-ranks/z.png',
   	storagekey: 'rank_z',
@@ -193,6 +198,11 @@ export const KEYS = {
     url: 'https://tetr.io/res/font/hun.fnt',
     storagekey: 'font_hun_fnt',
     filekey: '_font_hun_fnt'
+  },
+  ACHIEVEMENTS: {
+    url: 'https://tetr.io/res/achievements/icons.png',
+    storagekey: 'achievements',
+    filekey: '_achievements'
   },
   WINTER2022BOARD: {
     url: 'https://tetr.io/res/skins/board/frosty2022/board.png',
