@@ -56,6 +56,7 @@ let keys = [
   
   { key: 'frosty2023board', url: 'skins/board/frosty2023/board.png' },
   { key: 'frosty2023queue', url: 'skins/board/frosty2023/queue.png' },
+  { key: 'frosty2023grid', url: 'skins/board/frosty2023/grid.png' },
   { key: 'frosty2023snowcaps', url: 'frosty2023-snowcaps.png' },
   
   { key: 'grid', url: 'skins/board/frosty2022/grid.png' }

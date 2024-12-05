@@ -24,6 +24,11 @@ export const KEYS = {
     storagekey: 'frosty2023queue',
     filekey: '_frosty2023queue'
   },
+  FROSTY2023GRID: {
+    url: 'https://tetr.io/res/skins/board/frosty2023/grid.png',
+    storagekey: 'frosty2023grid',
+    filekey: '_frosty2023grid'
+  },
   FROSTY2023SNOWCAPS: {
     url: 'https://tetr.io/res/frosty2023-snowcaps.png',
     storagekey: 'frosty2023snowcaps',
