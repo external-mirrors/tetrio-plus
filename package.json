@@ -10,7 +10,7 @@
     "canvas": "^2.11.2",
     "commander": "^8.2.0",
     "esm": "^3.2.25",
-    "fluent-ffmpeg": "^2.1.2",
+    "fluent-ffmpeg": "^2.1.3",
     "mime-types": "^2.1.33",
     "node-fetch": "^2.6.5",
     "stream-buffers": "^3.0.2",
