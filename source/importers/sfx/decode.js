@@ -51,7 +51,7 @@ export async function fetchAtlas(abort_controller_signal=undefined) {
   let srcRequest = await window.fetch(srcUrl, { signal: abort_controller_signal });
   let src = await srcRequest.text();
 
-  let match = /({[^{}]*zenith_levelup_b\:\[[\d.e+]+,[\d.e+]+\][^{}]*})/.exec(src);
+  let match = /({[^{}]*boardappear\:\[[\d.e+]+,[\d.e+]+\][^{}]*})/.exec(src);
   if (!match) throw new Error('Failed to find sfx atlas');
 
   console.log("sfx atlas match", match[1]);
