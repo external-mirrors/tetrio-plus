@@ -47,17 +47,17 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       // Additionally, we add code that inserts a unique ID on the per-board instance.
       // We track this code to assign external board IDs to events. The object we insert
       // this on is available through other paths in the other hooks below, as well.
-      let bigPlay = /Play\((\w+),\s*(\w*)\s*=\s*\d,\s*(\w*)\s*=\s*\d\)\s*{[\S\s]+?(this\.self\.\w+\.IsLocal\(\))[\S\s]+?this\.self\.((\w+)\..{1,30}\.cox)/;
+      let bigPlay = /Play\((\w+),\s*(\w*)\s*=\s*\d,\s*(\w*)\s*=\s*\d,\s*(\w*)\s*=\s*\d\)\s*{[\S\s]+?(this\.self\.\w+\.IsLocal\(\))[\S\s]+?this\.self\.((\w+)\..{1,30}\.cox)/;
       let bigPlayMatch = bigPlay.exec(src);
       if (!bigPlayMatch) {
         console.error('Music graph hooks broken (bigPlay)');
         return;
       }
-      let [_match, soundNameVar, unknown1Var, unknown2Var, _isLocalInvocation, coxPath, boardSizeObjectPath] = bigPlayMatch;
+      let [_match, soundNameVar, unknown1Var, unknown2Var, unknown3Var, _isLocalInvocation, coxPath, boardSizeObjectPath] = bigPlayMatch;
 
       // This regex matches big Play for dispatching sound effects
       var match = false;
-      src = src.replace(/Play\(\w+,\s*\w*\s*=\s*\d,\s*\w*\s*=\s*\d\)\s*{/, ($) => {
+      src = src.replace(/Play\(\w+,\s*\w*\s*=\s*\d,\s*\w*\s*=\s*\d,\s*\w*\s*=\s*\d\)\s*{/, ($) => {
         match = true;
         return $ + (`
           let boardSize = (this.self.${boardSizeObjectPath}.IsTinyMode() || this.self.${boardSizeObjectPath}.IsSmallMode()) ? 'tiny' : 'full';
@@ -213,12 +213,14 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       }
 
       var match = false;
-      var rgx = /PlaySe:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0\)\s*{/;
-      src = src.replace(rgx, ($, a1, a2, a3, a4) => {
+      var rgx = /PlaySe:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0,\s*(\w+)\s*=\s*1\)\s*{/;
+      src = src.replace(rgx, ($, a1, a2, a3, a4, a5) => {
         match = true;
         // a1 = sfx name
         // a2 = volume (0 to 1)
         // a3 = pan left/right (-1 to 1)
+        // a4 = unknown
+        // a5 = unknown
         return $ + `
           document.dispatchEvent(new CustomEvent('tetrio-plus-globalsound', {
             detail: {
