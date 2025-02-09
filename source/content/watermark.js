@@ -12,6 +12,8 @@
       left: 0px;
       z-index: 01189998819991197253;
       
+      opacity: 1;
+      
       /*pointer-events: none;*/
       font-family: monospace;
       font-weight: bold;
@@ -119,7 +121,7 @@
   let show_icons = [
     {
       keys: ['skin', 'ghost'],
-      op: x => x.skin | x.ghost,
+      op: x => x.skin || x.ghost,
       sprite: [0, 0, 16, 16],
       canvas_resolution: [96, 96],
       special: (canvas) => {
@@ -162,7 +164,7 @@
       return true;
     }
     let result = (icon.op || defaultTest)(values)
-    // if (!result) continue;
+    if (!result) continue;
     
     let canvas = document.createElement('canvas');
     canvas.classList.add('tpi_icon');
