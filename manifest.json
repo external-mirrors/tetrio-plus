@@ -4,7 +4,7 @@
   "version": "0.27.5",
   "description": "Tetr.io client enhancer",
   "icons": { "256": "icons/tetrio-256.png" },
-
+  
   "permissions": [
     "webRequest",
     "webRequestBlocking",
@@ -86,7 +86,9 @@
       "source/content/music-graph/06-api.js",
 
       "source/content/custom-maps.js",
-      "source/content/bgmtweak-enhancer.js"
+      "source/content/bgmtweak-enhancer.js",
+      
+      "source/content/watermark.js"
     ],
     "run_at": "document_idle"
   }],

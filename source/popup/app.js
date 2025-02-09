@@ -153,6 +153,12 @@ const app = new Vue({
           <div class="option-group">
             <url-pack-loader />
 
+            <option-toggle storageKey="watermarkEnabled">
+              <span title="Shows a watermark in-game that indicates your usage of TETR.IO PLUS. This is in addition to the sigliatrip marker that the base game displays when it detects modifications.">
+                Show extended modded watermark
+              </span>
+            </option-toggle>
+            
             <option-toggle storageKey="bypassBootstrapper">
               <span :title="(
                 'Disables integrity checks on the tetrio.js file and loads ' +
