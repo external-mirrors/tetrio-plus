@@ -91,7 +91,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
 
 
       var match = false;
-      var rgx = /(fx\((\w+)\)\s*{\s*)return\s*(this\.effects\.get\(\w+\))/; // GOOD
+      var rgx = /(fx\((\w+)\)\s*{\s*)return\s*(this\.effects\.get\(\w+\))/;
       src = src.replace(rgx, ($, functionHeader, fxNameArgumentVar, getInvocation) => {
         match = true;
         return functionHeader + (`
@@ -160,7 +160,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       /**
        * This regex looks for a convenient "HighestLine" function to send off below.
        */
-      let highestLinePath = /let\s*\w+\s*=\s*(\w+\.\w+\.HighestLine\(\))/.exec(src); // GOOD
+      let highestLinePath = /let\s*\w+\s*=\s*(\w+\.\w+\.HighestLine\(\))/.exec(src);
       if (!highestLinePath) {
         console.error('Music graph hooks broken (height 1/2)');
         return;
@@ -172,7 +172,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
        * variables gathered in other hooks
        */
       var match = false;
-      var rgx = /(\w+)\.\w+\.IsServer\(\)\s*\|\|\s*\(\s*\w+\.\w+\.\w+\.stackdirty/; // GOOD
+      var rgx = /(\w+)\.\w+\.IsServer\(\)\s*\|\|\s*\(\s*\w+\.\w+\.\w+\.stackdirty/;
       src = src.replace(rgx, ($, contextVar) => {
         match = true;
         return `
@@ -213,7 +213,7 @@ createRewriteFilter("Music graph hooks", "https://tetr.io/js/tetrio.js*", {
       }
 
       var match = false;
-      var rgx = /PlaySe:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0,\s*(\w+)\s*=\s*1\)\s*{/;
+      var rgx = /SePlay:\s*function\s*\((\w+),\s*(\w+)\s*=\s*1,\s*(\w+)\s*=\s*0,\s*(\w+)\s*=\s*1\)\s*{/;
       src = src.replace(rgx, ($, a1, a2, a3, a4, a5) => {
         match = true;
         // a1 = sfx name
