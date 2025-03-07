@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microplus Toolkit for TETR.IO
 // @namespace    https://gitlab.com/UniQMG/tetrio-plus
-// @version      0.2.4
+// @version      0.2.5
 // @description  Some functionality of TETR.IO PLUS reimplemented as a userscript
 // @author       UniQMG
 // @match        https://tetr.io
@@ -32,7 +32,7 @@
   if (typeof GM_deleteValue == 'undefined') globalThis.GM_deleteValue = (key => delete localStorage[key]);
   let version = typeof GM_info != 'undefined'
     ? 'v' + GM_info.script.version.replace(/[^\w\.]/g, '')
-    : 'bookmarklet-v0.1';
+    : 'bookmarklet';
 
   let mp = '[µ+]';
   let tpse = {};
@@ -148,7 +148,7 @@
     </span>
   </div>
   <div style="color: red">
-    Microplus Toolkit supports only skins, sound effects, music, and custom backgrounds. See wiki page for more details.
+    Microplus Toolkit supports only skins, sound effects, and custom backgrounds. Custom music support is currently unavailable. See wiki page for more details.
   </div>
 </div>
 <marquee scrollamount="15">Do not report issues to TETR.IO or osk during use.</marquee>
@@ -173,11 +173,13 @@
           reader.onerror = rej;
         });
         let json = JSON.parse(reader.result);
-        if (json.version != '0.23.8') {
+        // tpse versions defined in source/shared/migrate.js - these are named after the tetrio plus version that introduced them,
+        // but are not kept in sync and only updated when a migration is necessary.
+        if (json.version != '0.27.3') {
           let confirmation = confirm(
-            `${mp} TPSE file is v${json.verson}, but this version of Microplus Toolkit is designed for v0.23.8. ` +
+            `${mp} TPSE file is v${json.version}, but this version of Microplus Toolkit is designed for v0.23.8. ` +
             `Microplus Toolkit does not provide TPSE migration functionality. This TPSE file may break TETR.IO, ` +
-            `but if it doesn't work you can always remove it. Use this TPSE file anyway?`
+            `but if it doesn't work you can always remove it.\n\nUse this TPSE file anyway?`
           );
           if (!confirmation) return;
         }
@@ -213,7 +215,7 @@
         window.location.reload();
       });
     }
-    
+
     let menus = document.getElementById("menus");
     waitUntil(() => !menus || menus.getAttribute('data-menu-type') !== 'none', () => mpMenu.style.display = 'none');
   });
@@ -388,8 +390,74 @@
     }
   });
 
-  if (tpse.customSoundAtlas && tpse.customSounds || tpse.music) {
+  if ((tpse.customSoundAtlas && tpse.customSounds) || tpse.music) {
     console.log(mp, "TPSE contains custom sounds or music");
+
+    let old_fetch = unsafeWindow.fetch;
+    unsafeWindow.fetch = function(url, ...args) {
+      //console.log(mp, 'fetch', url, args);
+      if (url.startsWith("/sfx/tetrio.opus.rsd") && tpse.customSounds && tpse.customSoundAtlas) {
+        console.log(mp, "intercepted sound effects fetch");
+        return {
+          async arrayBuffer() {
+            console.log(mp, "intercepted sound effects arrayBuffer call");
+            let { customSounds, customSoundAtlas } = tpse;
+
+            // copied from source/filters/sfx/sfx-request-filter.js
+            
+            let atlas = Object.entries(customSoundAtlas).map(([name, [offset, duration]]) => ({ name, offset, duration }));
+            atlas.sort((a, b) => {
+              if (a.offset < b.offset) return -1;
+              if (a.offset > b.offset) return 1;
+              return 0;
+            });
+            
+            let temp_buffer = new ArrayBuffer(4);
+            let view = new DataView(temp_buffer);
+            
+            let header_buffer = [];
+            header_buffer.push(0x74, 0x52, 0x53, 0x44); // header
+            view.setUint32(0, 1, true); // major
+            header_buffer.push(...new Uint8Array(temp_buffer)); 
+            view.setUint32(0, 0, true); // minor
+            header_buffer.push(...new Uint8Array(temp_buffer));
+            for (let { name, offset, duration } of atlas) {
+              let name_buffer = new TextEncoder().encode(name);
+              
+              // atlas values are in milliseconds, but tetrio changed to using seconds with its new format
+              view.setFloat32(0, offset/1000, true);
+              header_buffer.push(...new Uint8Array(temp_buffer));
+              
+              view.setUint32(0, name_buffer.length, true);
+              header_buffer.push(...new Uint8Array(temp_buffer));
+              
+              header_buffer.push(...name_buffer);
+            }
+            
+            let last_sprite = atlas[atlas.length-1];
+            view.setFloat32(0, (last_sprite.offset + last_sprite.duration)/1000, true);
+            header_buffer.push(...new Uint8Array(temp_buffer));
+            header_buffer.push(0, 0, 0, 0); // name length of last sprite
+            
+            // changed from source:
+            // Uint8Array.fromBase64 isn't available in the version of electron tetrio desktop uses,
+            // but it is in any modern browser.
+            let audio_buffer = Uint8Array.fromBase64(customSounds.substring(customSounds.indexOf(';base64,') + ';base64,'.length));
+            view.setUint32(0, audio_buffer.byteLength, true);
+            header_buffer.push(...new Uint8Array(temp_buffer));
+            
+            let final_buffer = new Uint8Array(header_buffer.length + audio_buffer.length);
+            final_buffer.set(header_buffer, 0);
+            final_buffer.set(audio_buffer, header_buffer.length);
+            
+            console.log(mp, "final buffer", final_buffer)
+            return final_buffer.buffer;
+          }
+        }
+      }
+      return old_fetch(url, ...args);
+    }
+      
     // intercept Howler.js to rewrite its arguments
     let howl = unsafeWindow.Howl; // this shouldn't be present yet, but if microplus late-loaded then it'll be populated here
     let musicLoop = 0;
@@ -401,11 +469,6 @@
               console.debug(mp, "new Howl", target, args);
 
               let howler = null;
-              if (tpse.customSounds && tpse.customSoundAtlas && args[0].src[0]?.includes('tetrio.ogg')) {
-                console.log(mp, "Rewriting howler arguments for sound effects", args);
-                args[0].src = tpse.customSounds;
-                args[0].sprite = tpse.customSoundAtlas;
-              }
 
               // todo: ripped from tetrio source, an automated way to read these would be nice
               let baseSongDefs = {
