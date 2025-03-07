@@ -99,20 +99,21 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
     
     window.trsd_log = [];
     async function read(length, expect_eof=false) {
-      window.trsd_log.push(`tRSD parse: read ${length} ${expect_eof}`);
+      window.trsd_log.push(`tRSD parse: begin read ${length} ${expect_eof} ----------------------`);
       let buffer = new ArrayBuffer(length);
       
       // as usual, `min` isn't supported in chrome. at least it's not too hard to work around here.
       let offset = 0;
       while (offset < length) {
         let remaining = length - offset;
+        window.trsd_log.push(`tRSD parse: read(new Uint8Array(${buffer}, ${offset}, ${remaining}, { min: ${remaining} }))`);
         let { value, done } = await reader.read(new Uint8Array(buffer, offset, remaining), { min: remaining });
         window.trsd_log.push(`tRSD parse: read chunk of ${value.byteLength} bytes`);
         offset += value.byteLength;
         buffer = value.buffer;
         
         if (done && !expect_eof) {
-          window.trsd_log.push(`tRSD unexpected EOF ${$offset}/${length}`);
+          window.trsd_log.push(`tRSD unexpected EOF ${offset}/${length}`);
           if (signal?.aborted)
             throw new Error(`tRSD: request aborted`);
           throw new Error(`tRSD: unexpected EOF after reading ${offset} of ${length} bytes`);
@@ -136,9 +137,12 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
     
     let header_ok = (await read(4)).getUint32(0) == 0x74525344; // "tRSD"
     if (!header_ok) console.warn("tRSD: bad header");
+    window.trsd_log.push(`tRSD: found header, ok: ${header_ok}`);
     
     let major = (await read(4)).getUint32(0, true);
+    window.trsd_log.push(`tRSD: found major ${major}`);
     let minor = (await read(4)).getUint32(0, true);
+    window.trsd_log.push(`tRSD: found minor ${minor}`);
     if (major != 1) console.warn(`tRSD: major version mismatch (got ${major})`);
     if (minor != 0) console.warn(`tRSD: minor version mismatch (got ${minor})`);
     
@@ -146,7 +150,10 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
     let last_audio_offset = 0;
     while (true) {
       let audio_offset = (await read(4)).getFloat32(0, true);
+      window.trsd_log.push(`tRSD: found audio offset ${audio_offset}`);
       let name_length = (await read(4)).getUint32(0, true);
+      window.trsd_log.push(`tRSD: found sprite name length ${name_length}`);
+      if (name_length > 1000) throw new Error("tRSD: sprite name too long, parser probably in a bad state");
       if (name_length == 0) {
         last_audio_offset = audio_offset;
         break;
@@ -166,7 +173,7 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
     on_header?.({ major, minor, sprites });
     
     let audio_buffer_length = (await read(4)).getUint32(0, true);
-    window.trsd_log.push(`tRSD: expected buffer length ${audio_buffer_length}`);
+    window.trsd_log.push(`tRSD: found audio buffer length ${audio_buffer_length}`);
     let buffer = (await read(audio_buffer_length, true)).buffer;
     console.log(new Uint8Array(buffer));
     on_buffer?.(buffer);
