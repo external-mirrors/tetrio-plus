@@ -362,7 +362,7 @@ var migrate = (() => {
   migrations.push({
     version: '0.27.3',
     run: async dataSource => {
-      await dataSource.set({ version: '0.25.4' });
+      await dataSource.set({ version: '0.27.3' });
       let { music } = await dataSource.get('music');
       if (music) {
         for (let song of music)
