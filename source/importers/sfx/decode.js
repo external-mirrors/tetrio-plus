@@ -95,44 +95,61 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
       ? 'tetrio-plus://tetrio-plus/sfx/tetrio.opus.rsd?bypass-tetrio-plus'
       : 'https://tetr.io/sfx/tetrio.opus.rsd?bypass-tetrio-plus';
     let request = await window.fetch(url, { signal });
-    let reader = request.body.getReader({ mode: 'byob' });
+    let reader = request.body.getReader();
     
     window.trsd_log = [];
-    async function read(length, expect_eof=false) {
-      window.trsd_log.push(`tRSD parse: begin read ${length} ${expect_eof} ----------------------`);
-      let buffer = new ArrayBuffer(length);
+    
+    // 2^24 (16.78MB), base game atlas is 5,999,308 bytes at time of writing (35% of initial buffer size)
+    let buffer = new Uint8Array(16_777_216);
+    let read_position = 0;
+    let buffer_length = 0;
+    
+    async function read(read_length, expect_eof=false) {
+      window.trsd_log.push(`tRSD parse: begin read ${read_length} ${expect_eof} ----------------------`);
       
-      // as usual, `min` isn't supported in chrome. at least it's not too hard to work around here.
-      let offset = 0;
-      while (offset < length) {
-        let remaining = length - offset;
-        window.trsd_log.push(`tRSD parse: read(new Uint8Array(${buffer}, ${offset}, ${remaining}, { min: ${remaining} }))`);
-        let { value, done } = await reader.read(new Uint8Array(buffer, offset, remaining), { min: remaining });
-        window.trsd_log.push(`tRSD parse: read chunk of ${value.byteLength} bytes`);
-        offset += value.byteLength;
-        buffer = value.buffer;
+      while (read_position + read_length > buffer_length) {
+        let { value, done } = await reader.read();
+        window.trsd_log.push(`tRSD parse: read chunk of ${value?.byteLength} bytes (done: ${done})`);
         
         if (done && !expect_eof) {
-          window.trsd_log.push(`tRSD unexpected EOF ${offset}/${length}`);
+          window.trsd_log.push(`tRSD parse: unexpected EOF at ${read_position}/${buffer_length}`);
           if (signal?.aborted)
-            throw new Error(`tRSD: request aborted`);
-          throw new Error(`tRSD: unexpected EOF after reading ${offset} of ${length} bytes`);
+            throw new Error(`tRSD parse: request aborted`);
+          throw new Error(`tRSD parse: unexpected EOF at ${read_position}/${buffer_length}`);
         }
-      }
-      if (length < 100) {
-        let bytes = [...new Uint8Array(buffer)].map(s => s.toString(16).padStart(2, 0)).join(' ');
-        window.trsd_log.push(`tRSD parse: read bytes: ${bytes}`);
-      } else {
-        window.trsd_log.push(`tRSD parse: read a lot of bytes (${offset} / ${buffer.byteLength})`);
+      
+        if (value.byteLength < 100) {
+          let bytes = [...value].map(s => s.toString(16).padStart(2, 0)).join(' ');
+          window.trsd_log.push(`tRSD parse: read ${value.byteLength} bytes: ${bytes}`);
+        } else {
+          window.trsd_log.push(`tRSD parse: read a lot of bytes (${value.byteLength})`);
+        }
+        
+        while (buffer_length + value.length >= buffer.length) {
+          let new_buffer_length = buffer.length*2;
+          window.trsd_log.push(`tRSD parse: resizing buffer to ${new_buffer_length}`);
+          let copy_swap = new Uint8Array(new_buffer_length);
+          copy_swap.set(buffer, 0);
+          buffer = copy_swap;
+        }
+        
+        window.trsd_log.push(`tRSD parse: putting ${value.byteLength} bytes into buffer at position ${buffer_length}`);
+        buffer.set(value, buffer_length);
+        buffer_length += value.byteLength;
       }
       
       // if we're expecting EOF, try reading another byte to see if it EOFs
       if (expect_eof) {
-        let { value: _, done } = await reader.read(new Uint8Array(1), { min: 1 });
-        if (!done) throw new Error(`tRSD: expected EOF`);
+        let { value, done } = await reader.read();
+        if (!done) throw new Error(`tRSD: expected EOF, found at least ${value?.byteLength} more bytes`);
+        if (done) window.trsd_log.push(`tRSD: found EOF at expected position`)
+        else window.trsd_log.push(`tRSD: expected EOF, found at least ${value?.byteLength} more bytes`);
       }
       
-      return new DataView(buffer);
+      window.trsd_log.push(`tRSD: buffer sufficiently full (${buffer_length}) for read of ${read_length} bytes at offset ${read_position}`);
+      let view = new DataView(buffer.buffer, read_position, read_length); // looking for 4F 67 67 53
+      read_position += read_length;
+      return view;
     }
     
     let header_ok = (await read(4)).getUint32(0) == 0x74525344; // "tRSD"
@@ -174,9 +191,8 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
     
     let audio_buffer_length = (await read(4)).getUint32(0, true);
     window.trsd_log.push(`tRSD: found audio buffer length ${audio_buffer_length}`);
-    let buffer = (await read(audio_buffer_length, true)).buffer;
-    console.log(new Uint8Array(buffer));
-    on_buffer?.(buffer);
+    let audio_buffer = await read(audio_buffer_length, true);
+    on_buffer?.(audio_buffer.buffer.slice(audio_buffer.byteOffset, audio_buffer.byteOffset + audio_buffer.byteLength));
   })().catch(on_error || (_=>{}));
 }
 
