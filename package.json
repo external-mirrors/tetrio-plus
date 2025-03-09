@@ -4,7 +4,7 @@
   "author": "UniQMG",
   "description": "TETR.IO PLUS",
   "main": "makeTPSELib.js",
-  "version": "0.27.6",
+  "version": "0.27.7",
   "dependencies": {
     "av": "^0.4.9",
     "canvas": "^2.11.2",
