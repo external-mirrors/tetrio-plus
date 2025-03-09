@@ -14,7 +14,7 @@
       
       opacity: 1;
       
-      /*pointer-events: none;*/
+      pointer-events: none;
       font-family: monospace;
       font-weight: bold;
       color: #FFF;

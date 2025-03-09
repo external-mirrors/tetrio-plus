@@ -153,7 +153,8 @@ const app = new Vue({
           <div class="option-group">
             <url-pack-loader />
 
-            <option-toggle storageKey="watermarkEnabled">
+            <option-toggle storageKey="watermarkEnabled" mode="trigger" v-if="!debugMode" @trigger="enableDebugMode()"></option-toggle>
+            <option-toggle storageKey="watermarkEnabled" v-if="debugMode">
               <span title="Shows a watermark in-game that indicates your usage of TETR.IO PLUS. This is in addition to the sigliatrip marker that the base game displays when it detects modifications.">
                 Show extended modded watermark
               </span>
