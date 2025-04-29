@@ -1,21 +1,19 @@
 import { ReadableStreamBuffer, WritableStreamBuffer } from 'stream-buffers';
 import { OfflineAudioContext } from 'web-audio-engine';
 import GIFGroover from './lib/GIFGroover.js';
-import fetch, { Response } from 'node-fetch';
-import { Blob, FileReader } from 'vblob';
 import { Canvas, Image } from 'canvas';
 import ffmpeg from 'fluent-ffmpeg';
-import { Readable } from 'stream';
 import path from 'path';
 import 'node-fetch';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 global.self = global;
 global.OggVorbisEncoderConfig = { TOTAL_MEMORY: 64 * 1024**2 };
 global.print = console.error;
-let ove = fs.readFileSync(path.join(__dirname, '../source/lib/OggVorbisEncoder.js'));
+let ove = fs.readFileSync(path.join(fileURLToPath(import.meta.url), '../../source/lib/OggVorbisEncoder.js'));
 new Function(ove)();
-let jszip = fs.readFileSync(path.join(__dirname, '../source/lib/jszip.min.js'));
+let jszip = fs.readFileSync(path.join(fileURLToPath(import.meta.url), '../../source/lib/jszip.min.js'));
 new Function(jszip)();
 
 // Web API polyfills
@@ -29,8 +27,7 @@ Object.assign(global, {
     ReadableStreamBuffer,
     WritableStreamBuffer,
 
-    Blob,
-    FileReader,
+    Blob: global.Blob,
     OggVorbisEncoder,
     OfflineAudioContext,
     Image,
@@ -40,21 +37,7 @@ Object.assign(global, {
         return new Canvas();
       }
     },
-    async fetch(url) {
-      if (url instanceof Readable)
-        return new Response(url);
-
-      let dataUrl = /^data:.{0,100};base64,/.exec(url);
-      if (dataUrl) {
-        let buffer = Buffer.from(url.slice(dataUrl[0].length), 'base64');
-        return { // mock response
-          async text() { return buffer.toString(); },
-          async arrayBuffer() { return buffer; }
-        }
-      }
-
-      return await fetch(url);
-    }
+    fetch: global.fetch
   },
   browser: {
     extension: {

@@ -1,3 +1,4 @@
+
 const sampleRate = 44100;
 const channels = 2;
 
@@ -94,6 +95,8 @@ function fetchAudio({ on_header, on_buffer, on_error, signal }) {
     let url = (typeof window !== 'undefined' && window.browser && window.browser.electron)
       ? 'tetrio-plus://tetrio-plus/sfx/tetrio.opus.rsd?bypass-tetrio-plus'
       : 'https://tetr.io/sfx/tetrio.opus.rsd?bypass-tetrio-plus';
+      
+    
     let request = await window.fetch(url, { signal });
     let reader = request.body.getReader();
     

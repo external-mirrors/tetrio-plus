@@ -28,10 +28,14 @@ export default async function encode(sprites, storage, options) {
   //   blobReader.onload = evt => res(blobReader.result)
   //   blobReader.readAsArrayBuffer(blob);
   // })));
-  let dataUrl = await new Promise(res => {
-    let blobReader = new window.FileReader();
-    blobReader.onload = evt => res(blobReader.result)
-    blobReader.readAsDataURL(blob);
+  let dataUrl = await new Promise(async res => {
+    if (window.IS_NODEJS_POLYFILLED) {
+      res('data:audio/ogg;base64,' + Buffer.from(await blob.arrayBuffer()).toString('base64'));
+    } else {
+      let blobReader = new window.FileReader();
+      blobReader.onload = evt => res(blobReader.result)
+      blobReader.readAsDataURL(blob);
+    }
   });
 
   storage.set({
