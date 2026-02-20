@@ -18,8 +18,9 @@ git pull --recurse-submodules # ensure tpsecore is pulled in
 
 # install rust
 curl https://sh.rustup.rs -sSf | sh -s -- -y
-rustup default 1.87.0
 source "$HOME/.cargo/env"
+rustup default 1.87.0
+rustup target add wasm32-unknown-unknown
 
 # build it
 git submodule init

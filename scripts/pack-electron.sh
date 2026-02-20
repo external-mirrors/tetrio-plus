@@ -39,7 +39,7 @@ yarn --ignore-engines
 cd ..
 
 # note: bit of a hack, assumes we're being called from build.sh after doing the tpsecore build
-cp source/lib/tpsecore_bg.wasm source/lib/tpsecore.js out/tetrioplus/source/lib
+cp source/lib/tpsecore.wasm out/tetrioplus/source/lib
 
 # cleanup
 rm 'TETR.IO Setup.tar.gz' app.asar
