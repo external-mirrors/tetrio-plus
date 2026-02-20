@@ -8,3 +8,4 @@ build
 importer/node_modules
 source/lib/tpsecore.js
 source/lib/tpsecore_bg.wasm
+source/lib/tpsecore.wasm
