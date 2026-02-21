@@ -7,9 +7,16 @@ import readfiles from '../../shared/filehelper.js';
   let panic_reported = false;
   let async_runtime_interval = null;
   let tpse_import_handlers = new Map();
+  let cached_assets = {};
   const wasm = await WebAssembly.instantiateStreaming(fetch('../../lib/tpsecore.wasm'), {
     tpsecore: {
       async fetch_asset(asset_id) {
+        if (cached_assets[asset_id]) {
+          console.log("fetch_asset", asset_id, "already cached, providing.");
+          tpsecore.provide_asset(asset_id, cached_assets[asset_id]);
+          return;
+        }
+        
         console.log("fetch_asset", asset_id);
         let asset = null;
         switch(asset_id) {
@@ -22,8 +29,9 @@ import readfiles from '../../shared/filehelper.js';
           console.log("fetch_asset", asset_id, "done, got", body.length, "bytes");
           let ptr = tpsecore.allocate_buffer(body.length);
           new Uint8Array(tpsecore.memory.buffer, ptr, body.length).set(body);
-          console.log("asset marked provided");
           tpsecore.provide_asset(asset_id, ptr);
+          cached_assets[asset_id] = ptr;
+          console.log("asset marked provided");
         } catch(ex) {
           console.error("fetch_asset", asset_id, "failed:", ex);
           tpsecore.provide_asset(asset_id, 0);
