@@ -241,6 +241,25 @@ export async function decodeDefaults(status=(()=>{})) {
       modified: false
     });
   }
+  
+  // Sort sprites alphabetically, but with special handling to ensure:
+  // - combo numbers are in order
+  // - combos are grouped by power vs nonpower
+  // - piece sounds are grouped, and they come first so they're easy to find (hard to ctrl-f otherwise)
+  sprites.sort((a, b) => {
+    let aname = a.name.length == 1 ? `0piece_${a.name}` : a.name;
+    let bname = b.name.length == 1 ? `0piece_${b.name}` : b.name;
+    let regex = /combo_(\d+)(_power)?/;
+    let am = regex.exec(aname);
+    let bm = regex.exec(bname);
+    if (am && bm) {
+      if (am[2] && !bm[2]) return 1;
+      if (!am[2] && bm[2]) return -1;
+      if (Number(am[1]) > Number(bm[1])) return 1;
+      if (Number(am[1]) < Number(bm[1])) return -1;
+    }
+    return aname.localeCompare(bname);
+  });
 
   status('Sprites assembled');
   return sprites;
