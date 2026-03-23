@@ -2,90 +2,60 @@ import '../../shared/drop-handler.js';
 import /* non es6 */ '../../shared/migrate.js';
 import importer from '../../importers/import.js';
 import readfiles from '../../shared/filehelper.js';
+import { tpsecore, registerListener, registerTPSEImportEventHandler, setExternalTPSEHandler } from '../../lib/tpsecore.js';
+window.tpsecore_debug = tpsecore;
+
+registerListener(event => {
+  if (event.kind != 'panic') return;
+  alert("Something went catastrophically wrong with tpsecore. See console for details. Reload page before attempting to use tpsecore again.");
+});
+
+const BROWSER_STORAGE_EXTERN_TPSE = tpsecore.allocate_extern_tpse();
+let storage_layer = {};
+let storage_layer_deletes = {};
+let import_running = false;
+async function flushStorageLayer() {
+  console.log("flushing changes to storage", storage_layer);
+  await browser.storage.local.set(storage_layer);
+  for (let key of Object.keys(storage_layer_deletes))
+    await browser.storage.local.remove(key);
+  storage_layer = {};
+  storage_layer_deletes = {};
+}
+function clearStorageLayer() {
+  console.log("discarding storage layer changes", storage_layer);
+  storage_layer = {};
+  storage_layer_deletes = {};
+}
+setExternalTPSEHandler(
+  async (tpse_id, key) => {
+    if (tpse_id != BROWSER_STORAGE_EXTERN_TPSE) throw new Error("invalid extern tpse");
+    let data = await browser.storage.local.get(key);
+    console.log("storage value get!", { tpse_id, key });
+    if (storage_layer.hasOwnProperty(key)) {
+      return JSON.stringify(storage_layer[key]);
+    }
+    if (!data.hasOwnProperty(key)) {
+      return null;
+    }
+    return JSON.stringify(data[key]);
+  },
+  async (tpse_id, key, value) => {
+    if (tpse_id != BROWSER_STORAGE_EXTERN_TPSE) throw new Error("invalid extern tpse");
+    // await browser.storage.local.set({ [key]: JSON.parse(value) });
+    storage_layer[key] = JSON.parse(value);
+    delete storage_layer_deletes[key];
+    console.log("storage value set!", { tpse_id, key, value });
+  },
+  async (tpse_id, key, value) => {
+    if (tpse_id != BROWSER_STORAGE_EXTERN_TPSE) throw new Error("invalid extern tpse");
+    delete storage_layer[key];
+    storage_layer_deletes[key] = true;
+    console.log("storage value delete!", { tpse_id, key, value });
+  }
+);
 
 (async () => {
-  let panic_reported = false;
-  let async_runtime_interval = null;
-  let tpse_import_handlers = new Map();
-  let cached_assets = {};
-  const wasm = await WebAssembly.instantiateStreaming(fetch('../../lib/tpsecore.wasm'), {
-    tpsecore: {
-      async fetch_asset(asset_id) {
-        if (cached_assets[asset_id]) {
-          console.log("fetch_asset", asset_id, "already cached, providing.");
-          tpsecore.provide_asset(asset_id, cached_assets[asset_id]);
-          return;
-        }
-        
-        console.log("fetch_asset", asset_id);
-        let asset = null;
-        switch(asset_id) {
-          case 0: asset = 'https://tetr.io/js/tetrio.js?bypass-tetrio-plus'; break;
-          case 1: asset = 'https://tetr.io/sfx/tetrio.opus.rsd?bypass-tetrio-plus'; break;
-          case 2: throw new Error("unknown asset #" + asset_id);
-        }
-        try {
-          let body = new Uint8Array(await fetch(asset).then(res => res.arrayBuffer()));
-          console.log("fetch_asset", asset_id, "done, got", body.length, "bytes");
-          let ptr = tpsecore.allocate_buffer(body.length);
-          new Uint8Array(tpsecore.memory.buffer, ptr, body.length).set(body);
-          tpsecore.provide_asset(asset_id, ptr);
-          cached_assets[asset_id] = ptr;
-          console.log("asset marked provided");
-        } catch(ex) {
-          console.error("fetch_asset", asset_id, "failed:", ex);
-          tpsecore.provide_asset(asset_id, 0);
-        }
-      },
-      report_import_done(tpse, status) {
-        console.log("import", tpse, "done with status", status);
-        tpse_import_handlers.get(tpse)?.finish(status);
-        tpse_import_handlers.delete(tpse);
-      },
-      async set_runtime_sleeping(sleeping) {
-        console.log(`set_runtime_sleeping`, sleeping);
-        clearInterval(async_runtime_interval);
-        if (!sleeping) {
-          async_runtime_interval = setInterval(() => {
-            console.log("tick");
-            tpsecore.tick_async();
-          }, 10);
-        }
-      },
-      log(level, ptr, len) {
-        let msg = new TextDecoder('utf-8').decode(new Uint8Array(tpsecore.memory.buffer, ptr, len));
-        log(level, null, msg);
-      },
-      import_log(level, tpse, ptr, len) {
-        let msg = new TextDecoder('utf-8').decode(new Uint8Array(tpsecore.memory.buffer, ptr, len));
-        tpse_import_handlers.get(tpse)?.log(level, msg);
-        log(level, tpse, msg);
-      },
-      report_panic() {
-        if (panic_reported) return;
-        panic_reported = true;
-        alert("Something went catastrophically wrong with tpsecore. See console for details. Reload page before attempting to use tpsecore again.")
-        console.trace("tpsecore panic");
-      }
-    }
-  }).catch(ex => {
-    console.error("loading tpsecore failed:", ex);
-  });
-  const tpsecore = wasm?.instance?.exports;
-  window.tpsecore_debug = { wasm, tpsecore };
-
-  function log(level, tpse, msg) {
-    let t = Date.now();
-    switch (level) {
-      case 1: console.error("wasm>", { t, tpse }, msg); break;
-      case 2: console.warn ("wasm>", { t, tpse }, msg); break;
-      case 3: console.info ("wasm>", { t, tpse }, msg); break;
-      case 4: console.debug("wasm>", { t, tpse }, msg); break;
-      case 5: console.debug("wasm>", { t, tpse }, msg); break;
-      default: console.log ("wasm>", { t, tpse }, msg); break;
-    }
-  }
-
   let match = /install=([^=]+)/.exec(new URL(window.location).search);
   if (match) {
     console.log(match);
@@ -311,96 +281,78 @@ import readfiles from '../../shared/filehelper.js';
     await importer.automatic(
       await readfiles(input),
       browser.storage.local,
-      { log(...msg) {
-        console.log(msg.join(' '));
-        logs.push(msg.join(' '));
-      } }
+      {
+        log(...msg) {
+          console.log(msg.join(' '));
+          logs.push(msg.join(' '));
+        }
+      }
     );
   }
 
   async function tpsecoreImport(input, logs) {
-    let tpse = tpsecore.allocate_tpse();
+    if (import_running) throw new Error("import already running");
+    import_running = true;
+    let tpse = BROWSER_STORAGE_EXTERN_TPSE;
     
     function assert_eq(a, b, label) {
       if (a != b) throw new Error(`assertion at ${label} failed: ${a} != ${b}`);
     }
     
-    let advancedMergeLogic = document.getElementById('advanced-merge-logic').checked;
-    if (advancedMergeLogic) {
-      logs.push("Re-importing existing content for advanced merge...");
-      let all = await browser.storage.local.get();
-      let all_enc = new TextEncoder('utf8').encode(JSON.stringify(all));
-      
-      let encoded = new TextEncoder().encode("existing.tpse");
-      let fptr = tpsecore.allocate_buffer(encoded.length);
-      let fbuffer = new Uint8Array(tpsecore.memory.buffer, fptr, encoded.length);
-      console.log(fptr, fbuffer, encoded);
-      fbuffer.set(encoded);
-      
-      let cptr = tpsecore.allocate_buffer(all_enc.length);
-      let cbuffer = new Uint8Array(tpsecore.memory.buffer, cptr, all_enc.length);
-      cbuffer.set(all_enc);
-      
-      let p = new Promise(res => tpse_import_handlers.set(tpse, { finish: res, log: () => {} }));
-      assert_eq(0, tpsecore.stage_file(tpse, fptr, cptr), 'reimport stage file');
-      assert_eq(0, tpsecore.queue_import(tpse), 'reimport queue import');
-      assert_eq(0, tpsecore.clear_staged_files(tpse, true), "reimport clear staged files");
-      assert_eq(0, await p, 'reimport import');
-    }
+    logs.push("TPSECORE: see web developer tools for extended logs with context stacks");
     
     logs.push("Loading files...");
     console.log("Loading files...", Date.now());
-    let reader = new FileReader();
-    let filename = input.files[0].name;
-    reader.readAsArrayBuffer(input.files[0], "UTF-8");
-    reader.onerror = () => alert("Failed to load content pack");
-    let content = await new Promise(res => {
-      reader.onload = _evt => res(new Uint8Array(reader.result));
-    });
-    console.log(content);
     
-    let encoded = new TextEncoder().encode(filename);
-    let fptr = tpsecore.allocate_buffer(encoded.length);
-    let fbuffer = new Uint8Array(tpsecore.memory.buffer, fptr, encoded.length);
-    fbuffer.set(encoded);
-    
-    let cptr = tpsecore.allocate_buffer(content.length);
-    let cbuffer = new Uint8Array(tpsecore.memory.buffer, cptr, content.length);
-    cbuffer.set(content);
-    
-    logs.push("Running import...");
-    console.log("Running import...", Date.now());
-    let queue_import = new Promise(res => tpse_import_handlers.set(tpse, {
-      finish: res,
-      log: (_level, message) => {
-        logs.push(message);
-      }
-    }));
-    assert_eq(0, tpsecore.stage_file(tpse, fptr, cptr), 'stage file');
-    assert_eq(0, tpsecore.queue_import(tpse), 'queue import');
-    let queue_import_result = await queue_import;
-    console.log('run_import code', queue_import_result);
-    assert_eq(0, tpsecore.clear_staged_files(tpse, true), "clear staged files");
-    
-    let ptr = tpsecore.export_tpse(tpse);
-    let len = tpsecore.get_buffer_length(ptr);
-    assert_eq(0, tpsecore.deallocate_tpse(tpse, true));
     try {
+      for (let file of input.files) {
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(file, "UTF-8");
+        let content = await new Promise((res, rej) => {
+          reader.onerror = err => rej(new Error("Reading file failed", { cause: err }));
+          reader.onload = _evt => res(new Uint8Array(reader.result));
+        });
+        console.log(content);
+        
+        let encoded = new TextEncoder().encode(file.name);
+        let fptr = tpsecore.allocate_buffer(encoded.length);
+        let fbuffer = new Uint8Array(tpsecore.memory.buffer, fptr, encoded.length);
+        fbuffer.set(encoded);
+        
+        let cptr = tpsecore.allocate_buffer(content.length);
+        let cbuffer = new Uint8Array(tpsecore.memory.buffer, cptr, content.length);
+        cbuffer.set(content);
+        
+        assert_eq(0, tpsecore.stage_file(tpse, fptr, cptr), 'stage file');
+      }
+      
+      logs.push("Running import...");
+      console.log("Running import...", Date.now());
+      let queue_import = new Promise(res => {
+        registerTPSEImportEventHandler(tpse, res, log => {
+          console.log("tpsecore log>", log);
+          if (log.level == 'trace') return;
+          logs.push(log.message)
+          if (log.level == 'status') {
+            document.getElementById('import-anything-status').innerText = `Working... (${log.message})`;
+          }
+        });
+      });
+      assert_eq(0, tpsecore.queue_import(tpse), 'queue import');
+      let queue_import_result = await queue_import;
+      console.log('run_import code', queue_import_result);
+      
       switch (queue_import_result) {
         case 0: break;
         case 1: throw new Error("general error (see logs)");
         case 2: throw new Error("internal error (invalid tpse handle)");
         default: throw new Error("unknown error " + queue_import_result);
       }
-      
-      logs.push("Applying generated TPSE...");
-      console.log("Applying generated TPSE...", Date.now());
-      let buffer = new Uint8Array(tpsecore.memory.buffer, ptr, len);
-      let json = new TextDecoder('utf-8').decode(buffer);
-      let data = JSON.parse(json);
-      await browser.storage.local.set(data);
+      flushStorageLayer();
     } finally {
-      assert_eq(0, tpsecore.deallocate_buffer(ptr));
+      assert_eq(0, tpsecore.clear_staged_files(tpse, true), "clear staged files");
+      import_running = false;
+      clearStorageLayer();
     }
   }
 

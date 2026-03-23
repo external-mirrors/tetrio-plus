@@ -30,6 +30,9 @@ cargo build --profile release
 cp target/wasm32-unknown-unknown/release/tpsecore.wasm ../source/lib
 cd ..
 
+# populate tpsecore.js
+cp tpsecore.js ../source/lib
+
 # build script dependencies
 DEBIAN_FRONTEND=noninteractive apt-get install zip -y
 
