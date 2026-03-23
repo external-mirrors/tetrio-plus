@@ -28,10 +28,8 @@ git submodule update
 cd tpsecore
 cargo build --quiet --profile release --target wasm32-unknown-unknown
 cp target/wasm32-unknown-unknown/release/tpsecore.wasm ../source/lib
-cd ..
-
-# populate tpsecore.js
 cp tpsecore.js ../source/lib
+cd ..
 
 # build script dependencies
 DEBIAN_FRONTEND=noninteractive apt-get install zip -y -qq
