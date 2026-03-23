@@ -388,6 +388,22 @@ var migrate = (() => {
       }
     }
   });
+  
+  /*
+    v0.28.0 - flattens double serialization of the music graph and touch controls.
+    It's weird and more cumbersome to deal with in rust than it is in javascript.
+    + JSON.deserialize(musicGraph)
+    + JSON.deserialize(touchControlConfig)
+  */
+  migrations.push({
+    version: '0.28.0',
+    run: async dataSource => {
+      await dataSource.set({ version: '0.28.0' });
+      let { musicGraph, touchControlConfig } = await dataSource.get(['musicGraph', 'touchControlConfig']);
+      if (musicGraph) await dataSource.set({ musicGraph: JSON.parse(musicGraph) });
+      if (touchControlConfig) await dataSource.set({ touchControlConfig: JSON.parse(touchControlConfig) });
+    }
+  });
 
   return async function migrate(dataSource) {
     let { version: initialVersion} = await dataSource.get('version');

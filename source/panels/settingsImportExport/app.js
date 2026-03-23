@@ -68,8 +68,10 @@ import readfiles from '../../shared/filehelper.js';
         console.trace("tpsecore panic");
       }
     }
+  }).catch(ex => {
+    console.error("loading tpsecore failed:", ex);
   });
-  const tpsecore = wasm.instance.exports;
+  const tpsecore = wasm?.instance?.exports;
   window.tpsecore_debug = { wasm, tpsecore };
 
   function log(level, tpse, msg) {

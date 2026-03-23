@@ -275,7 +275,7 @@ const app = new Vue({
     },
     save() {
       browser.storage.local.set({
-        touchControlConfig: JSON.stringify(this.config)
+        touchControlConfig: this.config
       });
       this.saveOpacity = 1.25;
       let timeout = setInterval(() => {
@@ -288,7 +288,7 @@ const app = new Vue({
   async mounted() {
     let configObj = await browser.storage.local.get('touchControlConfig');
     let config = configObj.touchControlConfig;
-    if (config) this.config = JSON.parse(config);
+    if (config) this.config = config;
 
     this.updateBoundingRect();
     window.addEventListener('resize', () => {

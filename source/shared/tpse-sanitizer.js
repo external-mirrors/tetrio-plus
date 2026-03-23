@@ -345,13 +345,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     },
     musicGraph: async (graph, importData) => {
       let toSet = {};
-
-      try {
-        graph = JSON.parse(graph);
-      } catch(ex) {
-        return `ERROR: Invalid json: ${ex}`
-      }
-
+      
       if (!Array.isArray(graph)) return `ERROR: Expected array`;
       for (let node of graph) {
         if (typeof node.id != 'number')
@@ -520,17 +514,11 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
         if (!result5.success) return result5.error;
       }
 
-      toSet.musicGraph = JSON.stringify(graph);
+      toSet.musicGraph = graph;
       await storage.set(toSet);
       return 'success';
     },
     touchControlConfig: async config => {
-      try {
-        config = JSON.parse(config);
-      } catch(ex) {
-        return `ERROR: Invalid json: ${ex}`
-      }
-
       if (typeof config != 'object')
         return `ERROR: Expected object at $`;
 
@@ -586,7 +574,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
       if (!result2.success) return result2.error;
 
       await storage.set({
-        touchControlConfig: JSON.stringify(config)
+        touchControlConfig: config
       });
       return 'success';
     }

@@ -224,7 +224,7 @@ const app = new Vue({
       this.config.hardEventRateLimit = opt.musicGraphHardEventRateLimit ?? 10000;
       this.saveConfig();
       if (opt.musicGraph) {
-        this.nodes = JSON.parse(opt.musicGraph);
+        this.nodes = opt.musicGraph;
         this.maxId = Math.max(...this.nodes.map(node => node.id));
       }
     }).then(() => {

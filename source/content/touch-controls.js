@@ -10,12 +10,8 @@
   document.head.appendChild(script);
 
   async function dispatchConfig() {
-    let { touchControlConfig: config } = await storage.get(
-      'touchControlConfig'
-    );
-    if (config) {
-      config = JSON.parse(config);
-    } else {
+    let { touchControlConfig: config } = await storage.get('touchControlConfig');
+    if (!config) {
       config = {
         mode: 'touchpad',
         deadzone: 100,

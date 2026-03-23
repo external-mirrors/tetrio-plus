@@ -138,17 +138,20 @@ export default {
       if (active != this.$refs.editor && active != document.body) return;
 
       let musicGraph = null;
-      let result = await sanitizeAndLoadTPSE({
-        version: '0.25.3',
-        musicGraph: event.clipboardData.getData('text')
-      }, {
-        async set(pairs) {
-          if (pairs.musicGraph)
-            musicGraph = JSON.parse(pairs.musicGraph);
-        }
-      }, {
-        skipFileDependencies: true
-      });
+      let result = await sanitizeAndLoadTPSE(
+        {
+          version: '0.25.3',
+          musicGraph: JSON.parse(event.clipboardData.getData('text'))
+        },
+        {
+          async set(pairs) {
+            if (pairs.musicGraph) {
+              musicGraph = pairs.musicGraph;
+            }
+          }
+        },
+        { skipFileDependencies: true }
+      );
       if (result.includes('ERROR')) {
         alert(`Paste failed:\n${result}`);
         return;
