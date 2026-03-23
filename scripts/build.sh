@@ -5,8 +5,8 @@ set -x
 # load config
 source ./resources/desktop-ci/config
 
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y
+apt-get update -qq
+DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y -qq
 
 echo "Writing commit to resources/ci-commit and resources/ci-commit-previous..."
 git rev-parse --short HEAD~1 > resources/ci-commit-previous # commit for display purposes
@@ -26,7 +26,7 @@ rustup target add wasm32-unknown-unknown
 git submodule init
 git submodule update
 cd tpsecore
-cargo build --profile release
+cargo build --quiet --profile release --target wasm32-unknown-unknown
 cp target/wasm32-unknown-unknown/release/tpsecore.wasm ../source/lib
 cd ..
 
@@ -34,10 +34,10 @@ cd ..
 cp tpsecore.js ../source/lib
 
 # build script dependencies
-DEBIAN_FRONTEND=noninteractive apt-get install zip -y
+DEBIAN_FRONTEND=noninteractive apt-get install zip -y -qq
 
 # node canvas dependencies
-DEBIAN_FRONTEND=noninteractive apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev -y
+DEBIAN_FRONTEND=noninteractive apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev -y -qq
 
 # install node
 apt install nodejs npm -y
