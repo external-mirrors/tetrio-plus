@@ -42,7 +42,7 @@ function createRewriteFilter(name, url, options) {
 
       if (options.onStart || options.onStop) {
         let filter = browser.webRequest.filterResponseData(request.requestId);
-        let decoder = new TextDecoder("utf-8");
+        
         function callback({ type, data, encoding }) {
           switch(encoding || 'text') {
             case 'base64-data-url':
@@ -68,16 +68,16 @@ function createRewriteFilter(name, url, options) {
           }
         }
 
-        // Potential future BUG: We're assuming onStop will only be called
-        // with textual data, but in the future we might want to process binary
-        // data in transit.
-        let originalData = [];
-        filter.ondata = event => {
-          let str = decoder.decode(event.data, { stream: true });
-          originalData.push(str);
-        }
-
         if (options.onStop) {
+          // Potential future BUG: We're assuming onStop will only be called
+          // with textual data, but in the future we might want to process binary
+          // data in transit.
+          let originalData = [];
+          let decoder = new TextDecoder("utf-8");
+          filter.ondata = event => {
+            let str = decoder.decode(event.data, { stream: true });
+            originalData.push(str);
+          }
           filter.onstop = async evt => {
             await options.onStop(dataSource, request.url, originalData.join(''), callback);
             filter.close();

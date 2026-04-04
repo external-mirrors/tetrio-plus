@@ -28,7 +28,7 @@ export default {
           'This option is required for animated skins, but is more ' +
           'likely to break.'
         )">
-          Use advanced skin loading
+          Enable animated skin support patch
         </span>
       </option-toggle>
       <option-toggle storageKey="forceNearestScaling">
