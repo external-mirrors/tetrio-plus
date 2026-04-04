@@ -26,7 +26,7 @@ rustup target add wasm32-unknown-unknown
 git submodule init
 git submodule update
 cd tpsecore
-cargo build --quiet --profile release --target wasm32-unknown-unknown
+cargo build --quiet --profile release --target wasm32-unknown-unknown --features wasm_rendering
 cp target/wasm32-unknown-unknown/release/tpsecore.wasm ../source/lib
 cp tpsecore.js ../source/lib
 cd ..
