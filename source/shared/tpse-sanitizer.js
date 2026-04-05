@@ -1,11 +1,3 @@
-if (typeof require == 'function') {
-  var migrate = require('./migrate');
-  var DOMParser = require('xmldom').DOMParser;
-}
-if (typeof window !== 'undefined' && window.migrate) { // module issues
-  var migrate = window.migrate;
-}
-
 /**
  * @param {Object} data the data object to load
  * @param {Storage} storage A browser-storage-like object with 'set' method
@@ -604,8 +596,4 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
 
   return results.join('\n');
 }
-
-if (typeof module !== 'undefined')
-  module.exports = sanitizeAndLoadTPSE;
-if (typeof window !== 'undefined')
-  window.sanitizeAndLoadTPSE = sanitizeAndLoadTPSE;
+globalThis.sanitizeAndLoadTPSE = sanitizeAndLoadTPSE;

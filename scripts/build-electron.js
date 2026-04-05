@@ -30,12 +30,16 @@ fs.writeFileSync(
 `const {
   onMainWindow,
   modifyWindowSettings,
-  handleWindowOpen
+  handleWindowOpen,
+  tetrioPlusReady
 } = require('./tetrioplus/source/electron/electron-main');
 `
   ).replace(
     /(new BrowserWindow\()({[\S\s]+?})(\))/,
     '$1modifyWindowSettings($2)$3'
+  ).replace(
+    /(\S+\.loadFile\([^\)]+\))/g,
+    'tetrioPlusReady.then(() => $1)'
   ).replace(
     /(if \(mainWindow)/g,
     '$1 && !handleWindowOpen(typeof url !== "undefined" ? url : (typeof arg !== "undefined" ? arg : null))'

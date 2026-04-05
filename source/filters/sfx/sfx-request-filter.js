@@ -71,12 +71,9 @@ var BASE64_MARKER = ';base64,';
 function convertDataURIToBinary(dataURI) {
   var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
   var base64 = dataURI.substring(base64Index);
-  var raw = atob(base64);
-  var rawLength = raw.length;
-  var array = new Uint8Array(new ArrayBuffer(rawLength));
-
-  for(i = 0; i < rawLength; i++) {
-    array[i] = raw.charCodeAt(i);
+  if (typeof Buffer !== 'undefined') {
+    return Uint8Array.from(Buffer.from(base64, 'base64')); // electron main process nodejs (too old for fromBase64)
+  } else {
+    return Uint8Array.fromBase64(base64); // browser
   }
-  return array;
 }

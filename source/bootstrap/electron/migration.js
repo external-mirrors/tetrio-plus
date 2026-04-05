@@ -1,1 +1,2 @@
-migrate(browser.storage.local);
+greenlog("running migrations");
+await migrate(browser.storage.local);

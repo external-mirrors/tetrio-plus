@@ -4,12 +4,6 @@
   wrappers/fallback.
 */
 
-if (typeof require == 'function') {
-  browser = require('../electron/electron-browser-polyfill');
-  fetch = require('node-fetch');
-  sanitizeAndLoadTPSE = require('../shared/tpse-sanitizer');
-}
-
 async function domainDataStatus(urlString) {
   let {
     allowURLPackLoader,
@@ -24,16 +18,24 @@ async function domainDataStatus(urlString) {
   if (!tetrioPlusEnabled)
     return { ok: false, reason: 'TETR.IO PLUS is disabled' };
 
-  let { useContentPack } = new URL(decodeURI(urlString))
-    .search
-    .slice(1)
-    .split('&')
-    .map(e => e.split('='))
-    .reduce((obj, [key, value]) => {
-      obj[key] = value;
-      return obj;
-    }, {})
-
+  if (urlString === '')
+    return { ok: false, reason: 'URL does not specify a content pack (is empty string)' };
+  
+  try {
+    var { useContentPack } = new URL(decodeURI(urlString))
+      .search
+      .slice(1)
+      .split('&')
+      .map(e => e.split('='))
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  } catch(ex) {
+    console.trace("failed to decode url", urlString, ex);
+    return { ok: false, reason: 'invalid URL: ' + ex };
+  }
+  
   if (!useContentPack)
     return { ok: false, reason: 'URL does not specify a content pack' };
 
@@ -52,11 +54,7 @@ const REQUEST_CACHE = {};
 async function getDataForDomain(urlString) {
   try {
     let { ok, reason, url } = await domainDataStatus(urlString);
-
-    if (!ok) {
-      console.log(reason);
-      return null;
-    }
+    if (!ok) return null;
 
     if (!REQUEST_CACHE[url]) {
       REQUEST_CACHE[url] = (async () => {

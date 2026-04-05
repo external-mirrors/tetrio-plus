@@ -1,19 +1,21 @@
 /*
   This file is bootstrapped via manual changes made to the tetrio desktop client
-  See the README for instructions on performing these changes
+  See the wiki on gitlab for instructions on performing these changes
   Not used on firefox
 */
 
 const { app, BrowserWindow, protocol, ipcMain, dialog, webContents } = require('electron');
-const browser = require('./electron-browser-polyfill.js');
-const { promisify } = require('util');
 const crypto = require('crypto');
 const https = require('https');
 const path = require('path');
-const vm = require('vm');
 const fs = require('fs');
 
 const manifest = require('../../desktop-manifest.js');
+
+let getDataSourceForDomain; // loaded from sandbox below
+
+let markTetrioPlusReady = null;
+const tetrioPlusReady = new Promise(res => markTetrioPlusReady = res);
 
 const Store = require('electron-store');
 function storeGet(key) {
@@ -27,14 +29,7 @@ function storeGet(key) {
 }
 
 const LEVELS = { verbose: 0, debug: 1, log: 2, warn: 3, error: 4, critical: 5 };
-const LEVEL_NAMES = {
-  verbose: 'VRB',
-  debug: 'DBG',
-  log: 'LOG',
-  warn: 'WRN',
-  error: 'ERR',
-  critical: 'SEV'
-}
+const LEVEL_NAMES = { verbose: 'VRB', debug: 'DBG', log: 'LOG', warn: 'WRN', error: 'ERR', critical: 'SEV' };
 const LOGGERS = {
   'greenlog': { level: 'log', prefix: '\u001b[32m[TP $level $time] GL >' },
   'redlog':   { level: 'log', prefix: '\u001b[31m[TP $level $time] RL >' },
@@ -98,7 +93,8 @@ const mainWindow = new Promise(res => {
     // Used by packaging edits (see README)
     onMainWindow: res,
     modifyWindowSettings,
-    handleWindowOpen
+    handleWindowOpen,
+    tetrioPlusReady
   }
 });
 
@@ -393,19 +389,17 @@ if(process.env.NODE_ENV === 'development' && process.platform === 'win32') {
   app.setAsDefaultProtocolClient('tetrio-plus');
 }
 
-app.whenReady().then(async () => {
+app.whenReady().then(initialize).catch(greenlog);
+async function initialize() {
+  greenlog("starting primarily tetrio plus initialization");
   let rewriteHandlers = [];
   protocol.registerBufferProtocol('tetrio-plus', (req, callback) => {
     (async () => {
       greenlog("tetrio plus request", req.method, req.url);
-      const originalUrl = 'https://tetr.io/' + req.url.substring(
-        'tetrio-plus://tetrio-plus/'.length
-      );
+      const originalUrl = 'https://tetr.io/' + req.url.substring('tetrio-plus://tetrio-plus/'.length);
+      const bypassed = null != new URL(originalUrl).searchParams.get('bypass-tetrio-plus');
       // query params break some stuffs (why? what stuff?) ((possibly some filters not expecting url parameters?))
       const url = originalUrl.split('?')[0];
-
-      const bypassed = null != new URL(originalUrl)
-        .searchParams.get('bypass-tetrio-plus');
 
       let contentType = null;
       let data = null;
@@ -525,9 +519,6 @@ app.whenReady().then(async () => {
         }
       };
 
-      const getDataSourceForDomain = require(
-        '../bootstrap/domain-specific-storage-fetcher'
-      );
       const dataSource = await getDataSourceForDomain(originalUrl);
 
       let handlers = rewriteHandlers.filter(handler => {
@@ -593,37 +584,46 @@ app.whenReady().then(async () => {
     let filepath = path.join(__dirname, '../..', relpath);
     callback({ path: filepath });
   });
-
-  /* Not a security measure! */
-  let context = vm.createContext({
-    mainWindow: await mainWindow,
-    rewriteHandlers,
-    greenlog,
-    browser,
-    app,
-    setTimeout,
-    TextEncoder: TextEncoder,
-    fetch: require('node-fetch'),
-    URL: require('whatwg-url').URL,
-    DOMParser: require('xmldom').DOMParser,
-    image_size: require('image-size'),
-    Buffer,
-    // https://gist.github.com/jmshal/b14199f7402c8f3a4568733d8bed0f25
-    atob(a) { return Buffer.from(a, 'base64').toString('binary'); },
-    btoa(b) { return Buffer.from(b).toString('base64'); },
-  });
-
+  
+  // TETR.IO PLUS loads scripts with the expectation that they'll be evaluated in a shared context.
+  // This expectation was originally inherited from the way web extension background scripts work.
+  // This used to be implemented via `vm.runInContext(...)` with a large set of polyfills, but was
+  // reimplemented as a simple eval for scoping benefits (no need to pass in every single api anymore)
+  // and proper debugging (vm messes with the chrome debugger pretty hard).
+  
+  // remaining polyfills, used in various scripts
+  greenlog("waiting for tetrio main window creation");
+  const electronMainWindow = await mainWindow;
+  greenlog("tetrio main window creation complete");
+  const image_size = require('image-size');
+  const browser = require('./electron-browser-polyfill.js');
+  
   greenlog("loading tetrio plus scripts");
-  let scripts = manifest.browser_specific_settings.desktop_client.scripts;
-  for (let script of scripts) {
+  let megascript = [];
+  megascript.push('(async function() {')
+  for (let script of manifest.browser_specific_settings.desktop_client.scripts) {
     greenlog("js: " + script);
-    let js = fs.readFileSync(path.join(__dirname, '../..', script));
-    try {
-      vm.runInContext(js, context);
-    } catch(ex) {
-      greenlog("Error while executing script", script, ex);
-    }
+    let fullpath = path.join(__dirname, '../..', script);
+    megascript.push(`// Script file: ${JSON.stringify(fullpath)}\n`);
+    megascript.push(fs.readFileSync(fullpath, 'utf8'));
+    megascript.push(';\n');
   }
+  megascript.push('return { getDataSourceForDomain };');
+  megascript.push("})();");
+  greenlog("evaluating concatenated tetrio plus megascript");
+  try {
+    let res = await eval(megascript.join(''));
+    getDataSourceForDomain = res.getDataSourceForDomain;
+  } catch(ex) {
+    redlog("error evaluating megascript: " + ex);
+  }
+
+  if (!storeGet('hideTetrioPlusOnStartup')) {
+    createTetrioPlusWindow();
+  }
+  
+  greenlog("done initializing custom protocols and running scripts, marking tetrioplus as ready");
+  markTetrioPlusReady();
 
   if (storeGet('openDevtoolsOnStart')) {
     let mainContents = (await mainWindow).webContents;
@@ -631,8 +631,4 @@ app.whenReady().then(async () => {
       mainContents.openDevTools();
     });
   }
-
-  if (!storeGet('hideTetrioPlusOnStartup')) {
-    createTetrioPlusWindow();
-  }
-}).catch(greenlog);
+}

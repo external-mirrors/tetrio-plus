@@ -1,4 +1,5 @@
-// global rewriteHandlers
+// global rewriteHandlers defined in electron-main.js
+
 function matchesGlob(glob, string) {
   return new RegExp(
     '^' +
@@ -10,7 +11,7 @@ function matchesGlob(glob, string) {
   ).test(string);
 }
 
-mainWindow.webContents.session.webRequest.onBeforeRequest(
+electronMainWindow.webContents.session.webRequest.onBeforeRequest(
   { urls: ['https://tetr.io/*', '*://*.adinplay.com/*', '*://adinplay.com/*'] },
   (request, callback) => {
     if (new URL(request.url).searchParams.get('bypass-tetrio-plus') != null) {

@@ -247,9 +247,6 @@ setExternalTPSEHandler(
     if (confirm('Are you sure you want to clear all your TETR.IO PLUS data?')) {
       await browser.storage.local.clear();
       await migrate(browser.storage.local);
-      await browser.storage.local.set({
-        version: browser.runtime.getManifest().version
-      });
       alert('Data cleared');
     }
   });

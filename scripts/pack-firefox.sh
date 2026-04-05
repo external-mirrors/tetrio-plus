@@ -29,7 +29,6 @@ files=$(
     ! -path "./source/electron/*" \
     ! -path "./source/bootstrap/electron/*" \
     ! -path "./tpsecore/*" \
-    ! -path "./tpseimporter/*" \
     ! -path "./attributions.txt" \
     ! -path "./CONTRIBUTING.md" \
     ! -path "./desktop-manifest.js" \
