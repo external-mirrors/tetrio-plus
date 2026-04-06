@@ -58,7 +58,6 @@ createRewriteFilter("Tetrio.js Music", "https://tetr.io/js/tetrio.js*", {
       delete song.metadata.loopLength;
     }
 
-
     // Some values used in the music definition were refactored out into constants.
     // This may not be particularly future-proof, but should work for now.
     // Also fill in true/false since those will get caught up by the constant-substitution regex.

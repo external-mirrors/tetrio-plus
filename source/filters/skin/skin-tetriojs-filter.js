@@ -106,9 +106,9 @@ createRewriteFilter("Advanced skin loader", "https://tetr.io/js/tetrio.js*", {
           }
           let scale = base_tex_is_ghost ? 512 : 1024;
 
-          // If there's frames, slice them up and stick them on the texture for later use.
+          // If there's multiple frames, slice them up and stick them on the texture for later use.
           // If not, the next replacement below will bail when it doesn't find the 'tetrioPlusAnimatedArray' key.
-          if (frames > 0) {
+          if (frames > 1) {
             texture.tetrioPlusAnimatedArray = [];
             // use a long unique name for i here to avoid conflicting with any values named 'i' in the minified code
             for (let iteration_value = 0; iteration_value < frames; iteration_value++) {
