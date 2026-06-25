@@ -275,7 +275,7 @@ const app = new Vue({
     },
     save() {
       browser.storage.local.set({
-        touchControlConfig: this.config
+        touchControlConfig: structuredClone(this.config)
       });
       this.saveOpacity = 1.25;
       let timeout = setInterval(() => {
@@ -288,6 +288,9 @@ const app = new Vue({
   async mounted() {
     let configObj = await browser.storage.local.get('touchControlConfig');
     let config = configObj.touchControlConfig;
+    // some touchControlConfigs were stored as empty objects due to a bug and break the editor, ignore them here
+    if (Object.keys(config).length == 0)
+      config = null;
     if (config) this.config = config;
 
     this.updateBoundingRect();
