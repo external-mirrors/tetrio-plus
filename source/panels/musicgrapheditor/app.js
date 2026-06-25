@@ -152,7 +152,9 @@ const app = new Vue({
     },
     save() {
       browser.storage.local.set({
-        musicGraph: JSON.stringify(this.nodes)
+        // structuredClone here eliminates Vue observability hooks and invokes getters,
+        // which browser.storage.local.set otherwise ignores entirely.
+        musicGraph: structuredClone(this.nodes)
       });
       this.saveOpacity = 1.25;
       let timeout = setInterval(() => {
@@ -224,6 +226,10 @@ const app = new Vue({
       this.config.hardEventRateLimit = opt.musicGraphHardEventRateLimit ?? 10000;
       this.saveConfig();
       if (opt.musicGraph) {
+	// a bug led to some music graphs still being double-serialized, handle them gracefully here
+	// by undoing it iff it's present.
+	if (typeof opt.musicGraph == 'string')
+	  opt.musicGraph = JSON.parse(musicGraph);
         this.nodes = opt.musicGraph;
         this.maxId = Math.max(...this.nodes.map(node => node.id));
       }
