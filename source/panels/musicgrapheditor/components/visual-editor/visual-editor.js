@@ -140,7 +140,7 @@ export default {
       let musicGraph = null;
       let result = await sanitizeAndLoadTPSE(
         {
-          version: '0.25.3',
+          version: '0.28.0',
           musicGraph: JSON.parse(event.clipboardData.getData('text'))
         },
         {
