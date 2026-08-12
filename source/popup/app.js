@@ -30,8 +30,8 @@ const app = new Vue({
       <fieldset class="section" v-if="isMobileExtensionPopup">
         <legend>Firefox mobile</legend>
         TETR.IO PLUS is currently runing on Firefox mobile in the extension popup.<br>
-        All menu-opening buttons will open background tabs.<br>
-        <button @click="openInNewTab()">Open this menu as a regular tab</button> instead to avoid this.
+        All menu-opening buttons will open background tabs, which may make it appear as if they don't work.<br>
+        <button @click="openInNewTab()">Open this menu as a regular tab</button> instead to open foreground tabs immediately.
       </fieldset>
 
       <option-toggle storageKey="tetrioPlusEnabled" mode="hide">
@@ -354,7 +354,7 @@ const app = new Vue({
     if (browser.tabs.query) {
       browser.tabs.query({
         active: true,
-        windowId: browser.windows.WINDOW_ID_CURRENT
+        windowId: browser.windows?.WINDOW_ID_CURRENT
       }).then(tabs => {
         let port = browser.runtime.connect({ name: 'info-channel' });
         port.postMessage({ type: 'getUrlFromTab', tabId: tabs[0].id });
@@ -455,16 +455,6 @@ const app = new Vue({
     },
     async openTemplates() {
       await this.openPanel('source/panels/templates/index.html', 600, 170);
-    },
-    openMonetizationInfo() {
-      browser.windows.create({
-        type: 'detached_panel',
-        url: browser.extension.getURL(
-          'source/panels/monetizationinfo/index.html'
-        ),
-        width: 750,
-        height: 350
-      });
     },
     openTouchEditor() {
       browser.tabs.create({
