@@ -289,7 +289,7 @@ const app = new Vue({
     let configObj = await browser.storage.local.get('touchControlConfig');
     let config = configObj.touchControlConfig;
     // some touchControlConfigs were stored as empty objects due to a bug and break the editor, ignore them here
-    if (Object.keys(config).length == 0)
+    if (config && Object.keys(config).length == 0)
       config = null;
     if (config) this.config = config;
 
