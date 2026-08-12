@@ -27,6 +27,14 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
       return 'success';
     }
   }
+  
+  function parseString(key, regex) {
+    return async value => {
+      if (!regex.test(value)) return `ERROR: invalid value`;
+      await storage.set({ [key]: value });
+      return 'success';
+    }
+  }
 
   function electronOnly(callback) {
     return async value => {
@@ -90,6 +98,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     forceNearestScaling: parseBoolean('forceNearestScaling'),
     windowTitleStatus: electronOnly(parseBoolean('windowTitleStatus')),
     musicGraphBackground: parseBoolean('musicGraphBackground'),
+    musicGraphVolumeSlider: parseString('musicGraphVolumeSlider', /^(music|sfx|ignored)$/),
 
     board: parseFile('board', /^image\/.+$/),
     queue: parseFile('queue', /^image\/.+$/),

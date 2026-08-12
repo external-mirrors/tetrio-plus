@@ -17,7 +17,8 @@ function musicGraph(module) {
     musicGraphBackground,
     musicGraphNodeLimit,
     musicGraphReportedEventRateLimit,
-    musicGraphHardEventRateLimit
+    musicGraphHardEventRateLimit,
+    musicGraphVolumeSlider
   } = await storage.get([
     'music',
     'backgrounds',
@@ -27,7 +28,8 @@ function musicGraph(module) {
     'musicGraphBackground',
     'musicGraphNodeLimit',
     'musicGraphReportedEventRateLimit',
-    'musicGraphHardEventRateLimit'
+    'musicGraphHardEventRateLimit',
+    'musicGraphVolumeSlider'
   ]);
   if (!musicEnabled || !musicGraphEnabled)
     return;
@@ -35,6 +37,7 @@ function musicGraph(module) {
   musicGraphNodeLimit = musicGraphNodeLimit ?? 100;
   musicGraphReportedEventRateLimit = musicGraphReportedEventRateLimit ?? 250;
   musicGraphHardEventRateLimit = musicGraphHardEventRateLimit ?? 10000;
+  musicGraphVolumeSlider = musicGraphVolumeSlider ?? 'music';
 
   const musicRoot = '/res/bgm/akai-tsuchi-wo-funde.mp3?song=';
   const audioContext = new AudioContext();
@@ -65,7 +68,11 @@ function musicGraph(module) {
   let lastUpdate = 0;
   function getGlobalVolume() {
     if (Date.now() - lastUpdate > 1000) {
-      globalVolume = JSON.parse(localStorage.userConfig).volume.music;
+      switch (musicGraphVolumeSlider) {
+        case 'music': globalVolume = JSON.parse(localStorage.userConfig).volume.music; break;
+        case 'sfx': globalVolume = JSON.parse(localStorage.userConfig).volume.sfx; break;
+        case 'ignored': globalVolume = 1; break;
+      }
       lastUpdate = Date.now();
     }
     return globalVolume;

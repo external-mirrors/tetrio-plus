@@ -26,6 +26,22 @@ const app = new Vue({
         <div class="node-list">
           <fieldset>
             <legend>Global configuration <button @click="resetConfig">reset</button></legend>
+            
+            <div>
+              Music graph uses which in-game volume slider:
+              <select
+                type="number"
+                v-model.number="config.volumeSlider"
+                @change="saveConfig"
+              >
+                <option default value="music">music</option>
+                <option value="sfx">sfx</option>
+                <option value="ignored">ignored (always 100%)</option>
+              </select>
+            </div>
+            
+            <hr/>
+            
             <b>Increasing these can lag your game.</b>
 
             <div>
@@ -80,6 +96,7 @@ const app = new Vue({
   data: {
     history: { undo: [], redo: [] },
     config: {
+      volumeSlider: 'music',
       nodeLimit: 0,
       reportedEventRateLimit: 0,
       hardEventRateLimit: 0
@@ -96,6 +113,7 @@ const app = new Vue({
   },
   methods: {
     async resetConfig() {
+      this.config.volumeSlider = 'music';
       this.config.nodeLimit = 100;
       this.config.reportedEventRateLimit = 100;
       this.config.hardEventRateLimit = 100;
@@ -103,6 +121,7 @@ const app = new Vue({
     },
     async saveConfig() {
       await browser.storage.local.set({
+        musicGraphVolumeSlider: this.config.volumeSlider,
         musicGraphNodeLimit: this.config.nodeLimit,
         musicGraphReportedEventRateLimit: this.config.reportedEventRateLimit,
         musicGraphHardEventRateLimit: this.config.hardEventRateLimit
@@ -217,19 +236,21 @@ const app = new Vue({
 
     browser.storage.local.get([
       'musicGraph',
+      'musicGraphVolumeSlider',
       'musicGraphNodeLimit',
       'musicGraphReportedEventRateLimit',
       'musicGraphHardEventRateLimit'
     ]).then((opt) => {
+      this.config.volumeSlider = opt.musicGraphVolumeSlider ?? 'music';
       this.config.nodeLimit = opt.musicGraphNodeLimit ?? 100;
       this.config.reportedEventRateLimit = opt.musicGraphReportedEventRateLimit ?? 250;
       this.config.hardEventRateLimit = opt.musicGraphHardEventRateLimit ?? 10000;
       this.saveConfig();
       if (opt.musicGraph) {
-	// a bug led to some music graphs still being double-serialized, handle them gracefully here
-	// by undoing it iff it's present.
-	if (typeof opt.musicGraph == 'string')
-	  opt.musicGraph = JSON.parse(musicGraph);
+        // a bug led to some music graphs still being double-serialized, handle them gracefully here
+        // by undoing it iff it's present.
+        if (typeof opt.musicGraph == 'string')
+          opt.musicGraph = JSON.parse(musicGraph);
         this.nodes = opt.musicGraph;
         this.maxId = Math.max(...this.nodes.map(node => node.id));
       }
