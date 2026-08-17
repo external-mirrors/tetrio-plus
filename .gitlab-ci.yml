@@ -2,6 +2,7 @@ image: ubuntu:focal
 
 stages:
   - build
+  - release
 
 build:
   variables:
@@ -13,10 +14,82 @@ build:
       - target
   artifacts:
     paths:
-      - tpsecore/target/wasm32-unknown-unknown/release/tpsecore.wasm
+      - tpsecore.wasm
       - tetrioplus.xpi
+      - tetrioplus-signed.xpi
       - app.asar.zip
       - tetrio-plus_v*_for_desktop*.asar.zip
+      - build.env
+      - firefox_changelog.md
+      - desktop_changelog.md
+    reports:
+      dotenv: build.env
     expire_in: 1 week
   script:
     - ./scripts/build.sh
+
+release-desktop:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  dependencies:
+    - build # pull in $DO_RELEASE, $ASAR_FILENAME, and $TAG_NAME from build.env from build step
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  variables:
+    GLAB_ENABLE_CI_AUTOLOGIN: true
+  script:
+    - |
+      if [[ "$DO_RELEASE" != "1" ]]; then
+        echo "DO_RELEASE not set, not creating release for this build";
+        exit 0;
+      fi
+      glab release create $TAG_NAME --use-package-registry -F ./desktop_changelog.md "./$ASAR_FILENAME" "./tetrioplus.xpi"
+      
+release-firefox:
+  image: node:latest
+  stage: release
+  dependencies:
+    - build
+  artifacts:
+    when: always
+    paths:
+      - artifacts/*
+      - clean-source-code.tar.gz
+      - amo-metadata-release.json
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  script:
+    - |
+      if [[ "$DO_RELEASE" != "1" ]]; then
+        echo "DO_RELEASE not set, not creating release for this build";
+        exit 0;
+      fi
+      npm i -g yarn
+      yarn install --ignore-engines --frozen-lockfile
+      
+      git clone . clean-source-code
+      cd clean-source-code
+      git submodule init
+      git submodule update
+      cd ..
+      tar -czvf clean-source-code.tar.gz clean-source-code
+      
+      node -e "
+        let fs = require('fs');
+        let json = JSON.parse(fs.readFileSync('resources/amo-metadata.json', 'utf8'));
+        json.release_notes = { 'en-US': fs.readFileSync('firefox_changelog.md', 'utf8') };
+        fs.writeFileSync('amo-metadata-release.json', JSON.stringify(json));
+      ";
+      
+      unzip tetrioplus.xpi -d tetrioplus_xpi
+      
+      mkdir artifacts
+      ./node_modules/web-ext/bin/web-ext.js sign \
+        --source-dir=tetrioplus_xpi \
+        --artifacts-dir=./artifacts \
+        --api-key=$WEB_EXT_API_KEY \
+        --api-secret=$WEB_EXT_API_SECRET \
+        --channel=listed \
+        --upload-source-code clean-source-code.tar.gz \
+        --amo-metadata amo-metadata-release.json
+      

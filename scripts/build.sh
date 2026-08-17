@@ -9,7 +9,7 @@ apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install git gcc curl wget -y -qq
 
 echo "Writing commit to resources/ci-commit and resources/ci-commit-previous..."
-git rev-parse --short HEAD~1 > resources/ci-commit-previous # commit for display purposes
+git rev-parse --short HEAD~1 > resources/ci-commit-previous # commit for comparison purposes
 git rev-parse --short HEAD > resources/ci-commit # commit for display purposes
 cat resources/ci-commit-previous
 cat resources/ci-commit
@@ -40,15 +40,50 @@ DEBIAN_FRONTEND=noninteractive apt-get install build-essential libcairo2-dev lib
 # install node
 apt install nodejs npm -y
 node -v
-npm i -g yarn
+npm i -g yarn@1.22.22
 
 # build it
 git checkout $CI_COMMIT_REF_NAME -f && git pull && git reset --hard $CI_COMMIT_SHA
 echo Building version v`grep -oP "(?<=version\": \")[^\"]+(?=\")" < manifest.json`
 ls -a
-yarn --ignore-engines
+yarn install --ignore-engines --frozen-lockfile
 bash ./scripts/pack-firefox.sh
 bash ./scripts/pack-electron.sh
 zip -r app.asar.zip -9 app.asar
+
+# move some of the files to more convenient locations for artifact uploads
 TETRIO_PLUS_VERSION=$(cat ./manifest.json | node -e "console.log(JSON.parse(require('fs').readFileSync(0, 'utf-8')).version)")
-cp app.asar.zip tetrio-plus_v${TETRIO_PLUS_VERSION}_for_desktop_${DESKTOP_VERSION_SHORT}.asar.zip
+EXTENDED_ASAR_NAME=tetrio-plus_v${TETRIO_PLUS_VERSION}_for_desktop_${DESKTOP_VERSION_SHORT}.asar.zip
+cp app.asar.zip $EXTENDED_ASAR_NAME
+cp tpsecore/target/wasm32-unknown-unknown/release/tpsecore.wasm tpsecore.wasm
+
+# prepare metadata for release job
+echo "PLACEHOLDER_BECAUSE_EMPTY_ENV_FILES_ARE_INVALID_APPARENTLY=1" > build.env
+if [[ "$(grep -E "^[a-f0-9]+$" resources/release-commit)" == "$(git rev-parse --short HEAD~1)" ]]; then
+  TAG_NAME=electron-${TETRIO_PLUS_VERSION}-tetrio-${DESKTOP_VERSION_SHORT}
+
+  echo "DO_RELEASE=1" >> build.env
+  echo "TAG_NAME=$TAG_NAME" >> build.env
+  echo "ASAR_FILENAME=$EXTENDED_ASAR_NAME" >> build.env
+  
+  node -e "
+    const fs = require('fs');
+
+    let changelog = null;
+    try {
+      changelog = fs.readFileSync('./resources/changelog/$TETRIO_PLUS_VERSION', 'utf8');
+    } catch(ex) {
+      console.error('missing changelog file for this release.');
+      process.exit(1);
+    }
+
+    let desktop = fs.readFileSync('./resources/release-header.md', 'utf8')
+      .replace(/%RELEASE_NAME/g, '$EXTENDED_ASAR_NAME')
+      .replace(/%RELEASE_URL/g, '../../releases/$TAG_NAME/downloads/$EXTENDED_ASAR_NAME')
+      .replace(/%DESKTOP_VERSION/g, '$DESKTOP_VERSION_SHORT')
+      .replace(/%CHANGELOG/g, changelog);
+    
+    fs.writeFileSync('firefox_changelog.md', changelog);
+    fs.writeFileSync('desktop_changelog.md', desktop);
+  ";
+fi

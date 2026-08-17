@@ -22,6 +22,9 @@ process () {
 files=$(
   find -type f \
     ! -path "./.*" \
+    ! -path "./resources/changelog/*" \
+    ! -path "./resources/desktop-ci/*" \
+    ! -path "./resources/amo-metadata.json/*" \
     ! -path "./build/*" \
     ! -path "./target/*" \
     ! -path "./node_modules/*" \

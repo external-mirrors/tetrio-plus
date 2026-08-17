@@ -10,4 +10,8 @@
 # Update this file and then commit. The CI output from that commit
 # is then the official release for that version and won't show
 # the commit hash in the TETR.IO PLUS window.
-65943ec
+# 
+# GitLab CI will automatically create a release when this matches.
+# Do not update until ready! Also, never update more than once per
+# version bump.
+df73c8d

@@ -1,0 +1,9 @@
+{
+  "compatibility": {
+    "firefox": { "min": "58" },
+    "android": { "min": "120.0" }
+  },
+  "version": {
+    "approval_notes": "To build: run `./scripts/build.sh`\n\nExtension built and uploaded on latest `ubuntu:focal` by gitlab CI.\n\nsee https://gitlab.com/UniQMG/tetrio-plus/-/wikis/build-guide#firefox-build-guide for third party library sources (outdated for build instructions though, use the build script)"
+  }
+}
