@@ -48,6 +48,8 @@ release-desktop:
 release-firefox:
   image: node:latest
   stage: release
+  environment:
+    name: amo-release
   dependencies:
     - build
   artifacts:
@@ -87,8 +89,6 @@ release-firefox:
       ./node_modules/web-ext/bin/web-ext.js sign \
         --source-dir=tetrioplus_xpi \
         --artifacts-dir=./artifacts \
-        --api-key=$WEB_EXT_API_KEY \
-        --api-secret=$WEB_EXT_API_SECRET \
         --channel=listed \
         --upload-source-code clean-source-code.tar.gz \
         --amo-metadata amo-metadata-release.json

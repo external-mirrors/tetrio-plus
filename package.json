@@ -3,7 +3,7 @@
   "name": "tetrioplus",
   "author": "UniQMG",
   "description": "TETR.IO PLUS - use as an npm package is no longer supported, use tpsecore instead.",
-  "version": "0.28.1",
+  "version": "0.28.2",
   "dependencies": {},
   "devDependencies": {
     "@vue/component-compiler-utils": "^3.2.2",
