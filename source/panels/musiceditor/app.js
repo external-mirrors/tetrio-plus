@@ -67,7 +67,8 @@ const app = new Vue({
         // Add leading 0 to numbers, since json doesn't allow numbers to start with a dot
         .replace(/("[^"]+":)(\.\d+)/, (_, key, number) => key + '0' + number)
         // Fill in constants with whatever, we only really care about song names here
-        .replace(/("[^"]+":)([A-Za-z\.]+)/g, (_, key, constant) => key + 'null');
+        .replace(/("[^"]+":)([A-Za-z\._]+)/g, (_, key, constant) => key + 'null')
+        .replace(/"source":([^\d"},][^,}]+)/g, `"source": null`);
       this.builtin = JSON.parse(sanitized);
       console.log('fetched builtins', this.builtin);
     } catch(ex) {
