@@ -49,6 +49,6 @@ cd ..
 cp source/lib/tpsecore_bg.wasm source/lib/tpsecore.js out/tetrioplus/source/lib
 
 # cleanup
-rm 'TETR.IO Setup.tar.gz' app.asar
+rm 'TETR.IO Setup v9.tar.gz' app.asar
 
 ./programs/node_modules/@electron/asar/bin/asar.js pack out app.asar
