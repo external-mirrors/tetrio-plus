@@ -12,12 +12,21 @@ echo "{}" > package.json
 yarn add @electron/asar@3.2.9
 cd ..
 
-if [ ! -f 'TETR.IO Setup.tar.gz' ]; then
-  wget -q -N $DESKTOP_DOWNLOAD_URL
-else
-  echo "Using existing 'TETR.IO Setup.tar.gz'"
+# if [ ! -f 'TETR.IO Setup.tar.gz' ]; then
+#   wget -q -N $DESKTOP_DOWNLOAD_URL
+# else
+#   echo "Using existing 'TETR.IO Setup.tar.gz'"
+# fi
+# tar --strip-components=2 -zxvf 'TETR.IO Setup v9.tar.gz' --wildcards 'tetrio-desktop-*/resources/app.asar'
+
+# Backport updates
+wget -q -N http://you.have.fail/ed/uploads/TETR.IO%20Setup%20v9.tar.gz
+HASH=$(sha256sum "TETR.IO Setup v9.tar.gz" | awk '{print $1}')
+if [ "$HASH" != "b94dd30c251ac473e82f1a053eb0f33e859ac964b80d8474e17562031c619854" ]; then
+  echo "tetrio installer hash mismatch"
+  exit 1
 fi
-tar --strip-components=2 -zxvf 'TETR.IO Setup.tar.gz' --wildcards 'tetrio-desktop-*/resources/app.asar'
+tar --strip-components=2 -zxvf 'TETR.IO Setup v9.tar.gz' --wildcards 'tetrio-desktop-*/resources/app.asar'
 
 ./programs/node_modules/@electron/asar/bin/asar.js extract app.asar out
 node ./scripts/build-electron.js
