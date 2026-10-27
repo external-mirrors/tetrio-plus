@@ -148,6 +148,11 @@ async function createTetrioPlusWindow() {
     greenlog("Main window closed");
     if (tpWindow) tpWindow.close();
   });
+  mainWin.on('page-title-updated', (event) => {
+    if (storeGet('blockTitleChanges')) {
+      event.preventDefault();
+    }
+  })
   mainWin.webContents.on('did-finish-load', () => {
     if (tpWindow && tpWindow.webContents)
       tpWindow.webContents.send('client-navigated', mainWin.getURL())

@@ -94,6 +94,7 @@ async function sanitizeAndLoadTPSE(data, storage, options={}) {
     bypassBootstrapper: parseBoolean('bypassBootstrapper'),
     enableCustomMaps: parseBoolean('enableCustomMaps'),
     disableSuppressExitPrompt: electronOnly(parseBoolean('disableSuppressExitPrompt')),
+    blockTitleChanges: electronOnly(parseBoolean('blockTitleChanges')),
     advancedSkinLoading: parseBoolean('advancedSkinLoading'),
     forceNearestScaling: parseBoolean('forceNearestScaling'),
     windowTitleStatus: electronOnly(parseBoolean('windowTitleStatus')),

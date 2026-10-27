@@ -202,6 +202,12 @@ const app = new Vue({
                 Disable suppression of exit prompt
               </span>
             </option-toggle>
+            
+            <option-toggle storageKey="blockTitleChanges" v-if="isElectron">
+              <span title="Blocks updates that TETR.IO makes to its window title">
+                Block window title changes
+              </span>
+            </option-toggle>
 
             <div v-if="isElectron">
               <option-toggle storageKey="enableUpdateCheck" @changed="updateCheck()">
